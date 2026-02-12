@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 fw-bold mb-4">Ассоциация — это все мы, счастливые обладатели самой лучшей профессии в мире!</h2>
+                <p class="lead mb-4">Это место, где мы все можем объединиться для продвижения, развития и поддержки грудничкового и раннего плавания.</p>
+                <p class="mb-4">{{ about_text }}</p>
+                <p class="mb-4">Мы надеемся, что благодаря вашему активному участию в жизни Ассоциации, вместе мы сможем помочь воплотить наши идеи развития и поддержки детского плавания.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'core:page_content' slug='about' %}" class="btn btn-primary">Об Ассоциации</a>
+                    <a href="{% url 'core:page_content' slug='membership' %}" class="btn btn-outline-primary">Членство</a>
+                    <a href="{% url 'core:news_list' %}" class="btn btn-outline-primary">Новости</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Courses Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h2 class="h3 mb-3">Обучающие программы</h2>
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <a href="{% url 'core:courses_list' %}" class="text-decoration-none">Программы</a>
+                    <span>•</span>
+                    <a href="{% url 'core:page_content' slug='timetable' %}" class="text-decoration-none">Расписание курсов и семинаров</a>
+                    <span>•</span>
+                    <a href="{% url 'core:page_content' slug='seminars' %}" class="text-decoration-none">Выездные семинары</a>
+                    <span>•</span>
+                    <a href="{% url 'core:page_content' slug='why_us' %}" class="text-decoration-none">Почему стоит учиться у нас?</a>
+                </div>
+                <p>{{ courses_intro }}</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for course in courses %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100">
+                    {% if course.image %}
+                    <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text text-muted small">{{ course.hours }} учебных часов</p>
+                        <p class="card-text">{{ course.description|truncatewords:20 }}</p>
+                        <p class="card-text"><small class="text-muted">Инструктор: {{ course.instructor }}</small></p>
+                        <a href="{% url 'core:course_detail' slug=course.slug %}" class="btn btn-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12 text-center">
+                <a href="{% url 'core:courses_list' %}" class="btn btn-outline-primary me-2">Расписание курсов и семинаров</a>
+                <a href="{% url 'core:page_content' slug='seminars' %}" class="btn btn-outline-primary">Расписание выездных семинаров</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Convention Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="h3 mb-3">Ежегодная конвенция специалистов грудничкового плавания</h2>
+                <p class="lead">
+                    Конвенция направлена на развитие потенциала профессионалов, работающих с детьми,
+                    помогает в решении сложных вопросов, возникающих при такой работе и служит ориентиром
+                    для тех, кто только начинает делать первые шаги. Обмен опытом, представление лучших
+                    практик в области раннего развития детей через воду, выработка привычки к здоровому
+                    образу жизни с рождения.
+                </p>
+                <a href="http://convent.grudnichkovoe-plavanie.ru/" class="btn btn-primary" target="_blank">
+                    Перейти на сайт конвенции
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Membership Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center mb-4">
+                <h2 class="h3">Членство в ассоциации</h2>
+                <div class="d-flex justify-content-center gap-3 mb-3">
+                    <a href="{% url 'core:page_content' slug='membership' %}" class="text-decoration-none">Преимущества для членов Ассоциации</a>
+                    <span>•</span>
+                    <a href="{% url 'core:page_content' slug='membership_rules' %}" class="text-decoration-none">Правила и условия</a>
+                </div>
+                <p class="lead">
+                    Мы рады видеть в членах ассоциации людей увлеченных, творческих и любящих детей.
+                    Готовых поднимать уровень своего профессионализма, учиться, обмениваться опытом,
+                    делиться своими мыслями и наработками.
+                </p>
+                <a href="{% url 'core:page_content' slug='membership' %}" class="btn btn-success">Подать заявку на вступление</a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for specialist in specialists %}
+            <div class="col-md-6 col-lg-3">
+                <div class="text-center p-3 border rounded h-100">
+                    {% if specialist.photo %}
+                    <img src="{{ specialist.photo.url }}" class="rounded-circle mb-3" alt="{{ specialist.name }}" style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                        <i class="bi bi-person fs-1"></i>
+                    </div>
+                    {% endif %}
+                    <h5>{{ specialist.name }}</h5>
+                    <p class="text-muted mb-1">{{ specialist.position }}</p>
+                    <p class="small text-muted">{{ specialist.city }} • {{ specialist.country }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Representatives Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="h3 mb-3">Региональные представители Ассоциации</h2>
+                <p class="lead mb-4">Представляем организации, которые рады оказать вам помощь в вашем регионе</p>
+                <a href="{% url 'core:specialists_list' %}" class="btn btn-primary">Региональные представители</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="h3 mb-3">Партнеры Ассоциации</h2>
+                <p class="lead mb-4">
+                    Партнеры Ассоциации — компании, организации и частные лица, разделяющие наши цели,
+                    принципы и задачи. Мы рады рассказывать и продвигать те направления деятельности,
+                    товары и услуги, которые могут быть полезны членам Ассоциации и вообще сообществу,
+                    занимающемуся работой с детьми.
+                </p>
+                <a href="{% url 'core:partners_list' %}" class="btn btn-primary">Подробнее о партнерах</a>
+            </div>
+        </div>
+
+        {% if partners %}
+        <div class="row mt-5 g-4 justify-content-center">
+            {% for partner in partners %}
+            <div class="col-md-4 col-lg-3 text-center">
+                {% if partner.logo %}
+                <img src="{{ partner.logo.url }}" class="img-fluid mb-3" alt="{{ partner.name }}" style="max-height: 150px; object-fit: contain;">
+                {% else %}
+                <div class="bg-secondary text-white py-4 mb-3">{{ partner.name }}</div>
+                {% endif %}
+                {% if partner.website %}
+                <a href="{{ partner.website }}" target="_blank" class="btn btn-sm btn-outline-primary">Сайт</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
