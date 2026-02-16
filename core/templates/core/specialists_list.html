@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 fw-bold mb-3">{{ page_title }}</h1>
+                <p class="lead">Региональные представители Ассоциации готовы оказать вам помощь</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Specialists List -->
+<section class="py-5">
+    <div class="container">
+        {% if specialists %}
+            <div class="row g-4">
+                {% for specialist in specialists %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            {% if specialist.photo %}
+                            <img src="{{ specialist.photo.url }}" class="rounded-circle mb-3" alt="{{ specialist.name }}" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 120px; height: 120px;">
+                                <i class="bi bi-person fs-1"></i>
+                            </div>
+                            {% endif %}
+                            <h5 class="card-title">{{ specialist.name }}</h5>
+                            <p class="card-text text-muted mb-1">{{ specialist.position }}</p>
+                            <p class="card-text small text-muted">{{ specialist.city }}, {{ specialist.country }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p class="lead text-muted">Информация о представителях обновляется</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

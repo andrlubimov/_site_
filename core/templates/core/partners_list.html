@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 fw-bold mb-3">{{ page_title }}</h1>
+                <p class="lead">Компании и организации, разделяющие наши цели и принципы</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners List -->
+<section class="py-5">
+    <div class="container">
+        {% if partners %}
+            <div class="row g-4">
+                {% for partner in partners %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            {% if partner.logo %}
+                            <img src="{{ partner.logo.url }}" class="img-fluid mb-3" alt="{{ partner.name }}" style="max-height: 150px; object-fit: contain;">
+                            {% else %}
+                            <div class="bg-light py-4 mb-3 rounded">
+                                <h4 class="text-muted">{{ partner.name }}</h4>
+                            </div>
+                            {% endif %}
+                            <h5 class="card-title">{{ partner.name }}</h5>
+                            {% if partner.description %}
+                            <p class="card-text">{{ partner.description|truncatewords:20 }}</p>
+                            {% endif %}
+                            {% if partner.website %}
+                            <a href="{{ partner.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-globe"></i> Посетить сайт
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p class="lead text-muted">Информация о партнерах обновляется</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
