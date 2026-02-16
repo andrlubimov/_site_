@@ -32,6 +32,8 @@ class NewsAdmin(admin.ModelAdmin):
     list_filter = ['is_published', 'published_date']
     search_fields = ['title', 'content']
     prepopulated_fields = {'slug': ('title',)}
+    list_editable = ['is_published']
+    date_hierarchy = 'published_date'
 
 
 @admin.register(PageContent)
