@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'core:index' %}">Главная</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'core:courses_list' %}">Обучающие программы</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ course.title }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold mb-3">{{ course.title }}</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Course Details -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                {% if course.image %}
+                <div class="mb-4">
+                    <img src="{{ course.image.url }}" class="img-fluid rounded" alt="{{ course.title }}">
+                </div>
+                {% endif %}
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Информация о курсе</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><strong>Преподаватель:</strong> {{ course.instructor }}</li>
+                            <li class="mb-2"><strong>Учебные часы:</strong> {{ course.hours }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="course-description">
+                    <h5>Описание курса</h5>
+                    {{ course.description|linebreaks }}
+                </div>
+
+                <div class="mt-5 pt-4 border-top">
+                    <a href="{% url 'core:courses_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Вернуться к списку курсов
+                    </a>
+                    <a href="{% url 'core:page_content' slug='timetable' %}" class="btn btn-primary">
+                        Расписание курсов
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

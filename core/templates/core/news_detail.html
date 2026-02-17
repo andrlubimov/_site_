@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'core:index' %}">Главная</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'core:news_list' %}">Новости</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ news.title }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold mb-3">{{ news.title }}</h1>
+                <p class="text-muted">
+                    <i class="bi bi-calendar"></i> {{ news.published_date|date:"d F Y г." }}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- News Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                {% if news.image %}
+                <div class="mb-4">
+                    <img src="{{ news.image.url }}" class="img-fluid rounded" alt="{{ news.title }}">
+                </div>
+                {% endif %}
+                
+                <div class="news-content">
+                    {{ news.content|linebreaks }}
+                </div>
+
+                <div class="mt-5 pt-4 border-top">
+                    <a href="{% url 'core:news_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Вернуться к списку новостей
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

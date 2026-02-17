@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'core:index' %}">Главная</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+                    </ol>
+                </nav>
+                {% if content.title %}
+                <h1 class="display-5 fw-bold mb-3">{{ content.title }}</h1>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Page Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="page-content">
+                    {{ content.content|linebreaks }}
+                </div>
+
+                <div class="mt-5 pt-4 border-top">
+                    <a href="{% url 'core:index' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Вернуться на главную
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
