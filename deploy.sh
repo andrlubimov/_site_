@@ -20,8 +20,7 @@ die()  { echo "[deploy] ERROR: $*" >&2; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/.env"
-DEPLOY_DIR="/var/www/swimming_association"
-VENV_DIR="${DEPLOY_DIR}/.venv"
+DEPLOY_DIR="/var/www/swimming_association"   # overridable via DEPLOY_DIR in .env
 GUNICORN_SOCKET="/run/swimming_association.sock"
 SYSTEMD_SERVICE="swimming_association"
 SERVICE_USER="swimming_association"
@@ -43,6 +42,14 @@ set +o allexport
 
 [[ -n "${REPO_URL:-}" ]] || die "REPO_URL is not set in ${ENV_FILE}."
 [[ -n "${DOMAIN:-}" ]]   || die "DOMAIN is not set in ${ENV_FILE}."
+
+# Allow .env to override the deploy directory; re-derive dependent paths
+DEPLOY_DIR="${DEPLOY_DIR:-/var/www/swimming_association}"
+VENV_DIR="${DEPLOY_DIR}/.venv"
+
+# Normalise USE_S3 (default: false)
+USE_S3="${USE_S3:-false}"
+USE_S3="${USE_S3,,}"   # lowercase
 
 # ── Step 2: create dedicated service user ────────────────────────────────────
 
@@ -89,6 +96,7 @@ declare -A REQUIRED_VARS=(
     [DB_NAME]="${DB_NAME:-swimming_association}"
     [DB_USER]="${DB_USER:-postgres}"
     [ALLOWED_HOSTS]="${DOMAIN}"
+    [USE_S3]="${USE_S3}"
 )
 
 for key in "${!REQUIRED_VARS[@]}"; do
@@ -123,6 +131,13 @@ log "Running Django migrations ..."
 
 log "Collecting static files ..."
 (cd "${DEPLOY_DIR}" && "${VENV_DIR}/bin/python" manage.py collectstatic --noinput)
+
+if [[ "${USE_S3}" != "true" ]]; then
+    log "USE_S3 is not true — ensuring staticfiles/media directories are readable by nginx ..."
+    mkdir -p "${DEPLOY_DIR}/staticfiles" "${DEPLOY_DIR}/media"
+    chown -R "${SERVICE_USER}:${SERVICE_USER}" "${DEPLOY_DIR}/staticfiles" "${DEPLOY_DIR}/media"
+    chmod -R 755 "${DEPLOY_DIR}/staticfiles" "${DEPLOY_DIR}/media"
+fi
 
 # ── Step 8: create systemd service for gunicorn ───────────────────────────────
 
@@ -161,6 +176,22 @@ systemctl restart "${SYSTEMD_SERVICE}"
 
 NGINX_CONF="/etc/nginx/conf.d/${DOMAIN}.conf"
 log "Writing nginx config to ${NGINX_CONF} ..."
+
+# Build static/media location blocks only when not using S3
+if [[ "${USE_S3}" != "true" ]]; then
+    STATIC_MEDIA_LOCATIONS="
+    location /static/ {
+        alias ${DEPLOY_DIR}/staticfiles/;
+    }
+
+    location /media/ {
+        alias ${DEPLOY_DIR}/media/;
+    }
+"
+else
+    STATIC_MEDIA_LOCATIONS=""
+fi
+
 cat > "${NGINX_CONF}" <<EOF
 # Redirect www → non-www
 server {
@@ -174,15 +205,7 @@ server {
     server_name ${DOMAIN};
 
     client_max_body_size 20M;
-
-    location /static/ {
-        alias ${DEPLOY_DIR}/staticfiles/;
-    }
-
-    location /media/ {
-        alias ${DEPLOY_DIR}/media/;
-    }
-
+${STATIC_MEDIA_LOCATIONS}
     location / {
         proxy_pass http://unix:${GUNICORN_SOCKET};
         proxy_set_header Host              \$host;
