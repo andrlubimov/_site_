@@ -20,8 +20,7 @@ die()  { echo "[deploy] ERROR: $*" >&2; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/.env"
-DEPLOY_DIR="/var/www/swimming_association"
-VENV_DIR="${DEPLOY_DIR}/.venv"
+DEPLOY_DIR="/var/www/swimming_association"   # overridable via DEPLOY_DIR in .env
 GUNICORN_SOCKET="/run/swimming_association.sock"
 SYSTEMD_SERVICE="swimming_association"
 SERVICE_USER="swimming_association"
@@ -43,6 +42,10 @@ set +o allexport
 
 [[ -n "${REPO_URL:-}" ]] || die "REPO_URL is not set in ${ENV_FILE}."
 [[ -n "${DOMAIN:-}" ]]   || die "DOMAIN is not set in ${ENV_FILE}."
+
+# Allow .env to override the deploy directory; re-derive dependent paths
+DEPLOY_DIR="${DEPLOY_DIR:-/var/www/swimming_association}"
+VENV_DIR="${DEPLOY_DIR}/.venv"
 
 # Normalise USE_S3 (default: false)
 USE_S3="${USE_S3:-false}"
