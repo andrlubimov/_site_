@@ -21,7 +21,7 @@ die()  { echo "[deploy] ERROR: $*" >&2; exit 1; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/.env"
 DEPLOY_DIR="/var/www/swimming_association"   # overridable via DEPLOY_DIR in .env
-GUNICORN_SOCKET="/run/swimming_association.sock"
+GUNICORN_SOCKET="/run/swimming_association/swimming_association.sock"
 SYSTEMD_SERVICE="swimming_association"
 SERVICE_USER="swimming_association"
 
@@ -159,6 +159,7 @@ ExecStart=${VENV_DIR}/bin/gunicorn \\
 ExecReload=/bin/kill -s HUP \$MAINPID
 KillMode=mixed
 TimeoutStopSec=5
+RuntimeDirectory=swimming_association
 PrivateTmp=true
 Restart=on-failure
 
