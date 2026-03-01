@@ -2,19 +2,18 @@
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
-{% block content %}
-<!-- Page Header -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-5 fw-bold mb-3">{{ page_title }}</h1>
-                <p class="lead">Компании и организации, разделяющие наши цели и принципы</p>
-            </div>
-        </div>
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">{{ page_title }}</h1>
+    <div class="header-tabs">
+        <a href="{% url 'core:page_content' slug='about' %}" class="header-tab-btn">Об Ассоциации</a>
+        <a href="{% url 'core:partners_list' %}" class="header-tab-btn active">Партнеры</a>
+        <a href="{% url 'core:specialists_list' %}" class="header-tab-btn">Представители</a>
     </div>
-</section>
+</div>
+{% endblock %}
 
+{% block content %}
 <!-- Partners List -->
 <section class="py-5">
     <div class="container">

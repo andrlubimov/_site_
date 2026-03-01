@@ -2,36 +2,34 @@
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
-{% block content %}
-<!-- Page Header -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-10 mx-auto">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'core:index' %}">Главная</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
-                    </ol>
-                </nav>
-                {% if content.title %}
-                <h1 class="display-5 fw-bold mb-3">{{ content.title }}</h1>
-                {% endif %}
-            </div>
-        </div>
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">{{ page_title }}</h1>
+    <div class="header-tabs">
+        {% if content.slug == 'timetable' or content.slug == 'seminars' or content.slug == 'why_us' %}
+            <a href="{% url 'core:courses_list' %}" class="header-tab-btn">Программы</a>
+            <a href="{% url 'core:page_content' slug='timetable' %}" class="header-tab-btn {% if content.slug == 'timetable' %}active{% endif %}">Расписание</a>
+            <a href="{% url 'core:page_content' slug='seminars' %}" class="header-tab-btn {% if content.slug == 'seminars' %}active{% endif %}">Выездные семинары</a>
+        {% else %}
+            <a href="{% url 'core:page_content' slug='about' %}" class="header-tab-btn {% if content.slug == 'about' %}active{% endif %}">Об Ассоциации</a>
+            <a href="{% url 'core:page_content' slug='membership' %}" class="header-tab-btn {% if content.slug == 'membership' %}active{% endif %}">Членство</a>
+            <a href="{% url 'core:news_list' %}" class="header-tab-btn">Новости Ассоциации</a>
+        {% endif %}
     </div>
-</section>
+</div>
+{% endblock %}
 
+{% block content %}
 <!-- Page Content -->
 <section class="py-5">
     <div class="container">
         <div class="row">
             <div class="col-lg-10 mx-auto">
-                <div class="page-content">
+                <div class="page-content bg-white p-4 rounded shadow-sm">
                     {{ content.content|linebreaks }}
                 </div>
 
-                <div class="mt-5 pt-4 border-top">
+                <div class="mt-4">
                     <a href="{% url 'core:index' %}" class="btn btn-outline-primary">
                         <i class="bi bi-arrow-left"></i> Вернуться на главную
                     </a>
