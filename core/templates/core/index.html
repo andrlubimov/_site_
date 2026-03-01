@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 
-{% block content %}
-<!-- Hero Section -->
-<section class="py-5 bg-light">
+{% block header_content %}
+<div class="hero-card-wrapper">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <h2 class="display-5 fw-bold mb-4">Ассоциация — это все мы, счастливые обладатели самой лучшей профессии в мире!</h2>
-                <p class="lead mb-4">Это место, где мы все можем объединиться для продвижения, развития и поддержки грудничкового и раннего плавания.</p>
-                <p class="mb-4">{{ about_text }}</p>
-                <p class="mb-4">Мы надеемся, что благодаря вашему активному участию в жизни Ассоциации, вместе мы сможем помочь воплотить наши идеи развития и поддержки детского плавания.</p>
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="{% url 'core:page_content' slug='about' %}" class="btn btn-primary">Об Ассоциации</a>
-                    <a href="{% url 'core:page_content' slug='membership' %}" class="btn btn-outline-primary">Членство</a>
-                    <a href="{% url 'core:news_list' %}" class="btn btn-outline-primary">Новости</a>
-                </div>
+        <div class="hero-card">
+            <p><strong>Ассоциация — это все мы, счастливые обладатели самой лучшей профессии в мире!</strong><br>
+            Это место, где мы все можем объединиться для продвижения, развития и поддержки грудничкового и раннего плавания.</p>
+            <p>{{ about_text }}</p>
+            <p>Мы надеемся, что благодаря вашему активному участию в жизни Ассоциации, вместе мы сможем помочь воплотить наши идеи развития и поддержки детского плавания.</p>
+            <div class="hero-buttons">
+                <a href="{% url 'core:page_content' slug='about' %}" class="btn-hero">Об Ассоциации</a>
+                <a href="{% url 'core:page_content' slug='membership' %}" class="btn-hero">Членство</a>
+                <a href="{% url 'core:news_list' %}" class="btn-hero">Новости</a>
             </div>
         </div>
     </div>
-</section>
+</div>
+{% endblock %}
 
+{% block content %}
 <!-- Courses Section -->
 <section class="py-5">
     <div class="container">

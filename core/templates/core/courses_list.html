@@ -2,19 +2,18 @@
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
-{% block content %}
-<!-- Page Header -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-5 fw-bold mb-3">{{ page_title }}</h1>
-                <p class="lead">Профессиональное обучение для специалистов грудничкового и раннего плавания</p>
-            </div>
-        </div>
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">Образовательные программы и семинары</h1>
+    <div class="header-tabs">
+        <a href="{% url 'core:courses_list' %}" class="header-tab-btn active">Программы</a>
+        <a href="{% url 'core:page_content' slug='timetable' %}" class="header-tab-btn">Расписание</a>
+        <a href="{% url 'core:page_content' slug='seminars' %}" class="header-tab-btn">Выездные семинары</a>
     </div>
-</section>
+</div>
+{% endblock %}
 
+{% block content %}
 <!-- Courses List -->
 <section class="py-5">
     <div class="container">
