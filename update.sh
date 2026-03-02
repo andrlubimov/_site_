@@ -35,7 +35,7 @@ log "Pulling latest changes in ${DEPLOY_DIR} ..."
 git -C "${DEPLOY_DIR}" pull --ff-only
 
 log "Installing Python dependencies ..."
-"${VENV_DIR}/bin/pip" install --upgrade -r "${DEPLOY_DIR}/requirements.txt"
+"${VENV_DIR}/bin/pip" install -r "${DEPLOY_DIR}/requirements.txt"
 
 log "Applying Django migrations ..."
 (cd "${DEPLOY_DIR}" && "${VENV_DIR}/bin/python" manage.py migrate --noinput)
