@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from django.db import OperationalError
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
-from .models import Course, Specialist, Partner, News, PageContent
+from .models import Teacher, Course, Specialist, Partner, News, PageContent
 
 import logging
 
@@ -22,7 +22,7 @@ FALLBACK_PAGE_TITLES = {
 
 def index(request):
     """Главная страница"""
-    courses = Course.objects.filter(is_active=True)[:4]
+    courses = Course.objects.filter(is_active=True).select_related('teacher').order_by('order', '-created_at')
     specialists = Specialist.objects.filter(is_active=True).order_by('order')[:4]
     partners = Partner.objects.filter(is_active=True).order_by('order')
 
@@ -49,7 +49,7 @@ def index(request):
 
 def courses_list(request):
     """Список всех курсов"""
-    courses = Course.objects.filter(is_active=True)
+    courses = Course.objects.filter(is_active=True).select_related('teacher')
     context = {
         'courses': courses,
         'page_title': 'Обучающие программы',

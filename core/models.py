@@ -3,22 +3,49 @@ from django.utils.text import slugify
 from django.utils import timezone
 
 
+class Teacher(models.Model):
+    """Модель преподавателя"""
+    first_name = models.CharField('Имя', max_length=100)
+    last_name = models.CharField('Фамилия', max_length=100)
+    patronymic = models.CharField('Отчество', max_length=100, blank=True)
+    photo = models.ImageField('Фотография с фоном', upload_to='teachers/', blank=True, null=True)
+    photo_transparent = models.ImageField(
+        'Фотография без фона', upload_to='teachers/transparent/', blank=True, null=True
+    )
+
+    class Meta:
+        verbose_name = 'Преподаватель'
+        verbose_name_plural = 'Преподаватели'
+        ordering = ['last_name', 'first_name']
+
+    def __str__(self):
+        return f"{self.last_name} {self.first_name}"
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+
 class Course(models.Model):
     """Модель обучающего курса"""
     title = models.CharField('Название курса', max_length=255)
     slug = models.SlugField('URL', unique=True, blank=True)
     description = models.TextField('Описание')
     hours = models.IntegerField('Учебные часы')
-    instructor = models.CharField('Преподаватель', max_length=255)
+    teacher = models.ForeignKey(
+        Teacher, verbose_name='Преподаватель', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='courses',
+    )
     image = models.ImageField('Изображение', upload_to='courses/', blank=True, null=True)
+    order = models.IntegerField('Место на странице', default=0)
     is_active = models.BooleanField('Активен', default=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлен', auto_now=True)
 
     class Meta:
-        verbose_name = 'Курс'
-        verbose_name_plural = 'Курсы'
-        ordering = ['-created_at']
+        verbose_name = 'Блок курса'
+        verbose_name_plural = 'Блоки курсов'
+        ordering = ['order', '-created_at']
 
     def __str__(self):
         return self.title
