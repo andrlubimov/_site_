@@ -1,5 +1,23 @@
+from types import SimpleNamespace
+
+from django.db import OperationalError
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from .models import Course, Specialist, Partner, News, PageContent
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+FALLBACK_PAGE_TITLES = {
+    'about': 'Об Ассоциации',
+    'membership': 'Членство',
+    'contacts': 'Контакты',
+    'info': 'Сведения об образовательной организации',
+    'timetable': 'Расписание',
+    'seminars': 'Выездные семинары',
+    'why_us': 'Почему мы',
+}
 
 
 def index(request):
@@ -91,7 +109,15 @@ def news_detail(request, slug):
 
 def page_content(request, slug):
     """Страница с контентом"""
-    content = get_object_or_404(PageContent, slug=slug)
+    try:
+        content = PageContent.objects.filter(slug=slug).first()
+    except OperationalError:
+        logger.warning("PageContent unavailable for slug '%s' due to database connectivity issue", slug)
+        content = None
+    if content is None:
+        if slug not in FALLBACK_PAGE_TITLES:
+            raise Http404("No PageContent matches the given query.")
+        content = SimpleNamespace(slug=slug, title=FALLBACK_PAGE_TITLES[slug], content='')
     context = {
         'content': content,
         'page_title': content.title or slug,
