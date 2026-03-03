@@ -40,17 +40,31 @@
 
         <div class="row g-4">
             {% for course in courses %}
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100">
-                    {% if course.image %}
-                    <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ course.title }}</h5>
-                        <p class="card-text text-muted small">{{ course.hours }} учебных часов</p>
-                        <p class="card-text">{{ course.description|truncatewords:20 }}</p>
-                        <p class="card-text"><small class="text-muted">Инструктор: {{ course.instructor }}</small></p>
-                        <a href="{% url 'core:course_detail' slug=course.slug %}" class="btn btn-primary">Подробнее</a>
+            <div class="col-md-6">
+                <div class="course-block">
+                    <div class="course-block-info">
+                        <div class="course-block-zone1">
+                            <h5 class="course-block-title">{{ course.title }}</h5>
+                        </div>
+                        <div class="course-block-zone2">
+                            <span class="course-block-hours">{{ course.hours }} учебных часов</span>
+                        </div>
+                        <div class="course-block-zone3">
+                            <p class="course-block-desc">{{ course.description|truncatewords:30 }}</p>
+                        </div>
+                        <div class="course-block-zone5">
+                            {% if course.teacher %}
+                            <p class="course-block-teacher-name">{{ course.teacher.full_name }}</p>
+                            {% endif %}
+                            <a href="{% url 'core:course_detail' slug=course.slug %}" class="btn btn-primary btn-sm">Подробнее</a>
+                        </div>
+                    </div>
+                    <div class="course-block-photo">
+                        {% if course.teacher and course.teacher.photo_transparent %}
+                        <img src="{{ course.teacher.photo_transparent.url }}" alt="{{ course.teacher.full_name }}">
+                        {% elif course.image %}
+                        <img src="{{ course.image.url }}" alt="{{ course.title }}">
+                        {% endif %}
                     </div>
                 </div>
             </div>

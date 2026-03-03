@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
@@ -28,6 +29,45 @@
                 <div class="page-content bg-white p-4 rounded shadow-sm">
                     {{ content.content|linebreaks }}
                 </div>
+
+                {% if content.slug == 'about' %}
+                <div class="about-divider">
+                    <img src="{% static 'divider.png' %}" alt="">
+                </div>
+
+                <section class="about-documents">
+                    <h2 class="about-documents-title">Документы</h2>
+                    <div class="about-documents-grid">
+                        <a class="about-doc-card" href="{% static 'documents/lizenziya-na-osushzestvlenie-obrazovatelnoy-deyatelnosti.pdf' %}" target="_blank" rel="noopener">
+                            <img src="{% static 'documents/license-1.thumb.jpg' %}" alt="Лицензия на осуществление образовательной деятельности">
+                            <span>Лицензия на осуществление образовательной деятельности</span>
+                        </a>
+                        <a class="about-doc-card" href="{% static 'documents/lizenziya-na-osushzestvlenie-obrazovatelnoy-deyatelnosti-prilozhenye.pdf' %}" target="_blank" rel="noopener">
+                            <img src="{% static 'documents/license-1-addition.thumb.jpg' %}" alt="Лицензия на осуществление образовательной деятельности (приложение)">
+                            <span>Лицензия (приложение)</span>
+                        </a>
+                        <a class="about-doc-card" href="{% static 'documents/svidetelstvo-o-gosregistraziy-yridicheskogo-litza.pdf' %}" target="_blank" rel="noopener">
+                            <img src="{% static 'documents/svidetelstvo-1.thumb.jpg' %}" alt="Свидетельство о госрегистрации юридического лица">
+                            <span>Свидетельство о госрегистрации юридического лица</span>
+                        </a>
+                        <a class="about-doc-card" href="{% static 'documents/svidetelstvo-o-registraziy-organyzaziy.pdf' %}" target="_blank" rel="noopener">
+                            <img src="{% static 'documents/svidetelstvo-2.thumb.jpg' %}" alt="Свидетельство о регистрации организации">
+                            <span>Свидетельство о регистрации организации</span>
+                        </a>
+                        <a class="about-doc-card" href="{% static 'documents/svidetelstvo-o-postanovke-na-uchet-assoziaziya.pdf' %}" target="_blank" rel="noopener">
+                            <img src="{% static 'documents/svidetelstvo-3.thumb.jpg' %}" alt="Свидетельство о постановке на учет">
+                            <span>Свидетельство о постановке на учет</span>
+                        </a>
+                    </div>
+                    <ul class="about-documents-list">
+                        <li><a href="{% static 'documents/ustav-mejzdunarodnoy-assoziazii-podderjzki-i-razvitiya-rannego-i-grudnichkovogo-plavaniya.pdf' %}" target="_blank" rel="noopener">Устав Международной ассоциации поддержки и развития раннего и грудничкового плавания</a></li>
+                        <li><a href="{% static 'documents/dogovor-ob-okazanii-platnih-obrazovatelnih-uslug.pdf' %}" target="_blank" rel="noopener">Договор об оказании платных образовательных услуг</a></li>
+                        <li><a href="{% static 'documents/dogovor-ob-okazanii-platnih-obrazovatelnih-uslug-urliza.pdf' %}" target="_blank" rel="noopener">Договор об оказании платных образовательных услуг (юрлица)</a></li>
+                        <li><a href="{% static 'documents/polojzenie-ob-okazanii-platnih-obrazovatelnih-uslug-v-mejzdunarodnoy-assoziazii-podderjzki-i-razvitiya-rannego-i-grudnichkovogo-plavaniya.pdf' %}" target="_blank" rel="noopener">Положение об оказании платных образовательных услуг</a></li>
+                        <li><a href="{% static 'documents/pravila-priema-slushateley-na-obuchenie-po-programmam-dopolnitelnogo-professionalnogo-obrazovaniya.pdf' %}" target="_blank" rel="noopener">Правила приема слушателей на обучение по программам ДПО</a></li>
+                    </ul>
+                </section>
+                {% endif %}
 
                 <div class="mt-4">
                     <a href="{% url 'core:index' %}" class="btn btn-outline-primary">

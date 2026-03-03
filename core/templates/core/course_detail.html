@@ -29,7 +29,7 @@
                     <div class="col-md-6">
                         <h5>Информация о курсе</h5>
                         <ul class="list-unstyled">
-                            <li class="mb-2"><strong>Преподаватель:</strong> {{ course.instructor }}</li>
+                            <li class="mb-2"><strong>Преподаватель:</strong> {% if course.teacher %}{{ course.teacher.full_name }}{% else %}—{% endif %}</li>
                             <li class="mb-2"><strong>Учебные часы:</strong> {{ course.hours }}</li>
                         </ul>
                     </div>
