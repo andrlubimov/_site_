@@ -3,6 +3,9 @@
    ============================================================ */
 :root {
     --footer-bg-color: #1a7b94;
+    /* Change this value to adjust the header height with video on the main page.
+       For example: 400px, 500px, 600px, 60vh, 80vh */
+    --header-min-height: 520px;
 }
 
 body {
@@ -28,9 +31,27 @@ main {
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+    min-height: var(--header-min-height, auto);
+}
+
+/* --- Video background for header (main page).
+   Header height is controlled by the --header-min-height variable in :root. --- */
+.header-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .header-overlay {
+    position: relative;
+    z-index: 1;
     background: linear-gradient(110deg, rgba(195, 80, 10, 0.58) 0%, rgba(10, 130, 160, 0.58) 100%);
 }
 
@@ -212,14 +233,15 @@ main {
 }
 
 .hero-card {
-    background: rgba(255, 255, 255, 0.86);
+    background: transparent;
     border-radius: 4px;
     padding: 1.8rem 2rem;
     max-width: 620px;
     margin: 0 auto;
     font-size: 0.92rem;
-    color: #222;
+    color: #fff;
     text-align: center;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 .hero-card p {
