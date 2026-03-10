@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block header_bg %}
+<video autoplay muted loop playsinline class="header-video" aria-label="Background video">
+    <source src="{% static 'headerBackground.mp4' %}" type="video/mp4">
+</video>
+{% endblock %}
 
 {% block header_content %}
 <div class="hero-card-wrapper">
