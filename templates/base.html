@@ -15,7 +15,7 @@
 
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
     <!-- ===== HEADER ===== -->
     <header class="site-header">
@@ -67,6 +67,8 @@
             {% block header_content %}{% endblock %}
 
         </div><!-- /.header-overlay -->
+
+        {% block header_decor %}{% endblock %}
     </header>
 
     <!-- ===== MAIN CONTENT ===== -->
@@ -76,10 +78,12 @@
 
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
+        {% block footer_wave %}
         <!-- Wave decoration -->
         <div class="footer-wave">
             <img src="{% static 'divider.png' %}" alt="" class="footer-wave-image">
         </div>
+        {% endblock %}
 
         <div class="footer-body">
             <div class="container text-center">
@@ -125,6 +129,8 @@
 
             </div>
         </div>
+
+        {% block footer_decor %}{% endblock %}
 
         <!-- Bottom swimmer icon -->
         <div class="footer-bottom-icon">

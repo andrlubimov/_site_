@@ -19,29 +19,77 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-10 mx-auto">
-                {% if course.image %}
-                <div class="mb-4">
-                    <img src="{{ course.image.url }}" class="img-fluid rounded" alt="{{ course.title }}">
-                </div>
-                {% endif %}
+                <div class="course-detail bg-white p-4 p-md-5 rounded shadow-sm">
+                    {% if course.image %}
+                    <div class="mb-4">
+                        <img src="{{ course.image.url }}" class="img-fluid rounded" alt="{{ course.title }}">
+                    </div>
+                    {% endif %}
 
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h5>Информация о курсе</h5>
-                        <ul class="list-unstyled">
-                            <li class="mb-2"><strong>Преподаватель:</strong> {% if course.teacher %}{{ course.teacher.full_name }}{% else %}—{% endif %}</li>
-                            <li class="mb-2"><strong>Учебные часы:</strong> {{ course.hours }}</li>
+                    <div class="course-detail-meta">
+                        {% if course.kind %}<span class="course-detail-kind">{{ course.kind }}</span>{% endif %}
+                        <span class="course-block-hours">{{ course.hours }} учебных часов</span>
+                    </div>
+
+                    {% if course.teacher_list %}
+                    <div class="course-detail-teachers">
+                        {% for teacher in course.teacher_list %}
+                        <div class="course-detail-teacher">
+                            {% if teacher.photo %}
+                            <img src="{{ teacher.photo.url }}" alt="{{ teacher.full_name }}">
+                            {% else %}
+                            <span class="course-detail-teacher-placeholder"><i class="bi bi-person"></i></span>
+                            {% endif %}
+                            <span>{{ teacher.first_name }}<br><strong>{{ teacher.last_name }}</strong></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if sessions %}
+                    <div class="course-detail-sessions">
+                        <h5>Ближайшие даты</h5>
+                        <ul>
+                            {% for item in sessions %}
+                            <li>
+                                <i class="bi bi-calendar-event"></i>
+                                <strong>{{ item.dates }}</strong>
+                                {% if item.session.location %}<span class="course-detail-badge">{{ item.session.location }}</span>{% endif %}
+                                {% if item.session.price %}<span class="course-detail-price">{{ item.session.price }}</span>{% endif %}
+                                {% if item.session.note %}<span class="text-muted">— {{ item.session.note }}</span>{% endif %}
+                            </li>
+                            {% endfor %}
                         </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="course-description">
+                        {{ course.description|linebreaks }}
+                    </div>
+
+                    {% if course.audience %}
+                    <div class="course-detail-audience">
+                        {{ course.audience|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                    {% if course.program %}
+                    <div class="course-detail-program">
+                        <h5>Рассматриваемые темы</h5>
+                        {{ course.program|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                    <div class="course-detail-signup">
+                        <strong>Запись:</strong>
+                        <a href="tel:+79169990990">+7 (916) 999-09-90</a>,
+                        <a href="mailto:info.babyswim@gmail.com">info.babyswim@gmail.com</a>
+                        <div class="small text-muted">Режим работы: с понедельника по пятницу с 10:00 до 18:00 по московскому времени</div>
                     </div>
                 </div>
 
-                <div class="course-description">
-                    <h5>Описание курса</h5>
-                    {{ course.description|linebreaks }}
-                </div>
-
-                <div class="mt-5 pt-4 border-top">
-                    <a href="{% url 'core:courses_list' %}" class="btn btn-outline-primary">
+                <div class="mt-4">
+                    <a href="{% url 'core:courses_list' %}" class="btn btn-outline-light">
                         <i class="bi bi-arrow-left"></i> Вернуться к списку курсов
                     </a>
                     <a href="{% url 'core:page_content' slug='timetable' %}" class="btn btn-primary ms-2">

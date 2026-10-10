@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/partners-pool.css' %}">
+{% endblock %}
 
 {% block header_content %}
 <div class="header-page-content">
@@ -14,43 +19,92 @@
 {% endblock %}
 
 {% block content %}
-<!-- Partners List -->
-<section class="py-5">
+<!-- Вступление (синий блок) -->
+<section class="py-5 partners-section">
+    <div class="container partners-narrow text-center">
+        <p class="partners-lead">Одной из основных деятельностей Ассоциации является просветительство. Мы рады рассказывать и продвигать те направления деятельности, товары и услуги, которые отвечают требованиям к высокому профессионализму и созвучны деятельности Ассоциации.</p>
+    </div>
+</section>
+
+<!-- Бассейн с партнёрами (белый блок) -->
+<section class="py-5 bg-light partners-section">
     <div class="container">
+        <h2 class="partners-title">Действующие партнеры Ассоциации</h2>
         {% if partners %}
-            <div class="row g-4">
+        <p class="partners-hint">Наведите на круг, чтобы узнать о партнёре, нажмите — чтобы перейти на его сайт.</p>
+
+        <div class="pool" id="partner-pool">
+            <!-- Фото бассейна; эллипс воды задан в partners-pool.css и partners-pool.js -->
+            <img class="pool-layer pool-photo" src="{% static 'pool.webp' %}" alt="Надувной бассейн Ассоциации" width="1400" height="787">
+
+            <!-- Вода -->
+            <div class="pool-layer pool-water" aria-hidden="true">
+                <div class="pool-caustics pool-caustics--a"></div>
+                <div class="pool-caustics pool-caustics--b"></div>
+                <div class="pool-waves"></div>
+            </div>
+
+            <!-- Спасательные круги с логотипами партнёров -->
+            <div class="pool-layer pool-buoys">
                 {% for partner in partners %}
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            {% if partner.logo %}
-                            <img src="{{ partner.logo.url }}" class="img-fluid mb-3" alt="{{ partner.name }}" style="max-height: 150px; object-fit: contain;">
-                            {% else %}
-                            <div class="bg-light py-4 mb-3 rounded">
-                                <h4 class="text-muted">{{ partner.name }}</h4>
-                            </div>
-                            {% endif %}
-                            <h5 class="card-title">{{ partner.name }}</h5>
-                            {% if partner.description %}
-                            <p class="card-text">{{ partner.description|truncatewords:20 }}</p>
-                            {% endif %}
-                            {% if partner.website %}
-                            <a href="{{ partner.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-globe"></i> Посетить сайт
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+                {% if partner.website %}
+                <a class="buoy" href="{{ partner.website }}" target="_blank" rel="noopener"
+                   aria-label="{{ partner.name }} — открыть сайт партнёра">
+                {% else %}
+                <div class="buoy" tabindex="0" aria-label="{{ partner.name }}">
+                {% endif %}
+                    <img class="buoy-ring" src="{% static 'lifebuoy.png' %}" alt="">
+                    {% if partner.logo %}
+                    <img class="buoy-logo" src="{{ partner.logo.url }}" alt="">
+                    {% else %}
+                    <span class="buoy-name">{{ partner.name }}</span>
+                    {% endif %}
+                    <span class="buoy-info" hidden>
+                        <strong>{{ partner.name }}</strong>
+                        {% if partner.city or partner.country %}<span class="buoy-place">{{ partner.city }}{% if partner.city and partner.country %} • {% endif %}{{ partner.country }}</span>{% endif %}
+                        {% if partner.description %}<span class="buoy-desc">{{ partner.description|truncatewords:45 }}</span>{% endif %}
+                        {% if partner.website %}<span class="buoy-go"><i class="bi bi-box-arrow-up-right"></i> Нажмите, чтобы открыть сайт партнёра</span>{% endif %}
+                    </span>
+                {% if partner.website %}</a>{% else %}</div>{% endif %}
                 {% endfor %}
             </div>
-        {% else %}
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <p class="lead text-muted">Информация о партнерах обновляется</p>
+
+            <!-- Ближний борт с логотипом перекрывает круги у переднего края -->
+            <img class="pool-layer pool-front" src="{% static 'pool-front.webp' %}" alt="" width="1400" height="787">
+
+            <div class="pool-tooltip" role="tooltip" hidden></div>
+        </div>
+
+        <!-- Список для узких экранов, где логотипы на кругах слишком мелкие -->
+        <ul class="partners-mobile-list">
+            {% for partner in partners %}
+            <li>
+                {% if partner.logo %}<img src="{{ partner.logo.url }}" alt="">{% endif %}
+                <div>
+                    <strong>{{ partner.name }}</strong>
+                    {% if partner.city %}<span class="buoy-place">{{ partner.city }}{% if partner.country %} • {{ partner.country }}{% endif %}</span>{% endif %}
+                    {% if partner.description %}<p>{{ partner.description|truncatewords:30 }}</p>{% endif %}
+                    {% if partner.website %}<a href="{{ partner.website }}" target="_blank" rel="noopener">Сайт партнёра</a>{% endif %}
                 </div>
-            </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-center text-muted">Информация о партнерах обновляется</p>
         {% endif %}
     </div>
 </section>
+
+<!-- Как стать партнёром (синий блок) -->
+<section class="py-5 partners-section">
+    <div class="container partners-narrow text-center">
+        <h2 class="partners-title">Как стать партнером?</h2>
+        <p>Если вы работаете в области грудничкового и раннего плавания, мы готовы рассмотреть вашу компанию или ваши услуги для представления их на сайте и включения в партнерские программы Ассоциации.</p>
+        <p>Звоните <a class="partners-link" href="tel:+79169990990">+7 (916) 999-09-90</a> или пишите на <a class="partners-link" href="mailto:info.babyswim@gmail.com">info.babyswim@gmail.com</a>.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/partners-pool.js' %}"></script>
 {% endblock %}

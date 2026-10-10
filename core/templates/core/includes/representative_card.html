@@ -1,0 +1,19 @@
+<div class="rep-card" id="rep-{{ rep.pk }}">
+    <div class="rep-card-logo">
+        {% if rep.logo %}
+            {% if rep.website %}<a href="{{ rep.website }}" target="_blank" rel="noopener">{% endif %}
+            <img src="{{ rep.logo.url }}" alt="{{ rep.name }}">
+            {% if rep.website %}</a>{% endif %}
+        {% else %}
+            <i class="bi bi-water"></i>
+        {% endif %}
+    </div>
+    <h3 class="rep-card-name">{{ rep.name }}</h3>
+    <p class="rep-card-location">{{ rep.city }} • {{ rep.country }}</p>
+    {% if rep.contact_name %}<p class="rep-card-contact">{{ rep.contact_name }}</p>{% endif %}
+    <ul class="rep-card-links">
+        {% if rep.phone %}<li><i class="bi bi-telephone"></i><a href="tel:{{ rep.phone_href }}">{{ rep.phone }}</a></li>{% endif %}
+        {% if rep.email %}<li><i class="bi bi-envelope"></i><a href="mailto:{{ rep.email }}">{{ rep.email }}</a></li>{% endif %}
+        {% if rep.website %}<li><i class="bi bi-globe2"></i><a href="{{ rep.website }}" target="_blank" rel="noopener">Сайт</a></li>{% endif %}
+    </ul>
+</div>

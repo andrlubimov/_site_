@@ -1,0 +1,2 @@
+FullCalendar v7.1.1 (npm: fullcalendar, @fullcalendar/bootstrap5)
+Источник темы: https://themes.fullcalendar.io/bootstrap5/
