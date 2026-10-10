@@ -1,0 +1,424 @@
+/* ============================================================
+   ГЛАВНАЯ: «погружение» — пляж → толща океана → дно
+   Подключается только на главной (body.page-home)
+   ============================================================ */
+.page-home {
+    /* Срезы глубины: верх → низ каждого блока */
+    --d1-top: #2fb5c2; --d1-bot: #1e98b0;
+    --d2-top: #1a86a6; --d2-bot: #146f92;
+    --d3-top: #11608a; --d3-bot: #0d4c74;
+    --d4-top: #0b3e66; --d4-bot: #083153;
+    --d5-top: #07294a; --d5-bot: #05203b;
+    --floor-top: #041a31;
+    --floor-bot: #0b2a3a;
+
+    --sea-text: #e6f6fa;
+    --sea-link: #aeefff;
+
+    /* Тайл волны для границ между срезами */
+    --slice-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='40'%3E%3Cpath d='M0 20 C50 6 100 6 150 20 S250 34 300 20 S400 6 450 20 S550 34 600 20 V40 H0 Z'/%3E%3C/svg%3E");
+
+    /* Цвет песка на дне — им же закрашивается всё ниже подвала */
+    background-color: #4a675f;
+}
+
+/* ------------------------------------------------------------
+   ШАПКА: песчаный пляж
+   ------------------------------------------------------------ */
+.page-home .site-header {
+    position: relative;
+    overflow: hidden;
+    background-color: #ecd29e;
+    background-image:
+        radial-gradient(ellipse 60% 70% at 88% -15%, rgba(255, 248, 220, 0.95), rgba(255, 248, 220, 0) 70%),
+        url('../sand-texture.png'),
+        linear-gradient(180deg, #f6e4b8 0%, #efd5a1 55%, #e3bd82 100%);
+    background-size: auto, 200px 200px, auto;
+    background-repeat: no-repeat, repeat, no-repeat;
+    background-position: 0 0, 0 0, 0 0;
+}
+
+.page-home .header-overlay {
+    position: relative;
+    z-index: 2;
+    background: none;
+    padding-bottom: 120px; /* место под кромку прибоя */
+}
+
+.page-home .top-nav-bar {
+    background: rgba(18, 96, 118, 0.82);
+    border-bottom: none;
+    backdrop-filter: blur(4px);
+}
+
+/* Белый логотип → тёмно-бирюзовый, чтобы читался на песке */
+.page-home .logo-image {
+    filter: brightness(0) saturate(100%) invert(24%) sepia(62%) saturate(1200%) hue-rotate(160deg) brightness(88%);
+}
+
+.page-home .hero-card {
+    background: rgba(255, 253, 247, 0.9);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(120, 85, 30, 0.18);
+    color: #1f3640;
+}
+
+.page-home .btn-hero {
+    background: #1f8fa6;
+    border-color: #1f8fa6;
+    color: #fff;
+}
+
+.page-home .btn-hero:hover {
+    background: #167489;
+    border-color: #167489;
+    color: #fff;
+}
+
+/* Ракушки на песке */
+.beach-decor {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.beach-starfish,
+.beach-shell {
+    position: absolute;
+    filter: drop-shadow(0 3px 2px rgba(120, 85, 30, 0.25));
+}
+
+.beach-starfish {
+    width: 64px;
+    left: 9%;
+    bottom: 150px;
+    transform: rotate(-18deg);
+}
+
+.beach-shell {
+    width: 54px;
+    right: 11%;
+    bottom: 165px;
+    transform: rotate(14deg);
+}
+
+/* Кромка прибоя: мокрый песок → пена → вода */
+.shore {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 140px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.shore-layer {
+    position: absolute;
+    inset: 0;
+    background-repeat: repeat-x;
+    background-size: 1200px 140px;
+    background-position: 0 bottom;
+}
+
+.shore-wet {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 30 C100 10 200 10 300 30 S500 50 600 30 S800 10 900 30 S1100 50 1200 30 V140 H0 Z' fill='%23b08a52' fill-opacity='0.35'/%3E%3C/svg%3E");
+    background-position: -150px bottom;
+    animation: shore-wash 7s ease-in-out infinite alternate;
+}
+
+.shore-foam {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 44 C100 24 200 24 300 44 S500 64 600 44 S800 24 900 44 S1100 64 1200 44 V140 H0 Z' fill='%23ffffff' fill-opacity='0.92'/%3E%3C/svg%3E");
+    background-position: -60px bottom;
+    animation: shore-wash 5s ease-in-out infinite alternate;
+}
+
+.shore-water {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0.35' stop-color='%2398e4dc'/%3E%3Cstop offset='1' stop-color='%232fb5c2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z' fill='url(%23g)'/%3E%3C/svg%3E");
+    animation: shore-drift 26s linear infinite;
+}
+
+@keyframes shore-wash {
+    from { transform: translateY(0); }
+    to   { transform: translateY(9px); }
+}
+
+@keyframes shore-drift {
+    from { background-position: 0 bottom; }
+    to   { background-position: 1200px bottom; }
+}
+
+/* ------------------------------------------------------------
+   ТОЛЩА ОКЕАНА: каждый блок — срез глубже предыдущего
+   ------------------------------------------------------------ */
+.page-home main {
+    position: relative;
+    overflow: hidden;
+    color: var(--sea-text);
+}
+
+.page-home main > section.ocean-slice {
+    position: relative;
+    background-image: url('../ocean-texture.png'), linear-gradient(180deg, var(--top), var(--bot));
+    background-repeat: repeat, no-repeat;
+}
+
+.page-home main > section.ocean-slice > .container {
+    position: relative;
+    z-index: 2;
+}
+
+.depth-1 { --top: var(--d1-top); --bot: var(--d1-bot); }
+.depth-2 { --top: var(--d2-top); --bot: var(--d2-bot); --wave-x: -120px; }
+.depth-3 { --top: var(--d3-top); --bot: var(--d3-bot); --wave-x: -260px; }
+.depth-4 { --top: var(--d4-top); --bot: var(--d4-bot); --wave-x: -40px; }
+.depth-5 { --top: var(--d5-top); --bot: var(--d5-bot); --wave-x: -330px; }
+
+/* Первый срез: текстура проявляется плавно, без шва с водой из шапки */
+.page-home main > section.depth-1 {
+    background-image: linear-gradient(180deg, var(--top), var(--bot));
+}
+
+.page-home main > section.depth-1::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('../ocean-texture.png') repeat;
+    -webkit-mask: linear-gradient(180deg, transparent 0, #000 260px);
+    mask: linear-gradient(180deg, transparent 0, #000 260px);
+    pointer-events: none;
+}
+
+/* Сбрасываем волны-картинки из style.css */
+.page-home main > section.ocean-slice:not(.depth-1)::after {
+    content: none;
+}
+
+/* Волнистая граница сверху каждого следующего среза */
+.page-home main > section.ocean-slice::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -39px;
+    height: 40px;
+    z-index: 1;
+    background: var(--top);
+    -webkit-mask: var(--slice-wave) var(--wave-x, 0) 0 / 600px 40px repeat-x;
+    mask: var(--slice-wave) var(--wave-x, 0) 0 / 600px 40px repeat-x;
+    pointer-events: none;
+}
+
+/* Первый срез продолжает воду из шапки — вместо волны лучи света */
+.page-home main > section.depth-1::before {
+    top: 0;
+    bottom: 0;
+    height: auto;
+    -webkit-mask: linear-gradient(180deg, transparent 0, #000 160px, transparent 75%);
+    mask: linear-gradient(180deg, transparent 0, #000 160px, transparent 75%);
+    background: repeating-linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0) 0 70px,
+        rgba(255, 255, 255, 0.07) 70px 110px,
+        rgba(255, 255, 255, 0) 110px 190px
+    );
+}
+
+/* Типографика на воде */
+.page-home main h2,
+.page-home main h5 {
+    color: #fff;
+}
+
+.page-home main .lead {
+    color: rgba(230, 246, 250, 0.88);
+}
+
+.page-home main a.text-decoration-none {
+    color: var(--sea-link);
+}
+
+.page-home main a.text-decoration-none:hover {
+    color: #fff;
+}
+
+.page-home main .text-muted {
+    color: rgba(230, 246, 250, 0.7) !important;
+}
+
+.page-home main .btn-outline-primary {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+.page-home main .btn-outline-primary:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: #fff;
+    color: #fff;
+}
+
+/* Карточки курсов остаются светлыми */
+.page-home .course-block {
+    color: #212529;
+    box-shadow: 0 8px 24px rgba(0, 30, 50, 0.25);
+}
+
+.page-home .course-block h5 {
+    color: #1b2a33;
+}
+
+/* Карточки специалистов — «стекло» под водой */
+.glass-card {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    backdrop-filter: blur(2px);
+}
+
+/* Пузырьки воздуха */
+.bubbles {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.bubbles span {
+    position: absolute;
+    bottom: -20px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.05) 60%);
+    animation: bubble-rise linear infinite;
+    opacity: 0;
+}
+
+.bubbles span:nth-child(1)  { left: 4%;  animation-duration: 22s; animation-delay: 0s; }
+.bubbles span:nth-child(2)  { left: 12%; width: 6px;  height: 6px;  animation-duration: 18s; animation-delay: 5s; }
+.bubbles span:nth-child(3)  { left: 23%; width: 14px; height: 14px; animation-duration: 28s; animation-delay: 9s; }
+.bubbles span:nth-child(4)  { left: 37%; width: 7px;  height: 7px;  animation-duration: 20s; animation-delay: 2s; }
+.bubbles span:nth-child(5)  { left: 51%; animation-duration: 25s; animation-delay: 12s; }
+.bubbles span:nth-child(6)  { left: 63%; width: 5px;  height: 5px;  animation-duration: 16s; animation-delay: 7s; }
+.bubbles span:nth-child(7)  { left: 74%; width: 12px; height: 12px; animation-duration: 24s; animation-delay: 3s; }
+.bubbles span:nth-child(8)  { left: 83%; width: 6px;  height: 6px;  animation-duration: 19s; animation-delay: 10s; }
+.bubbles span:nth-child(9)  { left: 91%; animation-duration: 27s; animation-delay: 6s; }
+.bubbles span:nth-child(10) { left: 97%; width: 8px;  height: 8px;  animation-duration: 21s; animation-delay: 14s; }
+
+@keyframes bubble-rise {
+    0%   { transform: translate(0, 0); opacity: 0; }
+    8%   { opacity: 1; }
+    50%  { transform: translate(14px, -1600px); }
+    90%  { opacity: 0.8; }
+    100% { transform: translate(-6px, -3200px); opacity: 0; }
+}
+
+/* ------------------------------------------------------------
+   ПОДВАЛ: дно океана
+   ------------------------------------------------------------ */
+.page-home .site-footer {
+    position: relative;
+    background: linear-gradient(180deg, var(--floor-top) 0%, var(--floor-bot) 100%);
+    padding-bottom: 150px; /* место под дно */
+}
+
+.page-home .site-footer::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -39px;
+    height: 40px;
+    background: var(--floor-top);
+    -webkit-mask: var(--slice-wave) -200px 0 / 600px 40px repeat-x;
+    mask: var(--slice-wave) -200px 0 / 600px 40px repeat-x;
+}
+
+.page-home .footer-body,
+.page-home .footer-bottom-icon {
+    position: relative;
+    z-index: 2;
+}
+
+.page-home .footer-bottom-icon {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 18px;
+    padding: 0;
+    opacity: 0.5;
+}
+
+.seabed {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 200px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.seabed-dunes {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.seabed-rock {
+    position: absolute;
+    width: 120px;
+}
+
+.seabed-rock--l { left: 6%;  bottom: 28px; }
+.seabed-rock--r { right: 9%; bottom: 40px; width: 90px; }
+
+.seabed-star {
+    position: absolute;
+    width: 26px;
+    right: 24%;
+    bottom: 18px;
+    transform: rotate(20deg);
+    opacity: 0.85;
+}
+
+.kelp {
+    position: absolute;
+    width: 36px;
+    height: 150px;
+    transform-origin: 50% 100%;
+    animation: kelp-sway 6s ease-in-out infinite alternate;
+}
+
+.kelp--1 { left: 13%; bottom: 30px; }
+.kelp--2 { left: 16%; bottom: 24px; height: 110px; animation-duration: 7.5s; }
+.kelp--3 { right: 16%; bottom: 44px; height: 120px; animation-duration: 5.5s; }
+.kelp--4 { right: 13%; bottom: 36px; height: 160px; animation-duration: 8s; }
+
+@keyframes kelp-sway {
+    from { transform: rotate(-5deg); }
+    to   { transform: rotate(5deg); }
+}
+
+/* ------------------------------------------------------------
+   Адаптив и доступность
+   ------------------------------------------------------------ */
+@media (max-width: 767px) {
+    .beach-decor { display: none; }
+    .page-home .header-overlay { padding-bottom: 90px; }
+    .shore { height: 110px; }
+    .seabed-rock--l, .kelp--2, .kelp--3 { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shore-layer,
+    .kelp,
+    .bubbles span {
+        animation: none;
+    }
+    .bubbles { display: none; }
+}

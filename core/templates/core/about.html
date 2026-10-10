@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Об Ассоциации - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">{{ page_title }}</h1>
+    <div class="header-tabs">
+        <a href="{% url 'core:page_content' slug='about' %}" class="header-tab-btn active">Об Ассоциации</a>
+        <a href="{% url 'core:page_content' slug='membership' %}" class="header-tab-btn">Членство</a>
+        <a href="{% url 'core:news_list' %}" class="header-tab-btn">Новости Ассоциации</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Тексты блоков редактируются в админке: «Страница «Об Ассоциации»» #}
+
+<!-- 1. Вступление -->
+{% with s=sections.intro %}
+<section class="about-section about-intro bg-white">
+    <div class="container about-container">
+        {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
+        <div class="about-lead">{{ s.content|linebreaks }}</div>
+        <img src="{% static 'divider.png' %}" alt="" class="about-wave">
+    </div>
+</section>
+{% endwith %}
+
+<!-- 2. Цели и задачи + 3. Направления деятельности -->
+<section class="about-section bg-white pt-0">
+    <div class="container about-container">
+        {% with s=sections.goals %}
+        <div class="about-block">
+            {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
+            <div class="about-text">{{ s.content|linebreaks }}</div>
+        </div>
+        {% endwith %}
+
+        {% with s=sections.directions %}
+        <div class="about-block">
+            {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
+            <div class="about-text">{{ s.content|linebreaks }}</div>
+        </div>
+        {% endwith %}
+    </div>
+</section>
+
+<!-- 4. Образовательная и просветительская деятельность -->
+{% with s=sections.education %}
+<section class="about-section about-education bg-white" style="--edu-bg: url('{% static 'about-edu.jpg' %}');">
+    <div class="container about-container">
+        {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
+        <div class="about-pills">
+            <a href="{% url 'core:courses_list' %}" class="about-pill">Программы</a>
+            <a href="{% url 'core:page_content' slug='timetable' %}" class="about-pill">Расписание курсов и семинаров</a>
+            <a href="{% url 'core:page_content' slug='seminars' %}" class="about-pill">Выездные семинары</a>
+        </div>
+        <div class="about-text text-center">{{ s.content|linebreaks }}</div>
+
+        <div class="about-docs">
+            <div class="about-thumbs">
+                <a href="{% static 'documents/lizenziya-na-osushzestvlenie-obrazovatelnoy-deyatelnosti.pdf' %}" target="_blank" rel="noopener">
+                    <img src="{% static 'documents/license-1.thumb.jpg' %}" alt="Лицензия на осуществление образовательной деятельности">
+                </a>
+                <a href="{% static 'documents/lizenziya-na-osushzestvlenie-obrazovatelnoy-deyatelnosti-prilozhenye.pdf' %}" target="_blank" rel="noopener">
+                    <img src="{% static 'documents/license-1-addition.thumb.jpg' %}" alt="Приложение к лицензии">
+                </a>
+            </div>
+            <ul class="about-files">
+                <li><a href="{% static 'documents/polojzenie-ob-okazanii-platnih-obrazovatelnih-uslug-v-mejzdunarodnoy-assoziazii-podderjzki-i-razvitiya-rannego-i-grudnichkovogo-plavaniya.pdf' %}" target="_blank" rel="noopener">Положение об оказании платных образовательных услуг в Международной ассоциации поддержки и развития раннего и грудничкового плавания</a></li>
+                <li><a href="{% static 'documents/dogovor-ob-okazanii-platnih-obrazovatelnih-uslug.pdf' %}" target="_blank" rel="noopener">Договор об оказании платных образовательных услуг (физические лица)</a></li>
+                <li><a href="{% static 'documents/dogovor-ob-okazanii-platnih-obrazovatelnih-uslug-urliza.pdf' %}" target="_blank" rel="noopener">Договор об оказании платных образовательных услуг (юридические лица)</a></li>
+                <li><a href="{% static 'documents/pravila-priema-slushateley-na-obuchenie-po-programmam-dopolnitelnogo-professionalnogo-obrazovaniya.pdf' %}" target="_blank" rel="noopener">Правила приема слушателей на обучение по программам дополнительного профессионального образования</a></li>
+            </ul>
+        </div>
+
+        <div class="text-center">
+            <a href="{% url 'core:page_content' slug='info' %}" class="about-pill">Сведения об образовательной организации</a>
+        </div>
+    </div>
+</section>
+{% endwith %}
+
+<!-- 5. Документы -->
+{% with s=sections.documents %}
+<section class="about-section bg-white">
+    <div class="container about-container">
+        {% if s.title %}<h2 class="about-title about-title--left">{{ s.title }}</h2>{% endif %}
+        {% if s.content %}<div class="about-text">{{ s.content|linebreaks }}</div>{% endif %}
+        <div class="about-thumbs">
+            <a href="{% static 'documents/svidetelstvo-o-registraziy-organyzaziy.pdf' %}" target="_blank" rel="noopener">
+                <img src="{% static 'documents/svidetelstvo-1.thumb.jpg' %}" alt="Свидетельство о регистрации организации">
+            </a>
+            <a href="{% static 'documents/svidetelstvo-o-gosregistraziy-yridicheskogo-litza.pdf' %}" target="_blank" rel="noopener">
+                <img src="{% static 'documents/svidetelstvo-2.thumb.jpg' %}" alt="Свидетельство о государственной регистрации юридического лица">
+            </a>
+            <a href="{% static 'documents/svidetelstvo-o-postanovke-na-uchet-assoziaziya.pdf' %}" target="_blank" rel="noopener">
+                <img src="{% static 'documents/svidetelstvo-3.thumb.jpg' %}" alt="Свидетельство о постановке на учет">
+            </a>
+        </div>
+        <ul class="about-files">
+            <li><a href="{% static 'documents/ustav-mejzdunarodnoy-assoziazii-podderjzki-i-razvitiya-rannego-i-grudnichkovogo-plavaniya.pdf' %}" target="_blank" rel="noopener">Устав Международной ассоциации поддержки и развития раннего и грудничкового плавания</a></li>
+        </ul>
+    </div>
+</section>
+{% endwith %}
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">{{ page_title }}</h1>
+    <div class="header-tabs">
+        <a href="{% url 'core:page_content' slug='about' %}" class="header-tab-btn">Об Ассоциации</a>
+        <a href="{% url 'core:page_content' slug='membership' %}" class="header-tab-btn">Членство</a>
+        <a href="{% url 'core:specialists_list' %}" class="header-tab-btn active">Представители</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Региональные представители (синий блок) -->
+<section class="py-5 rep-section">
+    <div class="container">
+        <h2 class="rep-title">Региональные представители, которые рады оказать вам помощь в вашем регионе</h2>
+        {% if regional %}
+        <div class="rep-grid">
+            {% for rep in regional %}{% include "core/includes/representative_card.html" %}{% endfor %}
+        </div>
+        {% else %}
+        <p class="rep-empty">Информация о представителях обновляется</p>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Зарубежные партнёры (белый блок) -->
+<section class="py-5 bg-light rep-section">
+    <div class="container">
+        <h2 class="rep-title">Зарубежные представители</h2>
+        {% if foreign %}
+        <div class="rep-grid">
+            {% for rep in foreign %}{% include "core/includes/representative_card.html" %}{% endfor %}
+        </div>
+        {% else %}
+        <p class="rep-empty">Информация о представителях обновляется</p>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Глобус (синий блок) -->
+<section class="py-5 rep-section">
+    <div class="container">
+        <h2 class="rep-title">Представители на карте</h2>
+        <div class="rep-globe-legend">
+            <span><i class="rep-dot rep-dot--hq"></i>Ассоциация</span>
+            <span><i class="rep-dot rep-dot--regional"></i>Региональные представители</span>
+            <span><i class="rep-dot rep-dot--foreign"></i>Зарубежные представители</span>
+        </div>
+        <div id="rep-globe" class="rep-globe" aria-label="Глобус с отметками представителей Ассоциации"></div>
+        <p class="rep-globe-hint">Глобус можно вращать мышью или пальцем. Нажмите на отметку, чтобы перейти к карточке представителя.</p>
+    </div>
+</section>
+{{ globe_points|json_script:"rep-globe-points" }}
+
+<!-- Возможности и обязанности (белый блок) -->
+<section class="py-5 bg-light rep-section">
+    <div class="container rep-narrow">
+        <h2 class="rep-title">Возможности и обязанности регионального филиала</h2>
+        <p>Распространение информации и пропаганда деятельности ассоциации. Наблюдение и контроль за тенденциями развития в регионе раннего и грудничкового плавания.</p>
+        <p>Разработка и создание обучающих программ. Консультативно-информационная помощь и поддержка развития грудничкового и раннего плавания.</p>
+        <p>Проведение семинаров с участием спикеров ассоциации. Проведение мастер-классов, семинаров и курсов повышения квалификации. Проведение региональных конференций по обмену опытом.</p>
+        <p>Сбор статистических данных о проделанной работе филиала.</p>
+    </div>
+</section>
+
+<!-- Как стать представителем (синий блок) -->
+<section class="py-5 rep-section">
+    <div class="container rep-narrow text-center">
+        <h2 class="rep-title">Хотите стать региональным представителем ассоциации?</h2>
+        <p>Мы готовы рассмотреть вашу организацию в качестве регионального представителя.</p>
+        <p>Звоните <a class="rep-link" href="tel:+79169990990">+7 (916) 999-09-90</a> или пишите на <a class="rep-link" href="mailto:info.babyswim@gmail.com">info.babyswim@gmail.com</a>.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/globe/globe.gl.min.js' %}"></script>
+<script>
+    window.REP_GLOBE = {
+        globeImage: "{% static 'vendor/globe/earth-blue-marble.jpg' %}",
+        bumpImage: "{% static 'vendor/globe/earth-topology.png' %}",
+        hqLogo: "{% static 'logo.png' %}"
+    };
+</script>
+<script src="{% static 'js/representatives-globe.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,49 @@
+/* Админка партнёров: миниатюра в списке и предпросмотр логотипа на спасательном круге */
+.partner-admin-thumb {
+    height: 34px;
+    max-width: 100px;
+    object-fit: contain;
+}
+
+.partner-admin-preview {
+    position: relative;
+    width: 260px;
+    aspect-ratio: 310 / 170;
+    padding: 0;
+    border-radius: 12px;
+    background: radial-gradient(ellipse at 50% 40%, #a9e9f5, #36b4d6);
+}
+
+.partner-admin-ring {
+    position: absolute;
+    inset: 4% 6%;
+    width: 88%;
+    height: auto;
+}
+
+.partner-admin-logo {
+    position: absolute;
+    left: 50%;
+    top: 47%;
+    max-width: 70%;
+    max-height: 55%;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+    filter:
+        drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff)
+        drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
+}
+
+.partner-admin-logo[hidden] {
+    display: none;
+}
+
+.partner-admin-preview:has(.partner-admin-logo[hidden])::after {
+    content: attr(data-empty-text);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1.6em;
+    font-size: 0.8rem;
+    color: #6c757d;
+}

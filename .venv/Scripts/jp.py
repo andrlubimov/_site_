@@ -1,4 +1,4 @@
-#!C:\Users\rukos\PycharmProjects\swimming_association\.venv\Scripts\python.exe
+#!C:\Users\ruko\Documents\vs_code\_site_\.venv\Scripts\python.exe
 
 import sys
 import json

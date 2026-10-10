@@ -1,0 +1,2 @@
+globe.gl v2.46.2 (npm: globe.gl) — https://globe.gl/
+Текстуры Земли: three-globe@2.45.3/example/img (NASA Blue Marble)
