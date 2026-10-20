@@ -101,10 +101,10 @@
                             <h5 class="course-block-title">{{ course.title }}</h5>
                         </div>
                         <div class="course-block-zone2">
-                            <span class="course-block-hours">{{ course.hours }} учебных часов</span>
+                            <span class="course-block-hours">{{ course.hours_label }}</span>
                         </div>
                         <div class="course-block-zone3">
-                            <p class="course-block-desc">{{ course.description|truncatewords:30 }}</p>
+                            <p class="course-block-desc">{{ course.short_description|truncatewords:30 }}</p>
                         </div>
                         <div class="course-block-zone5">
                             {% if course.teacher_names %}
@@ -117,8 +117,6 @@
                         {% with teacher=course.main_teacher %}
                         {% if teacher and teacher.photo_transparent %}
                         <img src="{{ teacher.photo_transparent.url }}" alt="{{ teacher.full_name }}">
-                        {% elif course.image %}
-                        <img src="{{ course.image.url }}" alt="{{ course.title }}">
                         {% endif %}
                         {% endwith %}
                     </div>

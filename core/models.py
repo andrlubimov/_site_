@@ -1,6 +1,19 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
+
+from .utils import format_date_range, format_day_list, plural_ru, sentence_case, slugify_ru
+
+
+def unique_slug(model, text, pk=None, fallback='page'):
+    """Латинский адрес страницы из русского текста; при совпадении добавляется -2, -3…"""
+    base = slugify_ru(text) or fallback
+    slug, n = base, 2
+    while model.objects.filter(slug=slug).exclude(pk=pk).exists():
+        slug, n = f'{base}-{n}', n + 1
+    return slug
 
 
 class Teacher(models.Model):
@@ -12,6 +25,15 @@ class Teacher(models.Model):
     photo_transparent = models.ImageField(
         'Фотография без фона', upload_to='teachers/transparent/', blank=True, null=True
     )
+    slug = models.SlugField(
+        'Адрес страницы', max_length=120, unique=True, blank=True,
+        help_text='Латиница: grudnichkovoe-plavanie.ru/education/teachers/адрес/. '
+                  'Если оставить пустым, заполнится из имени и фамилии.',
+    )
+    bio = models.TextField(
+        'Описание', blank=True,
+        help_text='Показывается на странице преподавателя. Абзацы разделяйте пустой строкой.',
+    )
 
     class Meta:
         verbose_name = 'Преподаватель'
@@ -21,46 +43,241 @@ class Teacher(models.Model):
     def __str__(self):
         return f"{self.last_name} {self.first_name}"
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = unique_slug(Teacher, f'{self.first_name} {self.last_name}', self.pk, 'teacher')
+        super().save(*args, **kwargs)
+
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+    def get_absolute_url(self):
+        return reverse('core:teacher_detail', kwargs={'slug': self.slug})
+
+    @property
+    def initials(self):
+        return f"{self.first_name[:1]}{self.last_name[:1]}".upper()
+
+    @property
+    def display_name(self):
+        """Имя, отчество и фамилия — для страницы преподавателя"""
+        return ' '.join(part for part in (self.first_name, self.patronymic, self.last_name) if part)
+
+
+class ChildAge(models.Model):
+    """Справочник «Возраст детей» (грудной, ранний, дошкольный)"""
+    code = models.SlugField('Код', max_length=30, unique=True)
+    name = models.CharField('Название', max_length=100)
+    order = models.PositiveSmallIntegerField('Порядок', default=0)
+
+    class Meta:
+        verbose_name = 'Возраст детей'
+        verbose_name_plural = 'Возраст детей'
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+
+class HealthFeature(models.Model):
+    """Справочник «Особенности здоровья детей» (нормотипичные, особой заботы, беременные)"""
+    code = models.SlugField('Код', max_length=30, unique=True)
+    name = models.CharField('Название', max_length=100)
+    order = models.PositiveSmallIntegerField('Порядок', default=0)
+
+    class Meta:
+        verbose_name = 'Особенность здоровья'
+        verbose_name_plural = 'Особенности здоровья детей'
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
 
 class Course(models.Model):
-    """Модель обучающего курса"""
-    title = models.CharField('Название курса', max_length=255)
-    slug = models.SlugField('URL', unique=True, blank=True)
-    description = models.TextField('Описание')
-    hours = models.IntegerField('Учебные часы')
+    """Обучающий курс. Даты проведения — в расписании (CourseSchedule)."""
+    TYPE_IN_PERSON = 'in_person'
+    TYPE_BLENDED = 'blended'
+    TYPE_DISTANCE = 'distance'
+    TYPE_ONLINE = 'online'
+    TYPE_CHOICES = [
+        (TYPE_IN_PERSON, 'Очный'),
+        (TYPE_BLENDED, 'Очно-заочный'),
+        (TYPE_DISTANCE, 'Дистанционный'),
+        (TYPE_ONLINE, 'Онлайн'),
+    ]
+    DATED_TYPES = (TYPE_IN_PERSON, TYPE_ONLINE, TYPE_BLENDED)
+
+    MEMBER_DISCOUNT_PERCENT = 20  # скидка для членов Ассоциации (на старом сайте — тоже 20%)
+
+    DIRECTION_CHOICES = [
+        ('land', 'Сухопутные'),
+        ('swimming', 'Плавание'),
+        ('hydrorehab', 'Гидрореабилитация'),
+        ('management', 'Администрирование'),
+    ]
+    DIRECTION_ICONS = {  # значки Bootstrap Icons для карточек на странице «Программы»
+        'land': 'bi-person-arms-up',
+        'swimming': 'bi-water',
+        'hydrorehab': 'bi-heart-pulse',
+        'management': 'bi-briefcase',
+    }
+    TYPE_ICONS = {
+        TYPE_IN_PERSON: 'bi-geo-alt-fill',
+        TYPE_BLENDED: 'bi-shuffle',
+        TYPE_DISTANCE: 'bi-laptop',
+        TYPE_ONLINE: 'bi-camera-video',
+    }
+    VENUE_CHOICES = [
+        ('pool', 'В бассейне'),
+        ('gym', 'В спортзале'),
+        ('home', 'На дому'),
+    ]
+    SKILL_CHOICES = [
+        ('beginner', 'Новичок'),
+        ('basic', '1–3 месяца практики и базовый курс за плечами'),
+        ('advanced', 'Продвинутый'),
+    ]
+
+    title = models.CharField('Название', max_length=255)
+    short_description = models.TextField(
+        'Краткое описание',
+        help_text='1–3 предложения: показывается в карточках курсов, в календаре и вверху страницы курса.',
+    )
+    full_description = models.TextField(
+        'Развёрнутое описание', blank=True,
+        help_text='Показывается на странице курса под кратким описанием. '
+                  'Абзацы разделяйте пустой строкой.',
+    )
+    slug = models.SlugField(
+        'Адрес страницы', max_length=100, unique=True,
+        help_text='Латинские буквы, цифры и дефисы: grudnichkovoe-plavanie.ru/education/courses/адрес-курса/',
+    )
+    audience = models.TextField('Для кого', help_text='На кого рассчитан курс.')
+    program = models.TextField(
+        'Программа курса',
+        help_text='Абзацы разделяйте пустой строкой. Одиночный перенос строки — перенос внутри абзаца.',
+    )
+    hours = models.PositiveIntegerField('Учебные часы')
     teachers = models.ManyToManyField(
         Teacher, verbose_name='Преподаватели', through='CourseTeacher',
         related_name='courses', blank=True,
     )
-    kind = models.CharField('Тип', max_length=100, blank=True,
-                            help_text='Например: «Семинар» или «Повышение квалификации».')
-    audience = models.TextField('Для кого', blank=True)
-    program = models.TextField(
-        'Программа курса', blank=True,
-        help_text='Абзацы разделяйте пустой строкой. Одиночный перенос строки — перенос внутри абзаца.',
+    child_ages = models.ManyToManyField(ChildAge, verbose_name='Возраст детей', related_name='courses')
+    direction = models.CharField('Направление работы', max_length=20, choices=DIRECTION_CHOICES)
+    health_features = models.ManyToManyField(
+        HealthFeature, verbose_name='Особенности здоровья детей', related_name='courses',
     )
-    image = models.ImageField('Изображение', upload_to='courses/', blank=True, null=True)
+    venue = models.CharField('Место проведения', max_length=20, choices=VENUE_CHOICES)
+    skill_level = models.CharField('Навыки учащегося', max_length=20, choices=SKILL_CHOICES)
+    course_type = models.CharField(
+        'Тип', max_length=20, choices=TYPE_CHOICES,
+        help_text='От типа зависят даты в расписании: у очных и онлайн — начало и конец, '
+                  'у очно-заочных — ещё очные дни и доступ к материалам, у дистанционных — срок доступа.',
+    )
+    base_price = models.PositiveIntegerField(
+        'Базовая стоимость, ₽', null=True,
+        help_text='Стоимость обучения с сертификатом о прохождении курса.',
+    )
+    has_diploma = models.BooleanField('Есть вариант с дипломом', default=False,
+                                      help_text='Диплом — для слушателей с высшим образованием.')
+    diploma_price = models.PositiveIntegerField('Стоимость с дипломом, ₽', null=True, blank=True)
+    has_qualification_certificate = models.BooleanField(
+        'Есть вариант с удостоверением о повышении квалификации', default=False,
+        help_text='Удостоверение — для слушателей со средним или высшим физкультурным образованием.',
+    )
+    qualification_certificate_price = models.PositiveIntegerField(
+        'Стоимость с удостоверением, ₽', null=True, blank=True,
+    )
+    required_course = models.ForeignKey(
+        'self', verbose_name='Необходимый курс для старта', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='next_courses',
+        help_text='Курс, который нужно пройти перед этим.',
+    )
+
+    # Варианты одного курса (пакет «Студент»/«Специалист», семинар/повышение квалификации)
+    # на странице «Программы» показываются одной карточкой — CourseCard
+    card = models.ForeignKey(
+        'CourseCard', verbose_name='Карточка курса', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='courses',
+        help_text='На странице «Программы» курсы одной карточки показываются вместе — строками внутри неё.',
+    )
+    card_position = models.PositiveSmallIntegerField(
+        'Порядок в карточке', default=0, help_text='Чем меньше число, тем выше строка курса в карточке.',
+    )
+    variant_label = models.CharField(
+        'Название варианта', max_length=100, blank=True,
+        help_text='Строка внутри карточки, например «Пакет «Студент»», «Семинар», '
+                  '«Повышение квалификации». Если пусто, пишется тип курса.',
+    )
+
     order = models.IntegerField('Место на странице', default=0)
-    is_active = models.BooleanField('Активен', default=True)
+    is_active = models.BooleanField('Показывать на сайте', default=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)
-    updated_at = models.DateTimeField('Обн  овлен', auto_now=True)
+    updated_at = models.DateTimeField('Обновлён', auto_now=True)
 
     class Meta:
-        verbose_name = 'Блок курса'
-        verbose_name_plural = 'Блоки курсов'
+        verbose_name = 'Курс'
+        verbose_name_plural = 'Курсы'
         ordering = ['order', '-created_at']
 
     def __str__(self):
         return self.title
 
+    def clean(self):
+        errors = {}
+        for flag, price_field in (('has_diploma', 'diploma_price'),
+                                  ('has_qualification_certificate', 'qualification_certificate_price')):
+            if getattr(self, flag):
+                if getattr(self, price_field) is None:
+                    errors[price_field] = 'Укажите стоимость для этого варианта документа.'
+            else:
+                setattr(self, price_field, None)  # вариант выключен — цена не нужна
+        if self.required_course_id:
+            if self.pk and self.required_course_id == self.pk:
+                errors['required_course'] = 'Курс не может требовать сам себя.'
+            else:
+                # защита от цикла: A требует B, B требует … A
+                seen, current = {self.pk}, self.required_course
+                while current is not None:
+                    if current.pk in seen:
+                        errors['required_course'] = 'Получается замкнутая цепочка обязательных курсов.'
+                        break
+                    seen.add(current.pk)
+                    current = current.required_course
+        if errors:
+            raise ValidationError(errors)
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = unique_slug(Course, self.title, self.pk, 'course')
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('core:course_detail', kwargs={'slug': self.slug})
+
+    @property
+    def is_dated(self):
+        return self.course_type in self.DATED_TYPES
+
+    @property
+    def list_title(self):
+        """Название курса без карточки на странице «Программы» (заглавные буквы — в обычные)"""
+        return sentence_case(self.title)
+
+    @property
+    def variant_name(self):
+        """Строка варианта внутри карточки"""
+        return self.variant_label or self.get_course_type_display()
+
+    @property
+    def direction_icon(self):
+        return self.DIRECTION_ICONS.get(self.direction, 'bi-mortarboard')
+
+    @property
+    def type_icon(self):
+        return self.TYPE_ICONS.get(self.course_type, 'bi-mortarboard')
 
     @property
     def teacher_list(self):
@@ -75,6 +292,70 @@ class Course(models.Model):
     @property
     def teacher_names(self):
         return ', '.join(t.full_name for t in self.teacher_list)
+
+    @property
+    def hours_label(self):
+        return f'{self.hours} {plural_ru(self.hours, ("учебный час", "учебных часа", "учебных часов"))}'
+
+    @property
+    def member_price(self):
+        """Стоимость для членов Ассоциации: базовая минус MEMBER_DISCOUNT_PERCENT"""
+        if self.base_price is None:
+            return None
+        return round(self.base_price * (100 - self.MEMBER_DISCOUNT_PERCENT) / 100)
+
+    @property
+    def documents(self):
+        """Документ по окончании курса: (название, для кого, стоимость). Сертификат — всегда."""
+        docs = [('Сертификат о прохождении курса', '', self.base_price)]
+        if self.has_diploma:
+            docs.append(('Диплом', 'для слушателей с высшим образованием', self.diploma_price))
+        if self.has_qualification_certificate:
+            docs.append(('Удостоверение о повышении квалификации',
+                         'для слушателей со средним или высшим физкультурным образованием',
+                         self.qualification_certificate_price))
+        return docs
+
+
+class CourseCard(models.Model):
+    """Карточка на странице «Программы»: несколько вариантов одного курса (пакеты «Студент» /
+    «Специалист», семинар и повышение квалификации) показываются вместе, строками внутри неё."""
+    title = models.CharField(
+        'Название', max_length=255,
+        help_text='Общее название курса — без «Пакет «Студент»», «Семинар», «Повышение квалификации».',
+    )
+    description_course = models.ForeignKey(
+        'Course', verbose_name='Описание взять из курса', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='+',
+        help_text='Краткое описание карточки берётся из этого курса. Если не выбран — из первого курса карточки.',
+    )
+    order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Показывать на сайте', default=True)
+
+    class Meta:
+        verbose_name = 'Карточка курса'
+        verbose_name_plural = 'Карточки курсов'
+        ordering = ['order', 'title']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def ordered_courses(self):
+        return list(self.courses.order_by('card_position', 'pk'))
+
+    @property
+    def description_source(self):
+        """Курс, из которого берётся краткое описание карточки"""
+        if self.description_course_id:
+            return self.description_course
+        courses = self.ordered_courses
+        return next((c for c in courses if c.short_description.strip()), courses[0] if courses else None)
+
+    @property
+    def short_description(self):
+        source = self.description_source
+        return source.short_description if source else ''
 
 
 class CourseTeacher(models.Model):
@@ -91,39 +372,125 @@ class CourseTeacher(models.Model):
         unique_together = [('course', 'teacher')]
 
     def __str__(self):
-        return f"{self.course} — {self.teacher}"
+        return str(self.teacher)
 
 
-class CourseSession(models.Model):
-    """Даты проведения курса — показываются в календаре на странице «Расписание»"""
-    course = models.ForeignKey(
-        Course, verbose_name='Курс', on_delete=models.CASCADE, related_name='sessions',
+class CourseSchedule(models.Model):
+    """Запись расписания курса. Какие даты заполняются — зависит от типа курса."""
+    FORMAT_CHOICES = [
+        ('individual', 'Индивидуальный'),
+        ('group', 'Групповой'),
+        ('corporate', 'Корпоративный'),
+        ('away', 'Выездной'),
+    ]
+
+    course = models.ForeignKey(Course, verbose_name='Курс', on_delete=models.CASCADE, related_name='schedules')
+    format = models.CharField('Формат проведения', max_length=20, choices=FORMAT_CHOICES)
+    start_date = models.DateField('Дата начала', null=True, blank=True)
+    end_date = models.DateField('Дата окончания', null=True, blank=True)
+    materials_from = models.DateField('Доступ к материалам: с', null=True, blank=True)
+    materials_to = models.DateField('Доступ к материалам: по', null=True, blank=True)
+    access_days = models.PositiveSmallIntegerField('Срок доступа, дней', null=True, blank=True)
+    time_from = models.TimeField('Занятия: начало', null=True, blank=True,
+                                 help_text='Примерное время, например 8:00.')
+    time_to = models.TimeField('Занятия: окончание', null=True, blank=True, help_text='Например 18:00.')
+    price_override = models.PositiveIntegerField(
+        'Стоимость, ₽', null=True, blank=True,
+        help_text='Заполните, только если стоимость отличается от базовой стоимости курса.',
     )
-    start_date = models.DateField('Дата начала')
-    end_date = models.DateField('Дата окончания', blank=True, null=True,
-                                help_text='Оставьте пустым, если курс проходит в один день.')
-    location = models.CharField('Место проведения', max_length=255, blank=True)
-    price = models.CharField('Стоимость', max_length=100, blank=True,
-                             help_text='Например: «от 18 240 руб».')
-    note = models.CharField('Примечание', max_length=255, blank=True,
-                            help_text='Например: «Онлайн» или «Набор закрыт».')
+    comment = models.TextField('Комментарий', blank=True)
 
     class Meta:
-        verbose_name = 'Дата проведения'
-        verbose_name_plural = 'Даты проведения'
-        ordering = ['start_date']
+        verbose_name = 'Запись расписания'
+        verbose_name_plural = 'Расписание курсов'
+        ordering = [models.F('start_date').asc(nulls_last=True), 'pk']
 
     def __str__(self):
-        return f"{self.course} — {self.start_date:%d.%m.%Y}"
+        label = self.date_label
+        return f'{self.course} — {label}' if label else str(self.course)
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-        if self.end_date and self.end_date < self.start_date:
-            raise ValidationError({'end_date': 'Дата окончания не может быть раньше даты начала.'})
+        if not self.course_id:
+            return
+        course_type = self.course.course_type
+        if not course_type:
+            raise ValidationError({'course': 'У курса не указан тип — укажите его в карточке курса.'})
+        errors = {}
+
+        def require(*fields):
+            for name in fields:
+                if getattr(self, name) in (None, ''):
+                    errors[name] = 'Обязательное поле для этого типа курса.'
+
+        if course_type == Course.TYPE_DISTANCE:
+            require('access_days')
+            if self.access_days == 0:
+                errors['access_days'] = 'Срок доступа должен быть больше нуля.'
+            # у дистанционных курсов дат нет
+            self.start_date = self.end_date = self.materials_from = self.materials_to = None
+            self.time_from = self.time_to = None
+        else:
+            require('start_date', 'end_date', 'time_from', 'time_to')
+            if self.start_date and self.end_date and self.end_date < self.start_date:
+                errors['end_date'] = 'Дата окончания не может быть раньше даты начала.'
+            if self.time_from and self.time_to and self.time_to <= self.time_from:
+                errors['time_to'] = 'Окончание занятий должно быть позже начала.'
+            self.access_days = None
+            if course_type == Course.TYPE_BLENDED:
+                require('materials_from', 'materials_to')
+                if self.materials_from and self.materials_to and self.materials_to < self.materials_from:
+                    errors['materials_to'] = 'Конец доступа не может быть раньше начала.'
+            else:
+                self.materials_from = self.materials_to = None
+        if errors:
+            raise ValidationError(errors)
+
+    @property
+    def price(self):
+        return self.price_override if self.price_override is not None else self.course.base_price
 
     @property
     def last_date(self):
         return self.end_date or self.start_date
+
+    @property
+    def date_label(self):
+        if self.start_date:
+            return format_date_range(self.start_date, self.last_date)
+        if self.access_days:
+            return f'Доступ {self.access_days} {plural_ru(self.access_days, ("день", "дня", "дней"))}'
+        return ''
+
+    @property
+    def time_label(self):
+        if self.time_from and self.time_to:
+            return f'{self.time_from:%H:%M}–{self.time_to:%H:%M}'
+        return ''
+
+    @property
+    def materials_label(self):
+        if self.materials_from and self.materials_to:
+            return format_date_range(self.materials_from, self.materials_to)
+        return ''
+
+    @property
+    def in_person_days_label(self):
+        return format_day_list(day.date for day in self.in_person_days.all())
+
+
+class CourseScheduleDay(models.Model):
+    """Дата очного занятия в записи расписания очно-заочного курса"""
+    schedule = models.ForeignKey(CourseSchedule, on_delete=models.CASCADE, related_name='in_person_days')
+    date = models.DateField('Дата очного занятия')
+
+    class Meta:
+        verbose_name = 'Очное занятие'
+        verbose_name_plural = 'Даты очных занятий'
+        ordering = ['date']
+        unique_together = [('schedule', 'date')]
+
+    def __str__(self):
+        return f'{self.date:%d.%m.%Y}'
 
 
 class Specialist(models.Model):

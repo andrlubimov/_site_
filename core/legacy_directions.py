@@ -1,0 +1,77 @@
+"""Направление работы для курсов, перенесённых со старого сайта (по адресу курса).
+
+На старом сайте направления не было — оно определено по названию и описанию курса.
+Используется миграцией 0017 и командой import_old_courses: заполняет направление,
+только если оно ещё не указано (правки из админки не затираются).
+"""
+LEGACY_DIRECTIONS = {
+    # Администрирование — управление акваклубом, продажи, работа администратора
+    'administrator2': 'management',
+    'sales': 'management',
+    'juristik2': 'management',
+
+    # Плавание — обучение плаванию и занятия в воде со здоровыми детьми и беременными
+    'gp-base-pool3': 'swimming',
+    'gp-base-bath3onl': 'swimming',
+    'gp-base-pool1onl': 'swimming',
+    'dinamichkavvode': 'swimming',
+    'gaming-technology-water': 'swimming',
+    'professionalstyles': 'swimming',
+    'distantstyles': 'swimming',
+    'distantstyles2': 'swimming',
+    'ranneyplavaniyePK': 'swimming',
+    'earlyswimming': 'swimming',
+    'doshkolnikitraining': 'swimming',
+    'doshkolniki-plavanie': 'swimming',
+    'water-aerobics-pregnant-3': 'swimming',
+    'motornyiontogenez': 'swimming',
+    'motornyiontogenez2': 'swimming',
+
+    # Сухопутные — патронаж и консультации на суше
+    'advanced': 'land',
+    'advanced2': 'land',
+    'patronageart2': 'land',
+    'nursing-art-basic2': 'land',
+    'grudnoyevskarmlivaniye': 'land',
+    'grudnoyevskarmlivaniye2': 'land',
+
+    # Гидрореабилитация — коррекционная и реабилитационная работа, водные тренажёры,
+    # а также теория для специалистов, работающих с особенными детьми
+    'hydrorehabilitation': 'hydrorehab',
+    'hydrorehabilitationprofessional': 'hydrorehab',
+    'speech': 'hydrorehab',
+    'speechadvanced': 'hydrorehab',
+    'sindromDauna': 'hydrorehab',
+    'sindromDauna2': 'hydrorehab',
+    'prematurebabies': 'hydrorehab',
+    'prematurebabiesspecialist': 'hydrorehab',
+    'hyperactivechildrenONL': 'hydrorehab',
+    'korrektsionnayarabota': 'hydrorehab',
+    'korrektsionnayarabota2': 'hydrorehab',
+    'recreationalswimmingPK': 'hydrorehab',
+    'recreationalswimmingPK2': 'hydrorehab',
+    'medlikbezspecialist': 'hydrorehab',
+    'medlikbezall3': 'hydrorehab',
+    'specialparents-online': 'hydrorehab',
+    'specialparents-online2': 'hydrorehab',
+    'psychosomaticsofraces': 'hydrorehab',
+    'aquajet': 'hydrorehab',
+    'thixotrainingabdominalaponeurosis': 'hydrorehab',
+    'thixotrainingabdominalaponeurosis2': 'hydrorehab',
+    'thixotrainingofvaricoseveins': 'hydrorehab',
+    'thixotrainingofvaricoseveins2': 'hydrorehab',
+    'logoaquadget': 'hydrorehab',
+    'logoaquadget2': 'hydrorehab',
+    'thixotrainingosteochondrosis': 'hydrorehab',
+    'thixotrainingosteochondrosis2': 'hydrorehab',
+    'thixotrainingflatfeet': 'hydrorehab',
+    'thixotrainingflatfeet2': 'hydrorehab',
+    'thixotrainingagingface': 'hydrorehab',
+    'thixotrainingagingface2': 'hydrorehab',
+    'thixotraininginfection': 'hydrorehab',
+    'thixotraininginfection2': 'hydrorehab',
+    'cellulitespecialist': 'hydrorehab',
+    'thixotrainingcellulite': 'hydrorehab',
+    'thixotrainingpregnant': 'hydrorehab',
+    'thixotrainingpregnant2': 'hydrorehab',
+}

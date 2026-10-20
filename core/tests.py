@@ -5,8 +5,29 @@ from django.db import OperationalError
 from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase, TestCase
 
-from .models import AboutSection, CourseSession, CourseTeacher, PageContent, Representative, Teacher, Course
-from .views import format_date_range, page_content
+from datetime import time
+
+from django.core.exceptions import ValidationError
+
+from .models import (
+    AboutSection, ChildAge, Course, CourseSchedule, CourseScheduleDay, CourseTeacher, HealthFeature, PageContent,
+    Representative, Teacher,
+)
+from .utils import (
+    format_date_range, format_day_list, format_rub, plural_ru, sentence_case, slugify_ru, split_variant_title,
+)
+from .views import page_content
+
+
+def make_course(**kwargs):
+    """Курс со всеми обязательными полями; любые можно переопределить"""
+    defaults = {
+        'title': 'Тестовый курс', 'short_description': 'Кратко о курсе', 'audience': 'Тренерам',
+        'program': 'Темы', 'hours': 40, 'course_type': Course.TYPE_ONLINE, 'direction': 'swimming',
+        'venue': 'pool', 'skill_level': 'beginner', 'base_price': 10000,
+    }
+    defaults.update(kwargs)
+    return Course.objects.create(**defaults)
 
 
 class PageContentViewTests(SimpleTestCase):
@@ -106,7 +127,7 @@ class CourseModelTests(TestCase):
     def test_course_with_teachers_in_order(self):
         first = Teacher.objects.create(first_name='Наталия', last_name='Дворяшина')
         second = Teacher.objects.create(first_name='Екатерина', last_name='Любимова')
-        course = Course.objects.create(title='Тестовый курс', description='Описание', hours=40)
+        course = make_course()
         CourseTeacher.objects.create(course=course, teacher=second, order=1)
         CourseTeacher.objects.create(course=course, teacher=first, order=0)
         self.assertEqual(course.teacher_list, [first, second])
@@ -115,31 +136,318 @@ class CourseModelTests(TestCase):
         self.assertIn(course, first.courses.all())
 
     def test_course_without_teacher(self):
-        course = Course.objects.create(
-            title='Курс без преподавателя', description='Описание', hours=20,
-        )
+        course = make_course(title='Курс без преподавателя')
         self.assertIsNone(course.main_teacher)
         self.assertEqual(course.teacher_names, '')
 
     def test_course_ordering_by_order_field(self):
-        Course.objects.create(title='Второй', slug='vtoroj', description='Д', hours=10, order=2)
-        Course.objects.create(title='Первый', slug='pervyj', description='Д', hours=10, order=1)
+        make_course(title='Второй', slug='vtoroj', order=2)
+        make_course(title='Первый', slug='pervyj', order=1)
         courses = list(Course.objects.values_list('title', flat=True))
-        self.assertEqual(courses[0], 'Первый')
-        self.assertEqual(courses[1], 'Второй')
+        self.assertEqual(courses[:2], ['Первый', 'Второй'])
 
     def test_slug_auto_generated(self):
-        course = Course.objects.create(title='Test Course', description='Д', hours=10)
-        self.assertEqual(course.slug, 'test-course')
+        self.assertEqual(make_course(title='Test Course').slug, 'test-course')
+
+    def test_slug_transliterated_from_russian_and_unique(self):
+        first = make_course(title='Грудничковое плавание. Базовый модуль')
+        second = make_course(title='Грудничковое плавание. Базовый модуль')
+        self.assertEqual(first.slug, 'grudnichkovoe-plavanie-bazovyy-modul')
+        self.assertEqual(second.slug, 'grudnichkovoe-plavanie-bazovyy-modul-2')
+
+    def test_lookup_options_seeded_by_migration(self):
+        self.assertEqual(list(ChildAge.objects.values_list('code', flat=True)), ['infant', 'early', 'preschool'])
+        self.assertEqual(list(HealthFeature.objects.values_list('code', flat=True)),
+                         ['normotypical', 'special_care', 'pregnant'])
+
+    def test_document_price_required_when_option_enabled(self):
+        course = make_course(has_diploma=True)
+        with self.assertRaises(ValidationError) as ctx:
+            course.clean()
+        self.assertIn('diploma_price', ctx.exception.message_dict)
+
+    def test_document_price_cleared_when_option_disabled(self):
+        course = make_course(diploma_price=15000, qualification_certificate_price=17000)
+        course.clean()
+        self.assertIsNone(course.diploma_price)
+        self.assertIsNone(course.qualification_certificate_price)
+
+    def test_documents_list(self):
+        course = make_course(base_price=10000, has_qualification_certificate=True,
+                             qualification_certificate_price=14000)
+        self.assertEqual([(name, price) for name, _, price in course.documents], [
+            ('Сертификат о прохождении курса', 10000),
+            ('Удостоверение о повышении квалификации', 14000),
+        ])
+
+    def test_required_course_cannot_be_self_or_cycle(self):
+        a = make_course(title='A')
+        b = make_course(title='B', required_course=a)
+        a.required_course = a
+        with self.assertRaises(ValidationError):
+            a.clean()
+        a.required_course = b  # A → B → A
+        with self.assertRaises(ValidationError):
+            a.clean()
+        Course.objects.get(pk=b.pk).clean()  # B → A без обратной ссылки — нормально
+
+    def test_member_price_is_base_minus_20_percent(self):
+        self.assertEqual(make_course(base_price=22800).member_price, 18240)
+        self.assertEqual(make_course(base_price=5700).member_price, 4560)
+        self.assertIsNone(Course(base_price=None).member_price)
+
+    def test_hours_label_plural(self):
+        self.assertEqual(make_course(hours=21).hours_label, '21 учебный час')
+        self.assertEqual(make_course(hours=3).hours_label, '3 учебных часа')
+        self.assertEqual(make_course(hours=80).hours_label, '80 учебных часов')
+
+
+class CourseScheduleTests(TestCase):
+    def schedule(self, course_type, **kwargs):
+        course = make_course(course_type=course_type)
+        return CourseSchedule(course=course, format='group', **kwargs)
+
+    def test_online_requires_dates_and_time(self):
+        with self.assertRaises(ValidationError) as ctx:
+            self.schedule(Course.TYPE_ONLINE, access_days=14).clean()
+        self.assertEqual(set(ctx.exception.message_dict),
+                         {'start_date', 'end_date', 'time_from', 'time_to'})
+
+    def test_in_person_clears_distance_and_materials_fields(self):
+        s = self.schedule(Course.TYPE_IN_PERSON, start_date=date(2026, 11, 1), end_date=date(2026, 11, 3),
+                          time_from=time(10), time_to=time(18), access_days=14,
+                          materials_from=date(2026, 10, 1), materials_to=date(2026, 12, 1))
+        s.clean()
+        self.assertIsNone(s.access_days)
+        self.assertIsNone(s.materials_from)
+
+    def test_blended_requires_materials_period(self):
+        with self.assertRaises(ValidationError) as ctx:
+            self.schedule(Course.TYPE_BLENDED, start_date=date(2026, 11, 1), end_date=date(2026, 11, 30),
+                          time_from=time(10), time_to=time(18)).clean()
+        self.assertEqual(set(ctx.exception.message_dict), {'materials_from', 'materials_to'})
+
+    def test_distance_has_no_dates(self):
+        s = self.schedule(Course.TYPE_DISTANCE, start_date=date(2026, 11, 1), end_date=date(2026, 11, 30),
+                          access_days=30)
+        s.clean()
+        self.assertIsNone(s.start_date)
+        self.assertEqual(s.date_label, 'Доступ 30 дней')
+        with self.assertRaises(ValidationError):
+            self.schedule(Course.TYPE_DISTANCE).clean()
+
+    def test_end_before_start_and_time_order(self):
+        with self.assertRaises(ValidationError) as ctx:
+            self.schedule(Course.TYPE_ONLINE, start_date=date(2026, 11, 5), end_date=date(2026, 11, 1),
+                          time_from=time(18), time_to=time(10)).clean()
+        self.assertEqual(set(ctx.exception.message_dict), {'end_date', 'time_to'})
+
+    def test_course_without_type(self):
+        with self.assertRaises(ValidationError) as ctx:
+            self.schedule('').clean()
+        self.assertIn('course', ctx.exception.message_dict)
+
+    def test_price_override_and_labels(self):
+        s = self.schedule(Course.TYPE_ONLINE, start_date=date(2026, 11, 12), end_date=date(2026, 11, 14),
+                          time_from=time(8), time_to=time(18))
+        self.assertEqual(s.price, 10000)
+        s.price_override = 8000
+        self.assertEqual(s.price, 8000)
+        self.assertEqual(s.date_label, '12–14 ноября 2026')
+        self.assertEqual(s.time_label, '08:00–18:00')
+
+
+class CourseAdminTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        self.client.force_login(User.objects.create_superuser('boss', 'boss@example.com', 'pw'))
+        self.teacher = Teacher.objects.create(first_name='Иван', last_name='Петров')
+
+    def course_data(self, **extra):
+        data = {
+            'title': 'Новый курс', 'slug': 'novyy-kurs', 'short_description': 'Кратко',
+            'full_description': '', 'audience': 'Тренерам', 'program': 'Темы', 'hours': '16',
+            'course_type': 'online', 'direction': 'swimming', 'venue': 'pool', 'skill_level': 'beginner',
+            'child_ages': [ChildAge.objects.get(code='infant').pk],
+            'health_features': [HealthFeature.objects.get(code='normotypical').pk],
+            'base_price': '10000', 'diploma_price': '', 'qualification_certificate_price': '',
+            'required_course': '', 'order': '0', 'is_active': 'on',
+            'card': '', 'variant_label': '', 'card_position': '0',
+            'course_teachers-TOTAL_FORMS': '1', 'course_teachers-INITIAL_FORMS': '0',
+            'course_teachers-MIN_NUM_FORMS': '1', 'course_teachers-MAX_NUM_FORMS': '1000',
+            'course_teachers-0-teacher': str(self.teacher.pk), 'course_teachers-0-order': '0',
+        }
+        data.update(extra)
+        return data
+
+    def test_add_course(self):
+        response = self.client.post('/admin/core/course/add/', self.course_data(
+            has_diploma='on', diploma_price='15000'))
+        self.assertEqual(response.status_code, 302, response.content.decode()[:500])
+        course = Course.objects.get(slug='novyy-kurs')
+        self.assertEqual(course.diploma_price, 15000)
+        self.assertEqual(course.teacher_list, [self.teacher])
+        self.assertEqual(list(course.child_ages.values_list('code', flat=True)), ['infant'])
+
+    def test_course_requires_teacher_and_diploma_price(self):
+        data = self.course_data(has_diploma='on')
+        data['course_teachers-0-teacher'] = ''
+        response = self.client.post('/admin/core/course/add/', data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('diploma_price', response.context['adminform'].form.errors)
+        self.assertFalse(Course.objects.filter(slug='novyy-kurs').exists())
+
+    def schedule_data(self, course, days=(), **extra):
+        data = {
+            'course': str(course.pk), 'format': 'group', 'start_date': '2026-11-10', 'end_date': '2026-11-20',
+            'materials_from': '2026-11-01', 'materials_to': '2026-12-01', 'access_days': '',
+            'time_from': '10:00', 'time_to': '15:00', 'price_override': '', 'comment': '',
+            'in_person_days-TOTAL_FORMS': str(len(days)), 'in_person_days-INITIAL_FORMS': '0',
+            'in_person_days-MIN_NUM_FORMS': '0', 'in_person_days-MAX_NUM_FORMS': '1000',
+        }
+        for i, day in enumerate(days):
+            data[f'in_person_days-{i}-date'] = day
+        data.update(extra)
+        return data
+
+    def test_add_blended_schedule_with_in_person_days(self):
+        course = make_course(course_type=Course.TYPE_BLENDED)
+        response = self.client.post('/admin/core/courseschedule/add/',
+                                    self.schedule_data(course, days=['2026-11-12', '2026-11-14']))
+        self.assertEqual(response.status_code, 302, response.content.decode()[:500])
+        schedule = CourseSchedule.objects.get(course=course)
+        self.assertEqual(schedule.in_person_days_label, '12 и 14 ноября 2026')
+        self.assertEqual(schedule.materials_label, '1 ноября – 1 декабря 2026')
+
+    def test_blended_schedule_requires_in_person_days_within_dates(self):
+        course = make_course(course_type=Course.TYPE_BLENDED)
+        response = self.client.post('/admin/core/courseschedule/add/', self.schedule_data(course))
+        self.assertContains(response, 'Укажите хотя бы одну дату очного занятия')
+        response = self.client.post('/admin/core/courseschedule/add/',
+                                    self.schedule_data(course, days=['2026-12-25']))
+        self.assertContains(response, 'в пределах дат курса')
+        self.assertFalse(CourseSchedule.objects.exists())
+
+    def test_distance_schedule_keeps_only_access_days(self):
+        course = make_course(course_type=Course.TYPE_DISTANCE)
+        response = self.client.post('/admin/core/courseschedule/add/',
+                                    self.schedule_data(course, days=['2026-11-12'], access_days='30'))
+        self.assertEqual(response.status_code, 302, response.content.decode()[:500])
+        schedule = CourseSchedule.objects.get(course=course)
+        self.assertIsNone(schedule.start_date)
+        self.assertEqual(schedule.access_days, 30)
+        self.assertFalse(schedule.in_person_days.exists())
+
+    def test_schedule_form_marks_course_types_for_js(self):
+        course = make_course(course_type=Course.TYPE_BLENDED)
+        response = self.client.get(f'/admin/core/courseschedule/add/?course={course.pk}')
+        self.assertContains(response, 'data-course-type="blended"')
+        self.assertContains(response, 'admin-schedule.js')
+
+
+class CourseDetailTests(TestCase):
+    def setUp(self):
+        self.course = make_course(
+            title='Курс', slug='kurs', short_description='Короткое описание.',
+            full_description='Подробности.', has_diploma=True, diploma_price=15000,
+        )
+        self.course.child_ages.set(ChildAge.objects.filter(code__in=['infant', 'early']))
+
+    def test_page_shows_facts_documents_and_schedule(self):
+        CourseSchedule.objects.create(course=self.course, format='group', start_date=date.today(),
+                                      end_date=date.today() + timedelta(days=2), time_from=time(10), time_to=time(15))
+        CourseSchedule.objects.create(course=self.course, format='group',
+                                      start_date=date.today() - timedelta(days=30),
+                                      end_date=date.today() - timedelta(days=28))  # прошедшая — не показываем
+        response = self.client.get('/education/courses/kurs/')
+        self.assertEqual(response.status_code, 200)
+        for text in ['Короткое описание.', 'Подробности.', 'Плавание', 'Грудной (0–1 год)', 'Ранний (1–3 года)',
+                     'Диплом', '15\u00a0000\u00a0₽', '10:00–15:00', 'Онлайн', 'Сертификат о прохождении курса']:
+            self.assertContains(response, text)
+        self.assertEqual(len(response.context['schedules']), 1)
+
+    def test_layout_title_prices_and_signup_buttons(self):
+        for days in (3, 40):
+            CourseSchedule.objects.create(course=self.course, format='group',
+                                          start_date=date.today() + timedelta(days=days),
+                                          end_date=date.today() + timedelta(days=days + 1),
+                                          time_from=time(10), time_to=time(15))
+        response = self.client.get('/education/courses/kurs/')
+        # название курса — главный заголовок страницы (в шапке — название раздела)
+        self.assertContains(response, '<h1 class="course-detail-title">Курс</h1>', html=True)
+        self.assertContains(response, 'Образовательные программы и семинары')
+        # стоимость и стоимость для членов Ассоциации (−20%)
+        self.assertContains(response, '10\u00a0000\u00a0₽')
+        self.assertContains(response, '8\u00a0000\u00a0₽')
+        # по кнопке «Записаться» на каждую ближайшую дату; пока никуда не ведут
+        self.assertContains(response, 'course-signup-btn', count=2)
+        self.assertNotContains(response, '<a class="btn btn-primary course-signup-btn')
+        self.assertContains(response, 'course-program-toggle')
+
+    def test_teacher_photo_and_name_link_to_teacher_page(self):
+        teacher = Teacher.objects.create(first_name='Анна', last_name='Швыдко')
+        CourseTeacher.objects.create(course=self.course, teacher=teacher)
+        response = self.client.get('/education/courses/kurs/')
+        # ссылка в боковом блоке и у фото с именем в основном
+        self.assertContains(response, 'href="/education/teachers/anna-shvydko/"', count=2)
+
+    def test_no_dates_message(self):
+        self.assertContains(self.client.get('/education/courses/kurs/'), 'Даты ближайших потоков пока не объявлены')
+
+    def test_required_course_link(self):
+        base = make_course(title='Базовый курс', slug='base')
+        self.course.required_course = base
+        self.course.save()
+        self.assertContains(self.client.get('/education/courses/kurs/'), 'href="/education/courses/base/"')
+
+    def test_inactive_course_404(self):
+        Course.objects.filter(pk=self.course.pk).update(is_active=False)
+        self.assertEqual(self.client.get('/education/courses/kurs/').status_code, 404)
+
+    def test_legacy_urls_redirect(self):
+        self.assertRedirects(self.client.get('/courses/kurs/'), '/education/courses/kurs/', status_code=301)
+        self.assertRedirects(self.client.get('/education/courses/kurs/09102026'), '/education/courses/kurs/',
+                             status_code=301, fetch_redirect_response=False)
+        self.assertRedirects(self.client.get('/courses/'), '/education/courses/', status_code=301)
+
+
+class TeacherPageTests(TestCase):
+    def setUp(self):
+        self.teacher = Teacher.objects.create(first_name='Ольга', last_name='Белоцерковская',
+                                              patronymic='Ивановна', bio='Педиатр.\n\nАвтор семинаров.')
+
+    def test_slug_generated_from_name_and_unique(self):
+        self.assertEqual(self.teacher.slug, 'olga-belotserkovskaya')
+        twin = Teacher.objects.create(first_name='Ольга', last_name='Белоцерковская')
+        self.assertEqual(twin.slug, 'olga-belotserkovskaya-2')
+        self.assertEqual(self.teacher.get_absolute_url(), '/education/teachers/olga-belotserkovskaya/')
+
+    def test_page_shows_bio_and_active_courses(self):
+        active = make_course(title='Патронажное искусство', slug='patronage')
+        hidden = make_course(title='Скрытый курс', slug='hidden', is_active=False)
+        other = make_course(title='Чужой курс', slug='other')
+        for course in (active, hidden):
+            CourseTeacher.objects.create(course=course, teacher=self.teacher)
+        CourseSchedule.objects.create(course=active, format='group', start_date=date.today() + timedelta(days=5),
+                                      end_date=date.today() + timedelta(days=6))
+        response = self.client.get('/education/teachers/olga-belotserkovskaya/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ольга Ивановна Белоцерковская')
+        self.assertContains(response, '<p>Автор семинаров.</p>', html=True)
+        self.assertContains(response, 'href="/education/courses/patronage/"')
+        self.assertNotContains(response, hidden.title)
+        self.assertNotContains(response, other.title)
+        self.assertEqual(list(response.context['courses']), [active])
+
+    def test_unknown_teacher_404(self):
+        self.assertEqual(self.client.get('/education/teachers/nobody/').status_code, 404)
 
 
 class IndexViewTests(TestCase):
     def test_index_page_renders_courses(self):
         teacher = Teacher.objects.create(first_name='Иван', last_name='Петров')
-        course = Course.objects.create(
-            title='Тестовый курс', slug='testovyj-kurs',
-            description='Описание курса', hours=40, order=1,
-        )
+        course = make_course(title='Тестовый курс', slug='testovyj-kurs', short_description='Описание курса',
+                             hours=40, order=1)
         CourseTeacher.objects.create(course=course, teacher=teacher)
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
@@ -148,10 +456,12 @@ class IndexViewTests(TestCase):
         self.assertContains(response, 'Иван Петров')
 
     def test_index_shows_nearest_courses_first(self):
-        far = Course.objects.create(title='Дальний курс', slug='far', description='Д', hours=10, order=1)
-        near = Course.objects.create(title='Ближний курс', slug='near', description='Д', hours=10, order=2)
-        CourseSession.objects.create(course=far, start_date=date.today() + timedelta(days=60))
-        CourseSession.objects.create(course=near, start_date=date.today() + timedelta(days=3))
+        far = make_course(title='Дальний курс', slug='far', order=1)
+        near = make_course(title='Ближний курс', slug='near', order=2)
+        CourseSchedule.objects.create(course=far, format='group', start_date=date.today() + timedelta(days=60),
+                                      end_date=date.today() + timedelta(days=61))
+        CourseSchedule.objects.create(course=near, format='group', start_date=date.today() + timedelta(days=3),
+                                      end_date=date.today() + timedelta(days=4))
         courses = list(self.client.get('/').context['courses'])
         self.assertEqual(courses[:2], [near, far])
 
@@ -164,39 +474,47 @@ class IndexViewTests(TestCase):
 class TimetableCalendarTests(TestCase):
     def setUp(self):
         teacher = Teacher.objects.create(first_name='Иван', last_name='Петров')
-        self.course = Course.objects.create(
-            title='Курс в календаре', slug='kurs-v-kalendare',
-            description='Описание', hours=24,
-        )
+        self.course = make_course(title='Курс в календаре', slug='kurs-v-kalendare', hours=24,
+                                  course_type=Course.TYPE_BLENDED)
         CourseTeacher.objects.create(course=self.course, teacher=teacher)
 
     def get_events(self):
         response = self.client.get('/page/timetable/')
         self.assertEqual(response.status_code, 200)
-        return response.context["calendar_events"]
+        return response.context['calendar_events']
 
-    def test_session_becomes_calendar_event(self):
-        CourseSession.objects.create(
-            course=self.course, start_date=date(2026, 11, 12), end_date=date(2026, 11, 14), location='Москва',
+    def test_schedule_becomes_calendar_event(self):
+        schedule = CourseSchedule.objects.create(
+            course=self.course, format='group', start_date=date(2026, 11, 12), end_date=date(2026, 11, 14),
+            time_from=time(10), time_to=time(15), price_override=9000, comment='Москва',
         )
+        CourseScheduleDay.objects.create(schedule=schedule, date=date(2026, 11, 13))
         events = self.get_events()
         self.assertEqual(len(events), 1)
         event = events[0]
         self.assertEqual(event['title'], 'Курс в календаре')
         self.assertEqual(event['start'], '2026-11-12')
         self.assertEqual(event['end'], '2026-11-15')  # конец невключительный
-        self.assertEqual(event['url'], '/courses/kurs-v-kalendare/')
-        self.assertEqual(event['extendedProps']['teacher'], 'Иван Петров')
-        self.assertEqual(event['extendedProps']['dates'], '12–14 ноября 2026')
+        self.assertEqual(event['url'], '/education/courses/kurs-v-kalendare/')
+        props = event['extendedProps']
+        self.assertEqual(props['teacher'], 'Иван Петров')
+        self.assertEqual(props['dates'], '12–14 ноября 2026')
+        self.assertEqual(props['inPersonDays'], '13 ноября 2026')
+        self.assertEqual(props['time'], '10:00–15:00')
+        self.assertEqual(props['price'], '9\u00a0000\u00a0₽')
+        self.assertEqual(props['hours'], '24 учебных часа')
 
-    def test_one_day_session(self):
-        CourseSession.objects.create(course=self.course, start_date=date(2026, 5, 5))
-        event = self.get_events()[0]
-        self.assertEqual(event['end'], '2026-05-06')
-        self.assertEqual(event['extendedProps']['dates'], '5 мая 2026')
+    def test_distance_courses_listed_separately(self):
+        distance = make_course(title='Дистанционный курс', slug='dist', course_type=Course.TYPE_DISTANCE)
+        CourseSchedule.objects.create(course=distance, format='group', access_days=14)
+        response = self.client.get('/page/timetable/')
+        self.assertEqual(response.context['calendar_events'], [])
+        self.assertContains(response, 'Дистанционное обучение')
+        self.assertContains(response, 'Доступ 14 дней')
 
     def test_inactive_course_hidden(self):
-        CourseSession.objects.create(course=self.course, start_date=date(2026, 5, 5))
+        CourseSchedule.objects.create(course=self.course, format='group', start_date=date(2026, 5, 5),
+                                      end_date=date(2026, 5, 5))
         Course.objects.filter(pk=self.course.pk).update(is_active=False)
         self.assertEqual(self.get_events(), [])
 
@@ -204,10 +522,26 @@ class TimetableCalendarTests(TestCase):
         self.assertContains(self.client.get('/page/timetable/'), 'fullcalendar.global.js')
         self.assertNotContains(self.client.get('/page/contacts/'), 'fullcalendar.global.js')
 
+
+class FormattingTests(SimpleTestCase):
     def test_format_date_range(self):
         self.assertEqual(format_date_range(date(2026, 11, 30), date(2026, 12, 2)), '30 ноября – 2 декабря 2026')
         self.assertEqual(format_date_range(date(2026, 12, 30), date(2027, 1, 2)),
                          '30 декабря 2026 – 2 января 2027')
+        self.assertEqual(format_date_range(date(2026, 5, 5), date(2026, 5, 5)), '5 мая 2026')
+
+    def test_format_day_list(self):
+        self.assertEqual(format_day_list([date(2026, 12, 10), date(2026, 12, 3), date(2026, 12, 4)]),
+                         '3, 4 и 10 декабря 2026')
+        self.assertEqual(format_day_list([date(2026, 11, 30), date(2026, 12, 2)]), '30 ноября и 2 декабря 2026')
+        self.assertEqual(format_day_list([date(2026, 12, 30), date(2027, 1, 2)]), '30 декабря 2026 и 2 января 2027')
+
+    def test_plural_rub_and_slug(self):
+        self.assertEqual([plural_ru(n, ('день', 'дня', 'дней')) for n in (1, 2, 5, 11, 21, 104)],
+                         ['день', 'дня', 'дней', 'дней', 'день', 'дня'])
+        self.assertEqual(format_rub(22800), '22\u00a0800\u00a0₽')
+        self.assertEqual(format_rub(None), '')
+        self.assertEqual(slugify_ru('Щука и ёж: «Синдром Дауна»'), 'schuka-i-ezh-sindrom-dauna')
 
 
 class RepresentativesPageTests(TestCase):
@@ -276,6 +610,23 @@ class OldSiteImportParserTests(SimpleTestCase):
     <p class="outline"><b>22 800</b> <span>руб</span></p><hr>
     <p class="outline">18 240 <span>руб</span></p></div></div>
     <!-- FOOTER -->"""
+
+    def test_split_description(self):
+        from core.management.commands.import_old_courses import split_description
+        self.assertEqual(split_description('Коротко.'), ('Коротко.', ''))
+        text = 'Первое предложение. ' * 10 + 'Хвост.'
+        short, full = split_description(text, limit=60)
+        self.assertEqual(short, 'Первое предложение. Первое предложение. Первое предложение.')
+        self.assertTrue(full.startswith('Первое предложение.'))
+        self.assertEqual(short + ' ' + full, text.strip())
+
+    def test_price_and_type_from_old_site(self):
+        from core.management.commands.import_old_courses import location_kind, parse_full_price
+        self.assertEqual(parse_full_price('22 800 руб, для членов Ассоциации — 18 240 руб'), 22800)
+        self.assertIsNone(parse_full_price(''))
+        self.assertEqual(location_kind('Онлайн — ZOOM'), Course.TYPE_ONLINE)
+        self.assertEqual(location_kind('Дистанционное обучение — в удобное для вас время'), Course.TYPE_DISTANCE)
+        self.assertEqual(location_kind('Москва, ул. Малыгина, 1 стр. 2'), Course.TYPE_IN_PERSON)
 
     def test_parse_timetable(self):
         from core.management.commands.import_old_courses import parse_timetable
@@ -372,3 +723,225 @@ class PartnerAdminTests(TestCase):
         response = self.client.get('/admin/core/partner/add/')
         self.assertEqual(response.context['adminform'].form.initial['order'], 8)
         self.assertContains(response, 'partner-admin-preview')
+
+
+class CourseFilterTests(TestCase):
+    def setUp(self):
+        self.teacher = Teacher.objects.create(first_name='Анна', last_name='Швыдко')
+        self.online = make_course(title='Онлайн-курс', slug='online', hours=6, course_type=Course.TYPE_ONLINE,
+                                  direction='management')
+        self.pool = make_course(title='Очный курс', slug='pool', hours=40, course_type=Course.TYPE_IN_PERSON,
+                                direction='swimming', skill_level='advanced')
+        self.distance = make_course(title='Дистанционный курс', slug='dist', hours=80,
+                                    course_type=Course.TYPE_DISTANCE, venue='home')
+        CourseTeacher.objects.create(course=self.pool, teacher=self.teacher)
+        self.pool.child_ages.set(ChildAge.objects.filter(code='infant'))
+        self.distance.child_ages.set(ChildAge.objects.filter(code__in=['infant', 'early']))
+
+    def titles(self, query):
+        response = self.client.get('/education/courses/' + query)
+        self.assertEqual(response.status_code, 200)
+        return sorted(c.title for c in response.context['courses'])
+
+    def test_no_filters_shows_all(self):
+        self.assertEqual(len(self.titles('')), 3)
+
+    def test_each_filter(self):
+        self.assertEqual(self.titles('?type=online'), ['Онлайн-курс'])
+        self.assertEqual(self.titles('?hours=upto10'), ['Онлайн-курс'])
+        self.assertEqual(self.titles('?hours=31-60&hours=over60'), ['Дистанционный курс', 'Очный курс'])
+        self.assertEqual(self.titles('?teacher=anna-shvydko'), ['Очный курс'])
+        self.assertEqual(self.titles('?age=infant'), ['Дистанционный курс', 'Очный курс'])
+        self.assertEqual(self.titles('?direction=management'), ['Онлайн-курс'])
+        self.assertEqual(self.titles('?venue=home'), ['Дистанционный курс'])
+        self.assertEqual(self.titles('?skill=advanced'), ['Очный курс'])
+
+    def test_groups_combine_with_and(self):
+        self.assertEqual(self.titles('?age=infant&type=distance'), ['Дистанционный курс'])
+        response = self.client.get('/education/courses/?type=online&skill=advanced')
+        self.assertContains(response, 'Ничего не нашлось')
+
+    def test_age_filter_no_duplicates(self):
+        self.assertEqual(self.titles('?age=infant&age=early'), ['Дистанционный курс', 'Очный курс'])
+
+    def test_courses_are_cards_with_teacher_links(self):
+        response = self.client.get('/education/courses/')
+        self.assertContains(response, 'class="course-card"', count=3)
+        self.assertContains(response, 'Анна Швыдко')
+        self.assertContains(response, 'href="/education/teachers/anna-shvydko/"')
+        self.assertContains(response, 'name="type"')
+
+    def test_timetable_filters_calendar_and_distance_list(self):
+        CourseSchedule.objects.create(course=self.online, format='group', start_date=date(2026, 11, 3),
+                                      end_date=date(2026, 11, 3))
+        CourseSchedule.objects.create(course=self.pool, format='group', start_date=date(2026, 11, 10),
+                                      end_date=date(2026, 11, 12))
+        CourseSchedule.objects.create(course=self.distance, format='group', access_days=30)
+        response = self.client.get('/page/timetable/?type=online')
+        self.assertEqual([e['title'] for e in response.context['calendar_events']], ['Онлайн-курс'])
+        self.assertEqual(response.context['distance_schedules'], [])
+        response = self.client.get('/page/timetable/')
+        self.assertEqual(len(response.context['calendar_events']), 2)
+        self.assertEqual(len(response.context['distance_schedules']), 1)
+        self.assertContains(response, 'course-filters')
+
+
+class CourseCardTests(TestCase):
+    """Карточка курса: варианты одного курса на странице «Программы» — одна карточка"""
+
+    def setUp(self):
+        from .models import CourseCard
+        self.card = CourseCard.objects.create(title='Патронаж', order=10)
+        self.student = make_course(title='Патронаж. Пакет «Студент»', slug='patronage-student', order=1,
+                                   card=self.card, card_position=0, variant_label='Пакет «Студент»',
+                                   short_description='',  # описания нет — карточка возьмёт его у «Специалиста»
+                                   course_type=Course.TYPE_DISTANCE, direction='land', hours=20)
+        self.specialist = make_course(title='Патронаж. Пакет «Специалист»', slug='patronage-specialist', order=2,
+                                      card=self.card, card_position=1, variant_label='Пакет «Специалист»',
+                                      short_description='Описание патронажа.',
+                                      course_type=Course.TYPE_DISTANCE, direction='land', hours=20)
+        self.other = make_course(title='ДРУГОЙ КУРС', slug='other', direction='management')
+        self.teacher = Teacher.objects.create(first_name='Ольга', last_name='Белоцерковская')
+        CourseTeacher.objects.create(course=self.student, teacher=self.teacher)
+        CourseTeacher.objects.create(course=self.specialist, teacher=self.teacher)
+
+    def get(self, query=''):
+        response = self.client.get('/education/courses/' + query)
+        self.assertEqual(response.status_code, 200)
+        return response
+
+    def test_variants_share_one_card(self):
+        response = self.get()
+        self.assertContains(response, 'class="course-card"', count=2)
+        self.assertContains(response, 'href="/education/courses/patronage-specialist/"')
+        self.assertContains(response, '2 программы · 3 варианта')
+        card = next(c for c in response.context['cards'] if c.obj == self.card)
+        self.assertEqual([c.slug for c in card.variants], ['patronage-student', 'patronage-specialist'])
+        self.assertEqual(card.teachers, [self.teacher])  # преподаватель не дублируется
+        self.assertEqual(card.description, 'Описание патронажа.')
+        self.assertEqual(self.card.short_description, 'Описание патронажа.')
+
+    def test_description_course_chosen_explicitly(self):
+        self.card.description_course = self.student
+        self.card.save()
+        self.student.short_description = 'Своё описание.'
+        self.student.save()
+        self.assertContains(self.get(), 'Своё описание.')
+
+    def test_sections_by_direction(self):
+        response = self.get()
+        self.assertEqual([s.label for s in response.context['sections']], ['Сухопутные', 'Администрирование'])
+        from .views import DIRECTION_SECTION_ORDER
+        self.assertEqual(sorted(DIRECTION_SECTION_ORDER), sorted(code for code, _ in Course.DIRECTION_CHOICES))
+        self.assertContains(response, 'course-dir--land')
+        self.assertContains(response, '1 программа')
+
+    def test_course_without_card_gets_own_card_with_softened_title(self):
+        self.assertContains(self.get(), 'Другой курс')
+
+    def test_hidden_card_not_shown(self):
+        self.card.is_active = False
+        self.card.save()
+        response = self.get()
+        self.assertNotContains(response, 'patronage-student')
+        self.assertEqual(len(response.context['cards']), 1)
+
+    def test_variant_found_by_filter_stays_under_card(self):
+        self.specialist.hours = 80
+        self.specialist.save()
+        response = self.get('?hours=over60')
+        self.assertContains(response, 'class="course-card"', count=1)
+        self.assertContains(response, '>Патронаж<')
+        self.assertNotContains(response, 'href="/education/courses/patronage-student/"')
+
+    def test_search_is_case_insensitive_and_matches_card_title(self):
+        self.assertEqual(len(self.get('?q=ПАТРОНАЖ').context['cards']), 1)
+        self.assertEqual(len(self.get('?q=другой').context['cards']), 1)
+        self.assertEqual(len(self.get('?q=описание%20патронажа').context['cards']), 1)
+        response = self.get('?q=патронаж')
+        self.assertEqual(dict(response.context['active_filters']), {'«патронаж»': '/education/courses/'})
+
+    def test_sort_by_title(self):
+        make_course(title='Аквагимнастика', slug='aqua', direction='management', order=99)
+        titles = [c.title for c in self.get('?sort=title').context['sections'][1].cards]
+        self.assertEqual(titles, ['Аквагимнастика', 'Другой курс'])
+        titles = [c.title for c in self.get().context['sections'][1].cards]
+        self.assertEqual(titles, ['Другой курс', 'Аквагимнастика'])  # по умолчанию — порядок из админки
+
+    def test_active_filter_chip_removes_only_its_value(self):
+        response = self.get('?type=distance&type=online')
+        chips = dict(response.context['active_filters'])
+        self.assertEqual(chips['Дистанционный'], '/education/courses/?type=online')
+
+
+class CourseCardAdminTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        self.client.force_login(User.objects.create_superuser('boss', 'boss@example.com', 'pw'))
+        self.seminar = make_course(title='Плавание. Семинар', slug='swim-seminar')
+        self.qualification = make_course(title='Плавание. Повышение квалификации', slug='swim-pk')
+
+    def test_add_card_with_courses(self):
+        from .models import CourseCard
+        response = self.client.post('/admin/core/coursecard/add/', {
+            'title': 'Плавание', 'courses': [self.seminar.pk, self.qualification.pk],
+            'description_course': self.qualification.pk, 'order': '0', 'is_active': 'on',
+            'courses-TOTAL_FORMS': '0', 'courses-INITIAL_FORMS': '0',
+            'courses-MIN_NUM_FORMS': '0', 'courses-MAX_NUM_FORMS': '1000',
+        })
+        self.assertEqual(response.status_code, 302, response.content.decode()[:600])
+        card = CourseCard.objects.get(title='Плавание')
+        self.assertEqual(card.ordered_courses, [self.seminar, self.qualification])
+        self.assertEqual(card.description_source, self.qualification)
+
+    def test_description_course_must_be_in_card(self):
+        other = make_course(title='Чужой курс', slug='alien')
+        response = self.client.post('/admin/core/coursecard/add/', {
+            'title': 'Плавание', 'courses': [self.seminar.pk], 'description_course': other.pk,
+            'order': '0', 'is_active': 'on',
+            'courses-TOTAL_FORMS': '0', 'courses-INITIAL_FORMS': '0',
+            'courses-MIN_NUM_FORMS': '0', 'courses-MAX_NUM_FORMS': '1000',
+        })
+        self.assertContains(response, 'Выберите курс, включённый в эту карточку')
+
+
+class LegacyCardsTests(TestCase):
+    def test_mapping_is_consistent(self):
+        from core.legacy_cards import LEGACY_CARDS
+        from core.legacy_directions import LEGACY_DIRECTIONS
+        slugs = [slug for _, members in LEGACY_CARDS for slug, _ in members]
+        self.assertEqual(len(slugs), len(set(slugs)), 'курс не может быть в двух карточках')
+        for title, members in LEGACY_CARDS:
+            directions = {LEGACY_DIRECTIONS.get(slug) for slug, _ in members}
+            self.assertEqual(len(directions), 1, f'у курсов карточки «{title}» разные направления')
+
+    def test_assign_course_cards(self):
+        from core.legacy_cards import assign_course_cards
+        from .models import CourseCard
+        pk = make_course(title='Грудничковое плавание. Работа в бассейне. Повышение квалификации',
+                         slug='gp-base-pool1onl')
+        seminar = make_course(title='Грудничковое плавание. Базовый модуль. Работа в бассейне. Семинар.',
+                              slug='gp-base-pool3')
+        lone = make_course(title='Новый курс', slug='brand-new')
+        self.assertEqual(assign_course_cards(Course, CourseCard), 2)
+        card = CourseCard.objects.get(title='Грудничковое плавание. Базовый модуль. Работа в бассейне')
+        self.assertEqual(card.ordered_courses, [seminar, pk])
+        self.assertEqual([c.variant_label for c in card.ordered_courses], ['Семинар', 'Повышение квалификации'])
+        lone.refresh_from_db()
+        self.assertEqual(lone.card.title, 'Новый курс')
+        self.assertEqual(assign_course_cards(Course, CourseCard), 0)  # повторный запуск ничего не меняет
+
+
+class VariantTitleTests(SimpleTestCase):
+    def test_split_variant_title(self):
+        self.assertEqual(split_variant_title('Недоношенные дети. Пакет "СТУДЕНТ"'),
+                         ('Недоношенные дети', 'Пакет «Студент»'))
+        self.assertEqual(split_variant_title('ЧАСТЬ 2. ПАКЕТ СПЕЦАЛИСТ'), ('ЧАСТЬ 2', 'Пакет «Специалист»'))
+        self.assertEqual(split_variant_title('Плавание. Повышение квалификации.'),
+                         ('Плавание', 'Повышение квалификации'))
+        self.assertEqual(split_variant_title('Гимнастика в воде. Семинар.'), ('Гимнастика в воде', 'Семинар'))
+        self.assertEqual(split_variant_title('Психосоматика (РАС)'), ('Психосоматика (РАС)', ''))
+
+    def test_sentence_case(self):
+        self.assertEqual(sentence_case('ГИДРОРЕАБИЛИТАЦИЯ ДЕТЕЙ. ВВЕДЕНИЕ'), 'Гидрореабилитация детей. Введение')
+        self.assertEqual(sentence_case('Обычный Заголовок'), 'Обычный Заголовок')

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static course_tags %}
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
@@ -14,35 +15,99 @@
 {% endblock %}
 
 {% block content %}
-<!-- Courses List -->
 <section class="py-5">
     <div class="container">
-        {% if courses %}
-            <div class="row g-4">
-                {% for course in courses %}
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        {% if course.image %}
-                        <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}" style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ course.title }}</h5>
-                            <p class="card-text text-muted small mb-2">{{ course.hours }} учебных часов</p>
-                            <p class="card-text">{{ course.description|truncatewords:20 }}</p>
-                            <p class="card-text"><small class="text-muted">Преподаватели: {{ course.teacher_names|default:'—' }}</small></p>
-                            <a href="{% url 'core:course_detail' slug=course.slug %}" class="btn btn-primary mt-auto">Подробнее</a>
+        <div class="row g-4">
+            <aside class="col-lg-3">
+                {% include "core/includes/course_filters.html" %}
+            </aside>
+
+            <div class="col-lg-9">
+                <!-- Сколько найдено, выбранные фильтры и сортировка -->
+                <div class="course-list-bar">
+                    <span class="course-list-found">{{ found_label }}</span>
+                    {% for label, url in active_filters %}
+                    <a class="course-list-chip" href="{{ url }}" title="Убрать фильтр">{{ label }} <i class="bi bi-x"></i></a>
+                    {% endfor %}
+                    {% if active_filters|length > 1 %}<a class="course-list-reset" href="{{ request.path }}">Сбросить всё</a>{% endif %}
+                    <label class="visually-hidden" for="course-sort">Сортировка</label>
+                    <select class="form-select form-select-sm course-list-sort" id="course-sort" name="sort" form="course-filters-form">
+                        {% for value, label in sort_choices %}
+                        <option value="{{ value }}"{% if value == sort %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Разделы по направлениям; варианты одного курса — строками внутри карточки -->
+                {% for section in sections %}
+                <section class="course-section" aria-labelledby="dir-{{ section.code }}">
+                    <header class="course-section-head">
+                        <span class="course-dir-icon course-dir--{{ section.code }}"><i class="bi {{ section.icon }}"></i></span>
+                        <div>
+                            <h2 class="course-section-title" id="dir-{{ section.code }}">{{ section.label }}</h2>
+                            <small>{{ section.count_label }}</small>
                         </div>
+                    </header>
+                    <div class="row g-3">
+                        {% for card in section.cards %}
+                        <div class="col-md-6">
+                            <article class="course-card">
+                                <div class="course-card-top">
+                                    {% if card.direction_label %}
+                                    <span class="course-dir-icon course-dir-icon--sm course-dir--{{ card.direction }}"><i class="bi {{ card.direction_icon }}"></i></span>
+                                    <span class="course-card-dir">{{ card.direction_label }}</span>
+                                    {% endif %}
+                                    <span class="course-card-types">
+                                        {% for code, label, icon in card.types %}<span class="course-type course-type--{{ code }}"><i class="bi {{ icon }}"></i>{{ label }}</span>{% endfor %}
+                                    </span>
+                                </div>
+                                <h3 class="course-card-title"><a href="{{ card.url }}">{{ card.title }}</a></h3>
+                                {% if card.description %}<p class="course-card-desc">{{ card.description }}</p>{% endif %}
+                                {% if card.teachers %}
+                                <ul class="course-card-teachers">
+                                    {% for teacher in card.teachers %}
+                                    <li>
+                                        <a href="{% url 'core:teacher_detail' slug=teacher.slug %}" class="course-teacher">
+                                            <span class="course-teacher-ava">{% if teacher.photo %}<img src="{{ teacher.photo.url }}" alt="" loading="lazy">{% else %}{{ teacher.initials }}{% endif %}</span>
+                                            <span>{{ teacher.full_name }}</span>
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                                <div class="course-card-options">
+                                    {% for variant in card.variants %}
+                                    <a class="course-option" href="{% url 'core:course_detail' slug=variant.slug %}">
+                                        <span class="course-option-text">
+                                            <span class="course-option-name">{{ variant.variant_name }}</span>
+                                            <span class="course-option-meta">{{ variant.hours_label }}{% if variant.base_price %} · {{ variant.base_price|rub }}{% endif %}</span>
+                                        </span>
+                                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            </article>
+                        </div>
+                        {% endfor %}
                     </div>
+                </section>
+                {% empty %}
+                <div class="course-list-empty">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    {% if filter_form.is_filtered %}
+                    <p>Ничего не нашлось. Попробуйте убрать часть фильтров.</p>
+                    <a class="btn btn-light btn-sm" href="{{ request.path }}">Сбросить фильтры</a>
+                    {% else %}
+                    <p>Курсы пока отсутствуют</p>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
-        {% else %}
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <p class="lead text-muted">Курсы пока отсутствуют</p>
-                </div>
-            </div>
-        {% endif %}
+        </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/course-filters.js' %}"></script>
 {% endblock %}

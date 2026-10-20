@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load course_tags %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <p class="header-page-title">Образовательные программы и семинары</p>
+    <div class="header-tabs">
+        <a href="{% url 'core:courses_list' %}" class="header-tab-btn">Программы</a>
+        <a href="{% url 'core:page_content' slug='timetable' %}" class="header-tab-btn">Расписание</a>
+        <a href="{% url 'core:page_content' slug='seminars' %}" class="header-tab-btn">Выездные семинары</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <article class="teacher-detail bg-white p-4 p-md-5 rounded shadow-sm">
+                    <header class="teacher-detail-head">
+                        {% if teacher.photo %}
+                        <img class="teacher-detail-photo" src="{{ teacher.photo.url }}" alt="{{ teacher.display_name }}">
+                        {% else %}
+                        <span class="teacher-detail-photo teacher-detail-photo--empty"><i class="bi bi-person"></i></span>
+                        {% endif %}
+                        <div>
+                            <p class="teacher-detail-role">Преподаватель</p>
+                            <h1 class="teacher-detail-name">{{ teacher.display_name }}</h1>
+                        </div>
+                    </header>
+
+                    {% if teacher.bio %}
+                    <div class="teacher-detail-bio">
+                        {{ teacher.bio|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                    <h2 class="teacher-detail-subtitle">Курсы преподавателя</h2>
+                    {% if courses %}
+                    <ul class="teacher-courses">
+                        {% for course in courses %}
+                        <li class="teacher-course">
+                            <a class="teacher-course-title" href="{% url 'core:course_detail' slug=course.slug %}">{{ course.title }}</a>
+                            <div class="teacher-course-meta">
+                                {% if course.course_type %}<span class="course-detail-kind">{{ course.get_course_type_display }}</span>{% endif %}
+                                <span>{{ course.hours_label }}</span>
+                                {% if course.base_price %}<span class="course-detail-price">{{ course.base_price|rub }}</span>{% endif %}
+                                {% with next=course.upcoming|first %}
+                                {% if next %}<span><i class="bi bi-calendar-event"></i> {{ next.date_label }}</span>{% endif %}
+                                {% endwith %}
+                            </div>
+                            {% if course.short_description %}
+                            <p class="teacher-course-desc">{{ course.short_description|truncatewords:30 }}</p>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">Сейчас у преподавателя нет открытых курсов.</p>
+                    {% endif %}
+                </article>
+
+                <div class="mt-4">
+                    <a href="{% url 'core:courses_list' %}" class="btn btn-outline-light">
+                        <i class="bi bi-arrow-left"></i> Все программы
+                    </a>
+                    <a href="{% url 'core:page_content' slug='timetable' %}" class="btn btn-primary ms-2">
+                        Расписание курсов
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

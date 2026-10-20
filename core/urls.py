@@ -1,12 +1,21 @@
-from django.urls import path
+from django.urls import path, re_path
+from django.views.generic import RedirectView
+
 from . import views
 
 app_name = 'core'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('courses/', views.courses_list, name='courses_list'),
-    path('courses/<slug:slug>/', views.course_detail, name='course_detail'),
+    # Курсы — по тем же адресам, что и на старом сайте: grudnichkovoe-plavanie.ru/education/courses/<адрес>/
+    path('education/courses/', views.courses_list, name='courses_list'),
+    path('education/courses/<slug:slug>/', views.course_detail, name='course_detail'),
+    # ссылки старого сайта вели на конкретную дату: /education/courses/<адрес>/<ддммгггг>
+    re_path(r'^education/courses/(?P<slug>[-a-zA-Z0-9_]+)/(?P<legacy>\d+)/?$', views.legacy_course_redirect),
+    path('education/teachers/<slug:slug>/', views.teacher_detail, name='teacher_detail'),
+    # прежние адреса нового сайта
+    path('courses/', RedirectView.as_view(pattern_name='core:courses_list', permanent=True)),
+    path('courses/<slug:slug>/', views.legacy_course_redirect),
     path('specialists/', views.representatives_list, name='specialists_list'),
     path('partners/', views.partners_list, name='partners_list'),
     path('news/', views.news_list, name='news_list'),

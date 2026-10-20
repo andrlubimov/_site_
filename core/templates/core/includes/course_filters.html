@@ -1,0 +1,46 @@
+{% load course_tags %}
+{# Блок фильтров курсов: страницы «Программы» и «Расписание». Отправка — GET на ту же страницу. #}
+{# Частые группы всегда раскрыты, редкие свёрнуты (раскрываются сами, если в них что-то выбрано). #}
+<details class="course-filters-wrap" open>
+    <summary class="course-filters-summary">
+        <i class="bi bi-funnel"></i> Фильтры{% if filter_form.is_filtered %} <span class="course-filters-badge">выбраны</span>{% endif %}
+    </summary>
+    <form class="course-filters" id="course-filters-form" method="get" data-autosubmit>
+        {% for field in filter_form %}
+        {% if field.name == 'q' %}
+        <div class="course-filter-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <label class="visually-hidden" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+        </div>
+        {% elif field.name == 'age' or field.name == 'health' or field.name == 'venue' or field.name == 'skill' %}
+        <details class="course-filter course-filter--collapsible"{% if field.value %} open{% endif %}>
+            <summary>{{ field.label }} <i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+            <div class="course-filter-options">
+                {% for option in field %}
+                <label class="course-filter-option">{{ option.tag }} <span>{% with icon=option.data.value|filter_icon:field.name %}{% if icon %}<i class="bi {{ icon }}" aria-hidden="true"></i>{% endif %}{% endwith %}{{ option.choice_label }}</span></label>
+                {% endfor %}
+            </div>
+        </details>
+        {% else %}
+        <fieldset class="course-filter">
+            <legend>{{ field.label }}</legend>
+            {% if field.name == 'teacher' %}
+            {{ field }}
+            {% else %}
+            <div class="course-filter-options">
+                {% for option in field %}
+                <label class="course-filter-option">{{ option.tag }} <span>{% with icon=option.data.value|filter_icon:field.name %}{% if icon %}<i class="bi {{ icon }}" aria-hidden="true"></i>{% endif %}{% endwith %}{{ option.choice_label }}</span></label>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </fieldset>
+        {% endif %}
+        {% endfor %}
+        <div class="course-filters-actions">
+            {# фильтры применяются сразу (js/course-filters.js); кнопка — для браузеров без JS #}
+            <noscript><button type="submit" class="btn btn-primary btn-sm">Показать</button></noscript>
+            {% if filter_form.is_filtered %}<a class="course-filters-reset" href="{{ request.path }}">Сбросить все фильтры</a>{% endif %}
+        </div>
+    </form>
+</details>

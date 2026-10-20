@@ -4,13 +4,22 @@
     python manage.py import_old_courses --dry-run  # только показать, что будет импортировано
 
 Берёт все записи со страницы /education/timetable, для каждой даты открывает страницу
-курса и переносит: тип, название, часы, описание, «для кого», программу, преподавателей
-(с фотографиями), место проведения и стоимость. Повторный запуск обновляет те же записи
-(курс ищется по slug старого сайта, дата проведения — по курсу и дате начала).
+курса и переносит: название, часы, описание (краткое + развёрнутое), «для кого», программу,
+преподавателей (с фотографиями), тип курса, базовую стоимость и расписание.
+
+Тип курса — по формату дат на старом сайте: «Онлайн…» — онлайн, «Дистанционное обучение…» —
+дистанционный, адрес — очный. У очных и онлайн-курсов каждая дата становится записью расписания
+(адрес — в комментарии), у дистанционных — одна запись со сроком доступа в днях.
+
+Повторный запуск обновляет те же записи: курс ищется по адресу (slug) старого сайта, запись
+расписания — по курсу и дате начала. Формат и комментарий, изменённые в админке, не затираются.
+Направление, место, навыки, возраст и особенности здоровья на старом сайте не указаны —
+их нужно заполнить в админке.
 """
 import html
 import re
 import time
+from collections import Counter
 from datetime import datetime
 from io import BytesIO
 from urllib.error import URLError
@@ -21,7 +30,9 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from core.models import Course, CourseSession, CourseTeacher, Teacher
+from core.legacy_cards import assign_course_cards
+from core.legacy_directions import LEGACY_DIRECTIONS
+from core.models import Course, CourseCard, CourseSchedule, CourseTeacher, Teacher
 
 BASE_URL = 'https://www.grudnichkovoe-plavanie.ru/'
 USER_AGENT = 'Mozilla/5.0 (course import)'
@@ -48,6 +59,45 @@ def inline_text(fragment):
 def nice_case(text):
     """«ОНЛАЙН» → «Онлайн», «ДИСТАНЦИОННОЕ ОБУЧЕНИЕ» → «Дистанционное обучение»."""
     return text.capitalize() if text.isupper() else text
+
+
+SHORT_DESCRIPTION_LIMIT = 320
+
+
+def split_description(text, limit=SHORT_DESCRIPTION_LIMIT):
+    """Краткое описание — первые предложения в пределах limit символов, развёрнутое — продолжение."""
+    text = (text or '').strip()
+    if len(text) <= limit:
+        return text, ''
+    ends = [m.end() for m in re.finditer(r'[.!?…](?=\s)', text)]
+    fitting = [e for e in ends if e <= limit]
+    if fitting:
+        cut = fitting[-1]
+    elif ends and ends[0] <= 2 * limit:
+        cut = ends[0]  # первое предложение длинное, но берём его целиком
+    else:
+        words = text[:limit].rsplit(' ', 1)[0]
+        return words.rstrip(' ,;:—-') + '…', text  # не режем предложение: полный текст — в развёрнутом
+    return text[:cut].strip(), text[cut:].strip()
+
+
+def location_kind(location):
+    """Тип курса по месту проведения со старого сайта: online / distance / in_person"""
+    loc = (location or '').strip().lower()
+    if not loc:
+        return ''
+    if loc.startswith('онлайн'):
+        return Course.TYPE_ONLINE
+    if loc.startswith('дистанц'):
+        return Course.TYPE_DISTANCE
+    return Course.TYPE_IN_PERSON
+
+
+def parse_full_price(price):
+    """«22 800 руб, для членов Ассоциации — 18 240 руб» → 22800 (полная цена)"""
+    m = re.match(r'\s*([\d\s\u00a0]+)', price or '')
+    digits = re.sub(r'\D', '', m.group(1)) if m else ''
+    return int(digits) if digits else None
 
 
 def parse_date(value):
@@ -181,7 +231,7 @@ class Command(BaseCommand):
             return
 
         photo_cache = {}
-        stats = {'courses_new': 0, 'courses_upd': 0, 'sessions_new': 0, 'sessions_upd': 0, 'teachers_new': 0}
+        stats = {'courses_new': 0, 'courses_upd': 0, 'schedules_new': 0, 'schedules_upd': 0, 'teachers_new': 0}
         # Группируем даты по курсам, сохраняя порядок первого появления в расписании
         by_course = {}
         for (slug, start), data in pages.items():
@@ -190,17 +240,27 @@ class Command(BaseCommand):
         with transaction.atomic():
             for order, (slug, sessions) in enumerate(by_course.items(), 1):
                 data = sessions[0][1]  # описание курса одинаково на страницах всех его дат
+                kinds = Counter(location_kind(d['location']) for _, d in sessions if location_kind(d['location']))
+                prices = Counter(parse_full_price(d['price']) for _, d in sessions if parse_full_price(d['price']))
+                course_type = kinds.most_common(1)[0][0] if kinds else ''
+                base_price = prices.most_common(1)[0][0] if prices else None
+                short, full = split_description(data['description'])
                 course, created = Course.objects.update_or_create(slug=slug, defaults={
                     'title': data['title'] or slug,
-                    'kind': data['kind'],
+                    'short_description': short,
+                    'full_description': full,
                     'hours': data['hours'] or unique[(slug, sessions[0][0])]['hours'],
-                    'description': data['description'],
                     'audience': data['audience'],
                     'program': data['program'],
+                    'course_type': course_type,
+                    'base_price': base_price,
                     'order': order,
                     'is_active': True,
                 })
                 stats['courses_new' if created else 'courses_upd'] += 1
+                if not course.direction and slug in LEGACY_DIRECTIONS:
+                    course.direction = LEGACY_DIRECTIONS[slug]  # направления на старом сайте нет
+                    course.save(update_fields=['direction'])
 
                 for position, t in enumerate(data['teachers']):
                     teacher, t_created = Teacher.objects.get_or_create(
@@ -211,20 +271,54 @@ class Command(BaseCommand):
                     CourseTeacher.objects.update_or_create(
                         course=course, teacher=teacher, defaults={'order': position})
 
-                for start, session_data in sessions:
-                    end_date = unique[(slug, start)]['end']
-                    _, s_created = CourseSession.objects.update_or_create(
-                        course=course, start_date=start, defaults={
-                            'end_date': end_date if end_date != start else None,
-                            'location': session_data['location'],
-                            'price': session_data['price'],
-                        })
-                    stats['sessions_new' if s_created else 'sessions_upd'] += 1
+                def override(price):
+                    return price if price and price != base_price else None
+
+                dated = sessions
+                if course_type == Course.TYPE_DISTANCE:
+                    # у дистанционных курсов дат нет — одна запись со сроком доступа
+                    distance = [(st, d) for st, d in sessions if location_kind(d['location']) == Course.TYPE_DISTANCE]
+                    dated = [(st, d) for st, d in sessions if location_kind(d['location']) != Course.TYPE_DISTANCE]
+                    days = Counter((unique[(slug, st)]['end'] - st).days + 1 for st, _ in distance)
+                    access = next((n for n, _ in days.most_common() if n > 0), None)
+                    price = Counter(parse_full_price(d['price']) for _, d in distance).most_common(1)[0][0]
+                    self.upsert_schedule(stats, course, None, {
+                        'access_days': access, 'price_override': override(price),
+                    }, on_create={'format': 'group'})
+
+                for start, session_data in dated:
+                    location = session_data['location']
+                    in_moscow = location.strip().lower().startswith('москва')
+                    away = location_kind(location) == Course.TYPE_IN_PERSON and not in_moscow
+                    self.upsert_schedule(stats, course, start, {
+                        'end_date': unique[(slug, start)]['end'],
+                        'price_override': override(parse_full_price(session_data['price'])),
+                    }, on_create={
+                        'format': 'away' if away else 'group',
+                        'comment': location if location_kind(location) != Course.TYPE_DISTANCE else '',
+                    })
+
+        # новые курсы — по карточкам страницы «Программы» (варианты одного курса — вместе)
+        stats['cards_new'] = assign_course_cards(Course, CourseCard)
 
         self.stdout.write(self.style.SUCCESS(
             f'Готово. Курсы: новых {stats["courses_new"]}, обновлено {stats["courses_upd"]}. '
-            f'Даты: новых {stats["sessions_new"]}, обновлено {stats["sessions_upd"]}. '
-            f'Новых преподавателей: {stats["teachers_new"]}.'))
+            f'Записи расписания: новых {stats["schedules_new"]}, обновлено {stats["schedules_upd"]}. '
+            f'Новых преподавателей: {stats["teachers_new"]}. Новых карточек курсов: {stats["cards_new"]}.'))
+
+    def upsert_schedule(self, stats, course, start_date, values, on_create):
+        """Запись расписания по курсу и дате начала (у дистанционных — без даты).
+        Формат и комментарий задаются только при создании, чтобы не затирать правки из админки."""
+        schedule = (CourseSchedule.objects.filter(course=course, start_date=start_date)
+                    .order_by('pk').first())
+        if schedule is None:
+            CourseSchedule.objects.create(course=course, start_date=start_date, **values, **on_create)
+            stats['schedules_new'] += 1
+        else:
+            for field, value in values.items():
+                setattr(schedule, field, value)
+            schedule.save()
+            stats['schedules_upd'] += 1
 
     def save_photo(self, teacher, url, cache):
         if url not in cache:

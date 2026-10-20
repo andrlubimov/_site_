@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static course_tags %}
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
@@ -31,8 +31,13 @@
 <!-- Page Content -->
 <section class="py-5">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-10 mx-auto">
+        <div class="row g-4">
+            {% if content.slug == 'timetable' %}
+            <aside class="col-lg-3">
+                {% include "core/includes/course_filters.html" %}
+            </aside>
+            {% endif %}
+            <div class="{% if content.slug == 'timetable' %}col-lg-9{% else %}col-lg-10 mx-auto{% endif %}">
                 {% if content.content %}
                 <div class="page-content bg-white p-4 rounded shadow-sm">
                     {{ content.content|linebreaks }}
@@ -43,10 +48,29 @@
                 <div class="timetable-calendar bg-white p-3 p-md-4 rounded shadow-sm{% if content.content %} mt-4{% endif %}">
                     <div id="course-calendar"></div>
                     {% if not calendar_events %}
-                    <p class="text-muted text-center mt-3 mb-0">Даты ближайших курсов пока не опубликованы.</p>
+                    <p class="text-muted text-center mt-3 mb-0">{% if filter_form.is_filtered %}По выбранным фильтрам курсов с датами нет.{% else %}Даты ближайших курсов пока не опубликованы.{% endif %}</p>
                     {% endif %}
                 </div>
                 {{ calendar_events|json_script:"course-calendar-events" }}
+
+                {% if distance_schedules %}
+                <div class="timetable-distance bg-white p-3 p-md-4 rounded shadow-sm mt-4">
+                    <h2 class="timetable-distance-title">Дистанционное обучение</h2>
+                    <p class="text-muted">Дистанционные курсы проходят без фиксированных дат — для каждого указан срок доступа к материалам.</p>
+                    <ul class="timetable-distance-list">
+                        {% for s in distance_schedules %}
+                        <li>
+                            <a href="{% url 'core:course_detail' slug=s.course.slug %}">{{ s.course.title }}</a>
+                            <span class="timetable-distance-meta">
+                                {% if s.date_label %}<span>{{ s.date_label }}</span>{% endif %}
+                                <span>{{ s.course.hours_label }}</span>
+                                {% if s.price %}<span class="course-detail-price">{{ s.price|rub }}</span>{% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
                 {% endif %}
 
 
@@ -67,5 +91,6 @@
 <script src="{% static 'vendor/fullcalendar/locale-ru.global.js' %}"></script>
 <script src="{% static 'vendor/fullcalendar/bootstrap5.global.js' %}"></script>
 <script src="{% static 'js/course-calendar.js' %}"></script>
+<script src="{% static 'js/course-filters.js' %}"></script>
 {% endif %}
 {% endblock %}

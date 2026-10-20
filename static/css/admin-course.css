@@ -1,0 +1,44 @@
+/* Админка курсов и расписания */
+
+/* Галочки «Возраст детей» и «Особенности здоровья» в строку */
+#id_child_ages,
+#id_health_features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+}
+
+#id_child_ages label,
+#id_health_features label {
+    width: auto;
+}
+
+/* Длинные названия курсов в списках переносятся, а не выталкивают колонки за край */
+#result_list .field-title,
+#result_list .field-course_short {
+    white-space: normal;
+    min-width: 240px;
+}
+
+/* Блок «Актуальные записи» в карточке курса */
+.course-admin-schedule {
+    margin: 0 0 0.5rem;
+    padding-left: 1.1rem;
+}
+
+.course-admin-schedule li {
+    margin-bottom: 0.2rem;
+}
+
+.course-admin-schedule-all {
+    margin-left: 1.5rem;
+}
+
+/* Подсказка о том, какие даты заполнять */
+.schedule-type-hint {
+    display: inline-block;
+    padding: 0.4rem 0.75rem;
+    border-left: 3px solid #1fa3d6;
+    background: rgba(31, 163, 214, 0.08);
+    font-size: 0.85rem;
+}

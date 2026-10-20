@@ -39,11 +39,14 @@
         var box = document.createElement('div');
         box.className = 'course-pop';
         line(box, 'bi-calendar-event', p.dates);
-        line(box, 'bi-clock', p.hours ? p.hours + ' учебных часов' : '');
+        line(box, 'bi-people', p.inPersonDays ? 'Очные занятия: ' + p.inPersonDays : '');
+        line(box, 'bi-journal-text', p.materials ? 'Доступ к материалам: ' + p.materials : '');
+        line(box, 'bi-clock', p.time ? 'Занятия: ' + p.time : '');
+        line(box, 'bi-mortarboard', [p.type, p.format].filter(Boolean).join(' · '));
+        line(box, 'bi-hourglass-split', p.hours);
         line(box, 'bi-person', p.teacher);
-        line(box, 'bi-geo-alt', p.location);
         line(box, 'bi-cash-coin', p.price);
-        line(box, 'bi-info-circle', p.note);
+        line(box, 'bi-info-circle', p.comment);
         if (p.description) {
             var desc = document.createElement('p');
             desc.className = 'course-pop-desc';

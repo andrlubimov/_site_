@@ -324,15 +324,21 @@ main > section:not(.bg-light):not(.bg-white)::after {
    FOOTER
    ============================================================ */
 .site-footer {
+    position: relative;
+    z-index: 2; /* перекрывает зубчатый край последней синей секции */
     background-color: var(--footer-bg-color);
     color: white;
     margin-top: 0;
 }
 
+/* Волна лежит поверх низа последней секции, без отдельной полосы */
 .footer-wave {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% - 1px);
     line-height: 0;
-    overflow: hidden;
-    background: white;
+    pointer-events: none;
 }
 
 .footer-wave svg {
@@ -341,10 +347,35 @@ main > section:not(.bg-light):not(.bg-white)::after {
     height: 70px;
 }
 
-.footer-wave-image {
-    display: block;
-    width: 100%;
-    height: auto;
+.footer-wave-back {
+    fill: var(--footer-bg-color);
+    opacity: 0.45;
+}
+
+.footer-wave-front {
+    fill: var(--footer-bg-color);
+}
+
+.footer-wave-foam {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.35);
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke; /* толщина линии не зависит от растяжения волны */
+}
+
+/* место под волну, чтобы она не наезжала на содержимое */
+body:has(.footer-wave) main > section:last-child {
+    padding-bottom: calc(3rem + 40px) !important;
+}
+
+body:has(.footer-wave) main > section:last-child::after {
+    display: none;
+}
+
+@media (max-width: 575.98px) {
+    .footer-wave svg {
+        height: 44px;
+    }
 }
 
 .footer-body {
@@ -1053,18 +1084,11 @@ main > section:not(.bg-light):not(.bg-white)::after {
 }
 
 /* ============================================================
-   COURSE DETAIL (/courses/<slug>/)
+   COURSE DETAIL (/education/courses/<slug>/)
+   Слева — краткая информация (.course-aside), справа — основной блок (.course-detail)
    ============================================================ */
 .course-detail {
     color: #2a3540;
-}
-
-.course-detail-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 1.5rem;
 }
 
 .course-detail-kind {
@@ -1075,24 +1099,127 @@ main > section:not(.bg-light):not(.bg-white)::after {
     color: #1f8fa6;
 }
 
+.course-detail-price {
+    color: #198754;
+    font-weight: 600;
+}
+
+.course-chip {
+    display: inline-block;
+    margin: 0 0.35rem 0.35rem 0;
+    padding: 0.1rem 0.65rem;
+    border-radius: 20px;
+    background: #e8f5fb;
+    color: #0f6f93;
+    font-size: 0.85rem;
+}
+
+/* --- Боковой блок с краткой информацией --- */
+.course-aside {
+    background: #fff;
+    color: #2a3540;
+    border-radius: 28px;
+    padding: 1.25rem 1.25rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+@media (min-width: 992px) {
+    .course-aside {
+        position: sticky;
+        top: 1.5rem;
+    }
+}
+
+.course-aside-list {
+    margin: 0;
+}
+
+.course-aside-row {
+    display: grid;
+    grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: baseline;
+    padding: 0.55rem 0;
+}
+
+.course-aside-row + .course-aside-row {
+    border-top: 1px solid #edf3f7;
+}
+
+.course-aside-row dt {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #55636e;
+}
+
+.course-aside-row dd {
+    margin: 0;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.course-aside-teacher {
+    display: block;
+    color: #0f6f93;
+    font-weight: 500;
+}
+
+.course-aside-price {
+    font-weight: 600;
+    color: #198754;
+}
+
+.course-aside .course-chip {
+    margin: 0 0.25rem 0.25rem 0;
+    font-size: 0.78rem;
+}
+
+/* --- Основной блок --- */
+.course-detail-title {
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    font-weight: 600;
+    text-align: center;
+    color: #1b2a33;
+    margin-bottom: 1.25rem;
+}
+
+.course-detail-lead {
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: #1b2a33;
+    margin-bottom: 1.5rem;
+}
+
 .course-detail-teachers {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.25rem 2rem;
+    gap: 0.75rem 1rem;
     margin-bottom: 1.75rem;
 }
 
 .course-detail-teacher {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.75rem;
+    padding: 0.4rem 1.25rem 0.4rem 0.4rem;
+    border: 1px solid #e3eef5;
+    border-radius: 60px;
+    color: inherit;
     line-height: 1.3;
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.course-detail-teacher:hover {
+    color: inherit;
+    border-color: #1fa3d6;
+    box-shadow: 0 4px 12px rgba(0, 60, 90, 0.1);
 }
 
 .course-detail-teacher img,
 .course-detail-teacher-placeholder {
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     object-fit: cover;
     flex: none;
@@ -1104,64 +1231,23 @@ main > section:not(.bg-light):not(.bg-white)::after {
     justify-content: center;
     background: #e3eef5;
     color: #8aa5b5;
-    font-size: 2rem;
-}
-
-.course-detail-sessions {
-    background: #f0f6fb;
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.75rem;
-}
-
-.course-detail-sessions h5 {
-    font-size: 1rem;
-    margin-bottom: 0.6rem;
-}
-
-.course-detail-sessions ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.course-detail-sessions li {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem 0.6rem;
-    padding: 0.25rem 0;
-}
-
-.course-detail-sessions .bi {
-    color: #1f8fa6;
-}
-
-.course-detail-badge {
-    background: #1f8fa6;
-    color: #fff;
-    border-radius: 20px;
-    padding: 0.05rem 0.6rem;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.course-detail-price {
-    color: #198754;
-    font-weight: 600;
-}
-
-.course-description p,
-.course-detail-program p {
-    text-align: justify;
+    font-size: 1.8rem;
 }
 
 .course-detail-audience {
     border-left: 4px solid #1fa3d6;
     background: #f7fbfd;
     padding: 0.75rem 1rem;
-    margin: 1.25rem 0;
+    margin: 0 0 1.75rem;
+}
+
+.course-detail-audience h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.course-detail-audience p {
     font-style: italic;
 }
 
@@ -1169,16 +1255,857 @@ main > section:not(.bg-light):not(.bg-white)::after {
     margin-bottom: 0;
 }
 
-.course-detail-program {
-    margin-top: 2rem;
+.course-description {
+    margin-bottom: 1.75rem;
 }
 
-.course-detail-program h5 {
-    margin-bottom: 1rem;
+.course-description p,
+.course-program-body p {
+    text-align: justify;
+}
+
+/* Программа курса: свёрнута до нескольких строк (см. course-detail.js) */
+.course-program {
+    border: 1px solid #e3eef5;
+    border-radius: 16px;
+    padding: 1.25rem 1.25rem 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.course-program h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.course-program-body {
+    position: relative;
+}
+
+.course-program-body.is-collapsed {
+    max-height: 240px; /* совпадает с COLLAPSED_HEIGHT в course-detail.js */
+    overflow: hidden;
+}
+
+.course-program-body.is-collapsed::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 80px;
+    background: linear-gradient(rgba(255, 255, 255, 0), #fff);
+}
+
+.course-program-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.4rem 1rem;
+    border: 1px solid #cfe3ee;
+    border-radius: 30px;
+    background: #f7fbfd;
+    color: #0f6f93;
+    font-weight: 500;
+}
+
+.course-program-toggle:hover {
+    background: #e8f5fb;
+}
+
+.course-program-toggle[hidden] {
+    display: none;
+}
+
+/* Документ по окончании курса */
+.course-detail-doc {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 1.5rem;
+    padding: 0.75rem 0;
+    margin-bottom: 1.5rem;
+    border-top: 1px solid #e3eef5;
+    border-bottom: 1px solid #e3eef5;
+}
+
+.course-detail-doc-label {
+    font-weight: 600;
+}
+
+.course-detail-doc-list {
+    flex: 1 1 260px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.course-detail-doc-list small {
+    color: #6c7a86;
+}
+
+/* Ближайшие даты проведения */
+.course-dates {
+    border: 1px solid #e3eef5;
+    border-radius: 24px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.course-dates-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.course-dates-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.course-dates-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding: 0.75rem 0;
+}
+
+.course-dates-row + .course-dates-row {
+    border-top: 1px solid #edf3f7;
+}
+
+.course-dates-info {
+    flex: 1 1 260px;
+}
+
+.course-dates-label {
+    font-size: 1.02rem;
+}
+
+.course-dates-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 1rem;
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    color: #55636e;
+}
+
+.course-dates-meta .bi {
+    color: #1f8fa6;
+}
+
+.course-dates-comment {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    color: #55636e;
+}
+
+.course-signup-btn {
+    min-width: 150px;
+}
+
+.course-dates-empty {
+    margin: 0;
+    text-align: center;
+    color: #6c7a86;
 }
 
 .course-detail-signup {
-    margin-top: 2rem;
     padding-top: 1.25rem;
     border-top: 1px solid #e3eef5;
+}
+
+/* ============================================================
+   TEACHER (/education/teachers/<slug>/)
+   ============================================================ */
+.teacher-detail {
+    color: #2a3540;
+}
+
+.teacher-detail-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.teacher-detail-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: none;
+    box-shadow: 0 6px 18px rgba(0, 40, 70, 0.15);
+}
+
+.teacher-detail-photo--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e3eef5;
+    color: #8aa5b5;
+    font-size: 4rem;
+}
+
+.teacher-detail-role {
+    margin: 0 0 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1f8fa6;
+}
+
+.teacher-detail-name {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    color: #1b2a33;
+}
+
+.teacher-detail-bio {
+    margin-bottom: 2rem;
+}
+
+.teacher-detail-bio p {
+    text-align: justify;
+}
+
+.teacher-detail-subtitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.teacher-courses {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.teacher-course {
+    padding: 1rem 0;
+    border-top: 1px solid #e3eef5;
+}
+
+.teacher-course-title {
+    font-weight: 600;
+    font-size: 1.02rem;
+    color: #0f6f93;
+    text-decoration: none;
+}
+
+.teacher-course-title:hover {
+    text-decoration: underline;
+}
+
+.teacher-course-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1rem;
+    margin: 0.3rem 0;
+    font-size: 0.88rem;
+    color: #55636e;
+}
+
+.teacher-course-meta .bi {
+    color: #1f8fa6;
+}
+
+.teacher-course-desc {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #3d4a55;
+}
+
+/* --- Расписание: дистанционные курсы --- */
+.timetable-distance {
+    color: #212529;
+}
+
+.timetable-distance-title {
+    font-size: 1.35rem;
+    margin-bottom: 0.25rem;
+}
+
+.timetable-distance-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.timetable-distance-list li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid #e3eef5;
+}
+
+.timetable-distance-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1rem;
+    font-size: 0.9rem;
+    color: #55636e;
+}
+
+/* ============================================================
+   COURSE FILTERS + COURSES LIST (/education/courses/, /page/timetable/)
+   ============================================================ */
+:root {
+    --course-brand: #1e6c8f;
+    --course-brand-2: #1a7b94;
+    --course-ink: #1b2a33;
+    --course-text: #2a3540;
+    --course-muted: #55636e;
+    --course-muted-2: #6c7a86;
+    --course-line: #edf3f7;
+    --course-chip: #e8f5fb;
+    --course-soft: #f0f6fb;
+    --course-link: #0f6f93;
+}
+
+/* --- Блок фильтров --- */
+.course-filters-wrap {
+    background: #fff;
+    color: var(--course-text);
+    border-radius: 28px;
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+@media (min-width: 992px) {
+    .course-filters-wrap {
+        position: sticky;
+        top: 1.5rem;
+    }
+}
+
+.course-filters-summary {
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.course-filters-summary::-webkit-details-marker {
+    display: none;
+}
+
+.course-filters-badge {
+    margin-left: 0.35rem;
+    padding: 0 0.5rem;
+    border-radius: 10px;
+    background: var(--course-chip);
+    color: var(--course-link);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+@media (min-width: 992px) {
+    .course-filters-summary {
+        display: none; /* на компьютере фильтры всегда раскрыты */
+    }
+}
+
+.course-filter {
+    margin: 0;
+    padding: 0.7rem 0;
+    border: 0;
+}
+
+.course-filter + .course-filter {
+    border-top: 1px solid var(--course-line);
+}
+
+.course-filter legend,
+.course-filter--collapsible > summary {
+    margin-bottom: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--course-muted-2);
+}
+
+.course-filter--collapsible > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+    cursor: pointer;
+    list-style: none;
+}
+
+.course-filter--collapsible > summary::-webkit-details-marker {
+    display: none;
+}
+
+.course-filter--collapsible > summary .bi {
+    transition: transform 0.2s;
+}
+
+.course-filter--collapsible[open] > summary .bi {
+    transform: rotate(180deg);
+}
+
+.course-filter--collapsible[open] > .course-filter-options {
+    padding-top: 0.5rem;
+}
+
+.course-filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+/* Варианты фильтра — «таблетки»: чекбокс скрыт визуально, но доступен с клавиатуры */
+.course-filter-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.course-filter-option input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.course-filter-option span {
+    display: inline-block;
+    padding: 0.28rem 0.75rem;
+    border: 1px solid #d5e5ec;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    line-height: 1.3;
+    color: var(--course-text);
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
+}
+
+.course-filter-option:hover span {
+    border-color: var(--course-brand-2);
+}
+
+.course-filter-option input:checked + span {
+    background: var(--course-brand);
+    border-color: var(--course-brand);
+    color: #fff;
+}
+
+.course-filter-option input:focus-visible + span {
+    outline: 2px solid var(--course-brand-2);
+    outline-offset: 2px;
+}
+
+.course-filter .form-select {
+    border-radius: 999px;
+    border-color: #d5e5ec;
+    font-size: 0.85rem;
+}
+
+.course-filters-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.course-filters-actions:empty {
+    display: none;
+}
+
+.course-filters-reset {
+    font-size: 0.88rem;
+    color: var(--course-link);
+}
+
+/* --- Строка над списком: сколько найдено и выбранные фильтры --- */
+.course-list-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.course-list-found {
+    font-weight: 700;
+    color: var(--course-ink);
+    margin-right: 0.25rem;
+}
+
+.course-list-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.15rem 0.4rem 0.15rem 0.7rem;
+    border-radius: 999px;
+    background: var(--course-chip);
+    color: #0b5675;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.course-list-chip:hover {
+    background: #d3ebf5;
+    color: #0b5675;
+}
+
+.course-list-reset {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--course-link);
+}
+
+/* --- Значок направления --- */
+.course-dir-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    background: #e3f0f6;
+    color: #1e6c8f;
+}
+
+.course-dir-icon--sm {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.course-dir--swimming   { background: #e3f0f6; color: #1e6c8f; }
+.course-dir--hydrorehab { background: #fdf0e6; color: #8a3d10; }
+.course-dir--land       { background: #e3f4ef; color: #0b6b5a; }
+.course-dir--management { background: #eef1f3; color: #4a5560; }
+
+/* --- Карточка курса --- */
+.course-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* карточки в строке одной высоты */
+    padding: 1.15rem 1.25rem 1.25rem;
+    background: #fff;
+    color: var(--course-text);
+    border-radius: 22px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.course-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 30, 45, 0.22);
+}
+
+.course-card-top {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.65rem;
+}
+
+.course-card-dir {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--course-muted-2);
+}
+
+.course-card-types {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    margin-left: auto;
+}
+
+.course-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.course-type--in_person { background: var(--course-brand); color: #fff; }
+.course-type--distance  { background: var(--course-chip); color: #0b5675; }
+.course-type--online    { background: #fff; color: #0b5675; box-shadow: inset 0 0 0 1.5px var(--course-brand-2); }
+.course-type--blended   { background: #fdf0e6; color: #8a3d10; }
+
+.course-card-title {
+    margin: 0 0 0.45rem;
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.course-card-title a {
+    color: var(--course-ink);
+    text-decoration: none;
+}
+
+.course-card-title a:hover {
+    color: var(--course-link);
+}
+
+.course-card-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--course-muted);
+}
+
+.course-card-teachers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 0 0 0.85rem;
+    padding: 0;
+    list-style: none;
+}
+
+.course-teacher {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--course-link);
+    text-decoration: none;
+}
+
+.course-teacher:hover span:last-child {
+    text-decoration: underline;
+}
+
+.course-teacher-ava {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #cfe6ef;
+    color: #0b5675;
+    font-size: 0.7rem;
+    font-weight: 700;
+    object-fit: cover;
+}
+
+.course-card-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: auto; /* варианты прижаты к низу карточки */
+}
+
+.course-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: var(--course-soft);
+    color: var(--course-ink);
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.course-option:hover {
+    border-color: var(--course-brand-2);
+    background: #fff;
+    color: var(--course-ink);
+}
+
+.course-option-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.course-option-meta {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--course-muted);
+    text-align: right;
+}
+
+.course-option .bi {
+    color: var(--course-brand);
+    transition: transform 0.15s;
+}
+
+.course-option:hover .bi {
+    transform: translateX(3px);
+}
+
+.course-card--empty {
+    align-items: center;
+    text-align: center;
+}
+
+@media (max-width: 575.98px) {
+    .course-card-top {
+        flex-wrap: wrap;
+    }
+
+    .course-option {
+        flex-wrap: wrap;
+    }
+
+    .course-option-meta {
+        margin-left: 0;
+        flex-basis: 100%;
+        order: 3;
+        text-align: left;
+    }
+
+    .course-option .bi {
+        margin-left: auto;
+    }
+}
+
+/* --- Страница «Программы», вариант B: поиск, сортировка, разделы по направлениям --- */
+.course-filter-search {
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.course-filter-search .bi {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--course-muted-2);
+    pointer-events: none;
+}
+
+.course-filter-search input {
+    padding-left: 38px;
+    border-radius: 999px;
+    border-color: #d5e5ec;
+}
+
+.course-filter-option span .bi {
+    margin-right: 0.3rem;
+}
+
+.course-list-sort {
+    width: auto;
+    margin-left: auto;
+    border-radius: 999px;
+    border-color: #d5e5ec;
+    font-size: 0.85rem;
+}
+
+.course-list-reset + .course-list-sort {
+    margin-left: 0.5rem;
+}
+
+.course-section {
+    margin-bottom: 2rem;
+}
+
+.course-section-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: #fff;
+}
+
+.course-section-head .course-dir-icon {
+    background: #fff;
+}
+
+.course-section-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.course-section-head small {
+    opacity: 0.85;
+}
+
+.course-dir--other { background: #eef1f3; color: #4a5560; }
+
+/* преподаватели: фото рядом с именем, крупно — чтобы было видно лицо */
+.course-card .course-teacher-ava {
+    width: 44px;
+    height: 44px;
+    overflow: hidden;
+    font-size: 0.85rem;
+}
+
+.course-card .course-teacher-ava img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* вариант курса: название, под ним часы и цена, стрелка справа */
+.course-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.course-option-text .course-option-meta {
+    flex-basis: auto;
+    order: 0;
+    margin-left: 0;
+    text-align: left;
+}
+
+.course-option > .bi {
+    margin-left: auto;
+}
+
+.course-list-empty {
+    padding: 2rem;
+    text-align: center;
+    color: #fff;
+}
+
+.course-list-empty .bi {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    opacity: 0.85;
 }

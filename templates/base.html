@@ -79,9 +79,13 @@
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
         {% block footer_wave %}
-        <!-- Wave decoration -->
-        <div class="footer-wave">
-            <img src="{% static 'divider.png' %}" alt="" class="footer-wave-image">
+        <!-- Волна: переход от тёмно-синего фона страницы к цвету морской волны подвала -->
+        <div class="footer-wave" aria-hidden="true">
+            <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
+                <path class="footer-wave-back" d="M0 34 C180 8 360 6 560 28 C760 50 940 52 1140 30 C1280 15 1380 14 1440 20 L1440 70 L0 70 Z"/>
+                <path class="footer-wave-front" d="M0 48 C220 24 420 22 640 42 C860 62 1080 62 1300 40 C1360 34 1410 32 1440 34 L1440 70 L0 70 Z"/>
+                <path class="footer-wave-foam" d="M0 48 C220 24 420 22 640 42 C860 62 1080 62 1300 40 C1360 34 1410 32 1440 34"/>
+            </svg>
         </div>
         {% endblock %}
 
