@@ -308,7 +308,8 @@ def news_detail(request, slug):
 
 
 # Цвета полосок курсов в календаре (по id курса)
-CALENDAR_COLORS = ['#1f8fa6', '#0d6efd', '#6f42c1', '#d63384', '#fd7e14', '#198754']
+# — цвета палитры сайта; на каждом белый текст читается (контраст ≥ 5:1)
+CALENDAR_COLORS = ['#0f6f93', '#0b3e52', '#be3455', '#b45309', '#4a5560', '#0b5675']
 
 
 def get_calendar_events(courses=None):

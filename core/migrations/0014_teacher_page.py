@@ -51,7 +51,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='teacher',
             name='slug',
-            field=models.SlugField(blank=True, default='', max_length=120, verbose_name='Адрес страницы'),
+            # без индекса: на PostgreSQL AlterField ниже создаёт индекс *_like заново и падает на дубле
+            field=models.SlugField(blank=True, default='', max_length=120, db_index=False,
+                                   verbose_name='Адрес страницы'),
             preserve_default=False,
         ),
         migrations.RunPython(fill_slugs, migrations.RunPython.noop),

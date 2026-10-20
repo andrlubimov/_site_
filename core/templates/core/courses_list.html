@@ -80,7 +80,7 @@
                                     <a class="course-option" href="{% url 'core:course_detail' slug=variant.slug %}">
                                         <span class="course-option-text">
                                             <span class="course-option-name">{{ variant.variant_name }}</span>
-                                            <span class="course-option-meta">{{ variant.hours_label }}{% if variant.base_price %} · {{ variant.base_price|rub }}{% endif %}</span>
+                                            <span class="course-option-meta">{{ variant.hours_label }}{% if variant.base_price %} · <span class="course-option-price">{{ variant.base_price|rub }}</span>{% endif %}</span>
                                         </span>
                                         <i class="bi bi-arrow-right" aria-hidden="true"></i>
                                     </a>

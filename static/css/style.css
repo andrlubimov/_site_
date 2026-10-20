@@ -2,13 +2,45 @@
    Global
    ============================================================ */
 :root {
-    --footer-bg-color: #1a7b94;
+    /* Палитра сайта: шкала «океан».
+       Текст на светлом фоне — не светлее ocean-700 (контраст ≥ 4,5:1);
+       ocean-500 — только для иконок, рамок и декора. */
+    --ocean-900: #0b3e52;
+    --ocean-800: #0b5675;
+    --ocean-700: #0f6f93;
+    --ocean-600: #1a7b94;
+    --ocean-500: #1f8fa6;
+    --ocean-200: #c7e1ec;
+    --ocean-100: #e3f0f6;
+    --ocean-50:  #f2f8fb;
+
+    --ink:       #1b2a33;   /* заголовки */
+    --text:      #2a3540;   /* основной текст */
+    --muted:     #55636e;   /* вторичный текст, подписи */
+    --line:      #e6eff4;   /* разделители */
+    --success:   #198754;   /* только сообщения об успехе */
+
+    /* направления работы: значок / фон */
+    --dir-swimming:      #0f6f93;  --dir-swimming-bg:   #e3f0f6;
+    --dir-hydrorehab:    #be3455;  --dir-hydrorehab-bg: #fdecef;
+    --dir-land:          #b45309;  --dir-land-bg:       #fdf3e3;
+    --dir-management:    #4a5560;  --dir-management-bg: #eef1f3;
+
+    --footer-bg-color: var(--ocean-600);
+
+    /* Bootstrap: ссылки и фокус в цветах сайта */
+    --bs-primary: #0f6f93;
+    --bs-primary-rgb: 15, 111, 147;
+    --bs-link-color: #0f6f93;
+    --bs-link-color-rgb: 15, 111, 147;
+    --bs-link-hover-color: #0b5675;
+    --bs-link-hover-color-rgb: 11, 86, 117;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.6;
-    background-color: #1a7b94;
+    background-color: var(--ocean-600);
 }
 
 main {
@@ -304,20 +336,52 @@ main > section:not(.bg-light):not(.bg-white)::after {
 }
 
 .btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    --bs-btn-bg: var(--ocean-700);
+    --bs-btn-border-color: var(--ocean-700);
+    --bs-btn-hover-bg: var(--ocean-600);
+    --bs-btn-hover-border-color: var(--ocean-600);
+    --bs-btn-active-bg: var(--ocean-800);
+    --bs-btn-active-border-color: var(--ocean-800);
+    --bs-btn-disabled-bg: var(--ocean-700);
+    --bs-btn-disabled-border-color: var(--ocean-700);
+    --bs-btn-focus-shadow-rgb: 15, 111, 147;
+    background-color: var(--ocean-700);
+    border-color: var(--ocean-700);
 }
 
 .btn-primary:hover {
-    background-color: #0b5ed7;
-    border-color: #0a58ca;
+    background-color: var(--ocean-600);
+    border-color: var(--ocean-600);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.35);
+    box-shadow: 0 4px 15px rgba(15, 111, 147, 0.35);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--ocean-700);
+    --bs-btn-border-color: var(--ocean-700);
+    --bs-btn-hover-bg: var(--ocean-700);
+    --bs-btn-hover-border-color: var(--ocean-700);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: var(--ocean-800);
+    --bs-btn-active-border-color: var(--ocean-800);
+    --bs-btn-focus-shadow-rgb: 15, 111, 147;
 }
 
 .btn-outline-primary:hover {
-    background-color: #0d6efd;
-    color: white;
+    background-color: var(--ocean-700);
+    color: #fff;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--ocean-500);
+    box-shadow: 0 0 0 0.2rem rgba(31, 143, 166, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--ocean-700);
+    border-color: var(--ocean-700);
 }
 
 /* ============================================================
@@ -492,7 +556,7 @@ body:has(.footer-wave) main > section:last-child::after {
     text-transform: uppercase;
     letter-spacing: 0.02em;
     text-align: center;
-    color: #1f2a35;
+    color: var(--ink);
     margin-bottom: 1.4rem;
 }
 
@@ -547,9 +611,9 @@ body:has(.footer-wave) main > section:last-child::after {
 .about-pill {
     display: inline-block;
     padding: 0.32rem 1.1rem;
-    border: 1px solid #1fa3d6;
+    border: 1px solid var(--ocean-500);
     border-radius: 25px;
-    color: #0f86b8;
+    color: var(--ocean-700);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -560,7 +624,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .about-pill:hover {
-    background: #1fa3d6;
+    background: var(--ocean-700);
     color: #fff;
 }
 
@@ -621,7 +685,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .about-files a {
-    color: #1a6fa3;
+    color: var(--ocean-700);
 }
 
 .about-files a:hover {
@@ -633,7 +697,7 @@ body:has(.footer-wave) main > section:last-child::after {
    ============================================================ */
 .course-block {
     display: flex;
-    background: #f0f6fb;
+    background: var(--ocean-50);
     border-radius: 12px;
     overflow: hidden;
     height: 100%;
@@ -661,7 +725,7 @@ body:has(.footer-wave) main > section:last-child::after {
     font-size: 1.1rem;
     font-weight: 700;
     margin: 0;
-    color: #1f2a35;
+    color: var(--ink);
 }
 
 .course-block-zone2 {
@@ -685,7 +749,7 @@ body:has(.footer-wave) main > section:last-child::after {
 
 .course-block-desc {
     font-size: 0.88rem;
-    color: #555;
+    color: var(--muted);
     margin: 0;
     line-height: 1.5;
 }
@@ -767,12 +831,12 @@ body:has(.footer-wave) main > section:last-child::after {
    TIMETABLE CALENDAR (/page/timetable/)
    ============================================================ */
 .timetable-calendar {
-    color: #212529;
+    color: var(--text);
 }
 
 .course-popover {
     --bs-popover-max-width: 340px;
-    --bs-popover-header-bg: #f0f6fb;
+    --bs-popover-header-bg: var(--ocean-50);
     --bs-popover-header-font-size: 0.9rem;
     font-size: 0.85rem;
 }
@@ -785,19 +849,19 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-pop-row .bi {
-    color: #1f8fa6;
+    color: var(--ocean-700);
     flex: none;
 }
 
 .course-pop-desc {
     margin: 0.5rem 0;
-    color: #555;
+    color: var(--muted);
     line-height: 1.4;
 }
 
 .course-pop-hint {
     font-size: 0.75rem;
-    color: #0d6efd;
+    color: var(--ocean-700);
 }
 
 /* ============================================================
@@ -839,7 +903,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .rep-section.bg-light .rep-link {
-    color: #0f86b8;
+    color: var(--ocean-700);
 }
 
 .rep-grid {
@@ -884,7 +948,7 @@ body:has(.footer-wave) main > section:last-child::after {
 
 .rep-card-logo .bi {
     font-size: 3rem;
-    color: #1fa3d6;
+    color: var(--ocean-500);
 }
 
 .rep-card-name {
@@ -895,7 +959,7 @@ body:has(.footer-wave) main > section:last-child::after {
 
 .rep-card-location {
     font-size: 0.85rem;
-    color: #6c7a86;
+    color: var(--muted);
     margin-bottom: 0.5rem;
 }
 
@@ -916,12 +980,12 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .rep-card-links .bi {
-    color: #1fa3d6;
+    color: var(--ocean-500);
     margin-right: 0.4rem;
 }
 
 .rep-card-links a {
-    color: #1a6fa3;
+    color: var(--ocean-700);
     text-decoration: none;
     word-break: break-word;
 }
@@ -1096,12 +1160,12 @@ body:has(.footer-wave) main > section:last-child::after {
     letter-spacing: 0.06em;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #1f8fa6;
+    color: var(--ocean-700);
 }
 
 .course-detail-price {
-    color: #198754;
-    font-weight: 600;
+    color: var(--ink);
+    font-weight: 700;
 }
 
 .course-chip {
@@ -1109,8 +1173,8 @@ body:has(.footer-wave) main > section:last-child::after {
     margin: 0 0.35rem 0.35rem 0;
     padding: 0.1rem 0.65rem;
     border-radius: 20px;
-    background: #e8f5fb;
-    color: #0f6f93;
+    background: var(--ocean-100);
+    color: var(--ocean-700);
     font-size: 0.85rem;
 }
 
@@ -1143,7 +1207,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-aside-row + .course-aside-row {
-    border-top: 1px solid #edf3f7;
+    border-top: 1px solid var(--line);
 }
 
 .course-aside-row dt {
@@ -1160,13 +1224,13 @@ body:has(.footer-wave) main > section:last-child::after {
 
 .course-aside-teacher {
     display: block;
-    color: #0f6f93;
+    color: var(--ocean-700);
     font-weight: 500;
 }
 
 .course-aside-price {
-    font-weight: 600;
-    color: #198754;
+    color: var(--ink);
+    font-weight: 700;
 }
 
 .course-aside .course-chip {
@@ -1202,7 +1266,7 @@ body:has(.footer-wave) main > section:last-child::after {
     align-items: center;
     gap: 0.75rem;
     padding: 0.4rem 1.25rem 0.4rem 0.4rem;
-    border: 1px solid #e3eef5;
+    border: 1px solid var(--line);
     border-radius: 60px;
     color: inherit;
     line-height: 1.3;
@@ -1212,7 +1276,7 @@ body:has(.footer-wave) main > section:last-child::after {
 
 .course-detail-teacher:hover {
     color: inherit;
-    border-color: #1fa3d6;
+    border-color: var(--ocean-500);
     box-shadow: 0 4px 12px rgba(0, 60, 90, 0.1);
 }
 
@@ -1229,14 +1293,14 @@ body:has(.footer-wave) main > section:last-child::after {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e3eef5;
-    color: #8aa5b5;
+    background: var(--ocean-100);
+    color: var(--ocean-500);
     font-size: 1.8rem;
 }
 
 .course-detail-audience {
-    border-left: 4px solid #1fa3d6;
-    background: #f7fbfd;
+    border-left: 4px solid var(--ocean-500);
+    background: var(--ocean-50);
     padding: 0.75rem 1rem;
     margin: 0 0 1.75rem;
 }
@@ -1266,7 +1330,7 @@ body:has(.footer-wave) main > section:last-child::after {
 
 /* Программа курса: свёрнута до нескольких строк (см. course-detail.js) */
 .course-program {
-    border: 1px solid #e3eef5;
+    border: 1px solid var(--line);
     border-radius: 16px;
     padding: 1.25rem 1.25rem 1rem;
     margin-bottom: 1.75rem;
@@ -1307,13 +1371,13 @@ body:has(.footer-wave) main > section:last-child::after {
     padding: 0.4rem 1rem;
     border: 1px solid #cfe3ee;
     border-radius: 30px;
-    background: #f7fbfd;
-    color: #0f6f93;
+    background: var(--ocean-50);
+    color: var(--ocean-700);
     font-weight: 500;
 }
 
 .course-program-toggle:hover {
-    background: #e8f5fb;
+    background: var(--ocean-100);
 }
 
 .course-program-toggle[hidden] {
@@ -1328,8 +1392,8 @@ body:has(.footer-wave) main > section:last-child::after {
     gap: 0.25rem 1.5rem;
     padding: 0.75rem 0;
     margin-bottom: 1.5rem;
-    border-top: 1px solid #e3eef5;
-    border-bottom: 1px solid #e3eef5;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
 }
 
 .course-detail-doc-label {
@@ -1344,12 +1408,12 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-detail-doc-list small {
-    color: #6c7a86;
+    color: var(--muted);
 }
 
 /* Ближайшие даты проведения */
 .course-dates {
-    border: 1px solid #e3eef5;
+    border: 1px solid var(--line);
     border-radius: 24px;
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.75rem;
@@ -1378,7 +1442,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-dates-row + .course-dates-row {
-    border-top: 1px solid #edf3f7;
+    border-top: 1px solid var(--line);
 }
 
 .course-dates-info {
@@ -1399,7 +1463,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-dates-meta .bi {
-    color: #1f8fa6;
+    color: var(--ocean-700);
 }
 
 .course-dates-comment {
@@ -1415,12 +1479,12 @@ body:has(.footer-wave) main > section:last-child::after {
 .course-dates-empty {
     margin: 0;
     text-align: center;
-    color: #6c7a86;
+    color: var(--muted);
 }
 
 .course-detail-signup {
     padding-top: 1.25rem;
-    border-top: 1px solid #e3eef5;
+    border-top: 1px solid var(--line);
 }
 
 /* ============================================================
@@ -1451,8 +1515,8 @@ body:has(.footer-wave) main > section:last-child::after {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e3eef5;
-    color: #8aa5b5;
+    background: var(--ocean-100);
+    color: var(--ocean-500);
     font-size: 4rem;
 }
 
@@ -1462,7 +1526,7 @@ body:has(.footer-wave) main > section:last-child::after {
     letter-spacing: 0.06em;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #1f8fa6;
+    color: var(--ocean-700);
 }
 
 .teacher-detail-name {
@@ -1494,13 +1558,13 @@ body:has(.footer-wave) main > section:last-child::after {
 
 .teacher-course {
     padding: 1rem 0;
-    border-top: 1px solid #e3eef5;
+    border-top: 1px solid var(--line);
 }
 
 .teacher-course-title {
     font-weight: 600;
     font-size: 1.02rem;
-    color: #0f6f93;
+    color: var(--ocean-700);
     text-decoration: none;
 }
 
@@ -1519,7 +1583,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .teacher-course-meta .bi {
-    color: #1f8fa6;
+    color: var(--ocean-700);
 }
 
 .teacher-course-desc {
@@ -1530,7 +1594,7 @@ body:has(.footer-wave) main > section:last-child::after {
 
 /* --- Расписание: дистанционные курсы --- */
 .timetable-distance {
-    color: #212529;
+    color: var(--text);
 }
 
 .timetable-distance-title {
@@ -1550,7 +1614,7 @@ body:has(.footer-wave) main > section:last-child::after {
     justify-content: space-between;
     gap: 0.25rem 1rem;
     padding: 0.6rem 0;
-    border-top: 1px solid #e3eef5;
+    border-top: 1px solid var(--line);
 }
 
 .timetable-distance-meta {
@@ -1565,16 +1629,16 @@ body:has(.footer-wave) main > section:last-child::after {
    COURSE FILTERS + COURSES LIST (/education/courses/, /page/timetable/)
    ============================================================ */
 :root {
-    --course-brand: #1e6c8f;
-    --course-brand-2: #1a7b94;
-    --course-ink: #1b2a33;
-    --course-text: #2a3540;
-    --course-muted: #55636e;
-    --course-muted-2: #6c7a86;
-    --course-line: #edf3f7;
-    --course-chip: #e8f5fb;
-    --course-soft: #f0f6fb;
-    --course-link: #0f6f93;
+    --course-brand: var(--ocean-700);
+    --course-brand-2: var(--ocean-500);
+    --course-ink: var(--ink);
+    --course-text: var(--text);
+    --course-muted: var(--muted);
+    --course-muted-2: var(--muted);
+    --course-line: var(--line);
+    --course-chip: var(--ocean-100);
+    --course-soft: var(--ocean-50);
+    --course-link: var(--ocean-700);
 }
 
 /* --- Блок фильтров --- */
@@ -1686,7 +1750,7 @@ body:has(.footer-wave) main > section:last-child::after {
 .course-filter-option span {
     display: inline-block;
     padding: 0.28rem 0.75rem;
-    border: 1px solid #d5e5ec;
+    border: 1px solid var(--ocean-200);
     border-radius: 999px;
     font-size: 0.84rem;
     line-height: 1.3;
@@ -1712,7 +1776,7 @@ body:has(.footer-wave) main > section:last-child::after {
 
 .course-filter .form-select {
     border-radius: 999px;
-    border-color: #d5e5ec;
+    border-color: var(--ocean-200);
     font-size: 0.85rem;
 }
 
@@ -1759,21 +1823,21 @@ body:has(.footer-wave) main > section:last-child::after {
     padding: 0.15rem 0.4rem 0.15rem 0.7rem;
     border-radius: 999px;
     background: var(--course-chip);
-    color: #0b5675;
+    color: var(--ocean-800);
     font-size: 0.8rem;
     font-weight: 600;
     text-decoration: none;
 }
 
 .course-list-chip:hover {
-    background: #d3ebf5;
-    color: #0b5675;
+    background: var(--ocean-200);
+    color: var(--ocean-800);
 }
 
 .course-list-reset {
     margin-left: auto;
     font-size: 0.85rem;
-    color: var(--course-link);
+    color: var(--ocean-700);
 }
 
 /* --- Значок направления --- */
@@ -1786,8 +1850,8 @@ body:has(.footer-wave) main > section:last-child::after {
     height: 44px;
     border-radius: 12px;
     font-size: 1.25rem;
-    background: #e3f0f6;
-    color: #1e6c8f;
+    background: var(--dir-swimming-bg);
+    color: var(--dir-swimming);
 }
 
 .course-dir-icon--sm {
@@ -1797,10 +1861,10 @@ body:has(.footer-wave) main > section:last-child::after {
     font-size: 1rem;
 }
 
-.course-dir--swimming   { background: #e3f0f6; color: #1e6c8f; }
-.course-dir--hydrorehab { background: #fdf0e6; color: #8a3d10; }
-.course-dir--land       { background: #e3f4ef; color: #0b6b5a; }
-.course-dir--management { background: #eef1f3; color: #4a5560; }
+.course-dir--swimming   { background: var(--dir-swimming-bg);   color: var(--dir-swimming); }
+.course-dir--hydrorehab { background: var(--dir-hydrorehab-bg); color: var(--dir-hydrorehab); }
+.course-dir--land       { background: var(--dir-land-bg);       color: var(--dir-land); }
+.course-dir--management { background: var(--dir-management-bg); color: var(--dir-management); }
 
 /* --- Карточка курса --- */
 .course-card {
@@ -1856,9 +1920,9 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-type--in_person { background: var(--course-brand); color: #fff; }
-.course-type--distance  { background: var(--course-chip); color: #0b5675; }
-.course-type--online    { background: #fff; color: #0b5675; box-shadow: inset 0 0 0 1.5px var(--course-brand-2); }
-.course-type--blended   { background: #fdf0e6; color: #8a3d10; }
+.course-type--distance  { background: var(--ocean-100); color: var(--ocean-800); }
+.course-type--online    { background: #fff; color: var(--ocean-800); box-shadow: inset 0 0 0 1.5px var(--ocean-500); }
+.course-type--blended   { background: var(--ocean-200); color: var(--ocean-900); }
 
 .course-card-title {
     margin: 0 0 0.45rem;
@@ -1918,8 +1982,8 @@ body:has(.footer-wave) main > section:last-child::after {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #cfe6ef;
-    color: #0b5675;
+    background: var(--ocean-100);
+    color: var(--ocean-800);
     font-size: 0.7rem;
     font-weight: 700;
     object-fit: cover;
@@ -1946,7 +2010,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-option:hover {
-    border-color: var(--course-brand-2);
+    border-color: var(--ocean-500);
     background: #fff;
     color: var(--course-ink);
 }
@@ -1964,7 +2028,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-option .bi {
-    color: var(--course-brand);
+    color: var(--ocean-700);
     transition: transform 0.15s;
 }
 
@@ -2016,7 +2080,7 @@ body:has(.footer-wave) main > section:last-child::after {
 .course-filter-search input {
     padding-left: 38px;
     border-radius: 999px;
-    border-color: #d5e5ec;
+    border-color: var(--ocean-200);
 }
 
 .course-filter-option span .bi {
@@ -2027,7 +2091,7 @@ body:has(.footer-wave) main > section:last-child::after {
     width: auto;
     margin-left: auto;
     border-radius: 999px;
-    border-color: #d5e5ec;
+    border-color: var(--ocean-200);
     font-size: 0.85rem;
 }
 
@@ -2052,17 +2116,29 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-section-title {
-    margin: 0;
+    position: relative;
+    margin: 0 0 0.3rem;
     font-size: 1.2rem;
     font-weight: 800;
     color: #fff;
+}
+
+.course-section-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 28px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--ocean-200);
 }
 
 .course-section-head small {
     opacity: 0.85;
 }
 
-.course-dir--other { background: #eef1f3; color: #4a5560; }
+.course-dir--other { background: var(--dir-management-bg); color: var(--dir-management); }
 
 /* преподаватели: фото рядом с именем, крупно — чтобы было видно лицо */
 .course-card .course-teacher-ava {
@@ -2091,6 +2167,11 @@ body:has(.footer-wave) main > section:last-child::after {
     order: 0;
     margin-left: 0;
     text-align: left;
+}
+
+.course-option-price {
+    color: var(--ink);
+    font-weight: 700;
 }
 
 .course-option > .bi {

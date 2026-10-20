@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Палитра страницы «Программы»: было и стало</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+<style>
+/* ================= ТОКЕНЫ ================= */
+/* Было — значения из текущего static/css/style.css */
+body.old {
+  --page-bg:#1a7b94;
+  --ink:#1b2a33; --text:#2a3540; --muted:#55636e; --muted-2:#6c7a86;
+  --line:#edf3f7; --border:#d5e5ec;
+  --brand:#1e6c8f; --brand-ring:#1a7b94; --link:#0f6f93;
+  --chip-bg:#e8f5fb; --chip-text:#0b5675; --soft:#f0f6fb;
+  --btn:#0d6efd; --btn-hover:#0b5ed7; --btn-text:#fff;
+  --accent:#1a7b94; --accent-text:#1e6c8f;
+  --price:#55636e; --price-weight:400;
+  --t-in-bg:#1e6c8f; --t-in-tx:#fff;
+  --t-dist-bg:#e8f5fb; --t-dist-tx:#0b5675;
+  --t-onl-bg:#fff; --t-onl-tx:#0b5675; --t-onl-ring:#1a7b94;
+  --t-bl-bg:#fdf0e6; --t-bl-tx:#8a3d10;
+  --d-swim-bg:#e3f0f6; --d-swim-tx:#1e6c8f;
+  --d-hydro-bg:#fdf0e6; --d-hydro-tx:#8a3d10;
+  --d-land-bg:#e3f4ef; --d-land-tx:#0b6b5a;
+  --d-mgmt-bg:#eef1f3; --d-mgmt-tx:#4a5560;
+  --ava-bg:#cfe6ef; --ava-tx:#0b5675;
+  --sub-label:#1f8fa6; --success:#198754;
+}
+/* Стало — шкала «океан» + коралловый акцент из шапки */
+body.new {
+  --ocean-900:#0b3e52; --ocean-800:#0b5675; --ocean-700:#0f6f93; --ocean-600:#1a7b94; --ocean-500:#1f8fa6;
+  --ocean-200:#c7e1ec; --ocean-100:#e3f0f6; --ocean-50:#f2f8fb;
+  --coral-700:#9a3412; --coral-600:#c2410c; --coral-400:#e0683a; --coral-50:#fdf0e6;
+  --page-bg:var(--ocean-600);
+  --ink:#1b2a33; --text:#2a3540; --muted:#55636e; --muted-2:#55636e;
+  --line:#e6eff4; --border:var(--ocean-200);
+  --brand:var(--ocean-700); --brand-ring:var(--ocean-500); --link:var(--ocean-700);
+  --chip-bg:var(--ocean-100); --chip-text:var(--ocean-800); --soft:var(--ocean-50);
+  --btn:var(--coral-600); --btn-hover:var(--coral-700); --btn-text:#fff;
+  --accent:var(--coral-400); --accent-text:var(--coral-600);
+  --price:var(--ink); --price-weight:700;
+  --t-in-bg:var(--ocean-700); --t-in-tx:#fff;
+  --t-dist-bg:var(--ocean-100); --t-dist-tx:var(--ocean-800);
+  --t-onl-bg:#fff; --t-onl-tx:var(--ocean-800); --t-onl-ring:var(--ocean-500);
+  --t-bl-bg:var(--coral-50); --t-bl-tx:var(--coral-600);
+  --d-swim-bg:#e3f0f6; --d-swim-tx:#0f6f93;
+  --d-hydro-bg:#fdecef; --d-hydro-tx:#be3455;
+  --d-land-bg:#fdf3e3; --d-land-tx:#b45309;
+  --d-mgmt-bg:#eef1f3; --d-mgmt-tx:#4a5560;
+  --ava-bg:var(--ocean-100); --ava-tx:var(--ocean-800);
+  --sub-label:var(--ocean-700); --success:#198754;
+}
+
+/* ================= БАЗА ================= */
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;background:var(--page-bg);color:var(--text);transition:background-color .3s}
+a{color:var(--link)}
+.switch-bar{position:sticky;top:0;z-index:50;background:rgba(8,40,54,.94);backdrop-filter:blur(6px);color:#fff;padding:10px 0}
+.switch-bar .seg{display:inline-flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+.switch-bar .seg button{border:0;background:transparent;color:#fff;font-weight:600;font-size:.9rem;padding:.35rem 1.1rem;border-radius:999px}
+.switch-bar .seg button.on{background:#fff;color:#0b3e52}
+.switch-bar .hint{font-size:.85rem;opacity:.8}
+
+.hero{background:linear-gradient(110deg,rgba(195,80,10,.78) 0%,rgba(10,130,160,.78) 100%),linear-gradient(180deg,#5a8a90,#2c7d93);color:#fff;text-align:center;padding:48px 0 60px;position:relative}
+.hero h1{font-weight:800;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(1.4rem,3vw,2.2rem);text-shadow:0 2px 8px rgba(0,0,0,.25);margin:0 0 14px}
+.hero .tab{display:inline-block;border:1px solid rgba(255,255,255,.75);border-radius:999px;padding:.3rem .9rem;font-size:.72rem;font-weight:600;text-transform:uppercase;color:#fff;text-decoration:none;margin:3px}
+.hero .tab.on{background:rgba(255,255,255,.22)}
+.hero svg{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:22px}
+.hero svg path{fill:var(--page-bg);transition:fill .3s}
+.main{padding:36px 0 70px;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:14px 14px}
+
+/* ================= ПАЛИТРА ================= */
+.pal{background:#fff;border-radius:24px;padding:20px 22px;margin-bottom:28px}
+.pal h2{font-size:1.05rem;font-weight:800;color:var(--ink);margin:0 0 4px}
+.pal p{font-size:.88rem;color:var(--muted);margin:0 0 14px}
+.sw-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.sw{width:118px;font-size:.72rem;line-height:1.3;color:var(--muted)}
+.sw i{display:block;height:44px;border-radius:12px;margin-bottom:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.sw b{display:block;color:var(--ink);font-size:.75rem}
+.sw-group{font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:6px 0 8px}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.cmp>div{background:var(--soft);border-radius:16px;padding:14px 16px}
+.cmp h3{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.btn-cta{background:var(--btn);color:var(--btn-text);border:0;border-radius:999px;padding:.55rem 1.3rem;font-weight:600;transition:background-color .15s}
+.btn-cta:hover{background:var(--btn-hover);color:var(--btn-text)}
+.btn-ghost{background:#fff;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:.5rem 1.1rem;font-weight:600}
+.sub-label{text-transform:uppercase;letter-spacing:.06em;font-size:.78rem;font-weight:700;color:var(--sub-label)}
+.price{color:var(--price);font-weight:var(--price-weight)}
+.ok{color:var(--success);font-weight:600;font-size:.9rem}
+.cr{display:inline-block;font-size:.68rem;font-weight:700;border-radius:6px;padding:0 .4rem;margin-left:.3rem;vertical-align:middle}
+.cr.good{background:#dcf2e4;color:#11603a}.cr.bad{background:#fde2e1;color:#9b1c1c}
+body.old .only-new, body.new .only-old{display:none!important}
+
+/* ================= ФИЛЬТРЫ ================= */
+.flt{background:#fff;border-radius:28px;padding:20px;position:sticky;top:70px;box-shadow:0 .125rem .25rem rgba(0,0,0,.075)}
+.flt .grp{padding:11px 0;border-top:1px solid var(--line)}
+.flt .grp:first-child{border-top:0;padding-top:0}
+.flt h6,.flt summary{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);font-weight:700;margin:0 0 8px}
+.flt summary{list-style:none;display:flex;justify-content:space-between;cursor:pointer;margin:0}
+.flt summary::-webkit-details-marker{display:none}
+.search{position:relative}
+.search .bi{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{padding-left:38px;border-radius:999px;border-color:var(--border);font-size:.88rem}
+.search input:focus,.flt select:focus{border-color:var(--brand-ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand-ring) 25%,transparent)}
+.pill{display:inline-block;margin:0 4px 6px 0}
+.pill input{position:absolute;opacity:0}
+.pill span{display:inline-flex;align-items:center;gap:.3rem;border:1px solid var(--border);border-radius:999px;padding:.26rem .7rem;font-size:.82rem;cursor:pointer;color:var(--text);transition:.15s}
+.pill span:hover{border-color:var(--brand-ring)}
+.pill input:checked+span{background:var(--brand);border-color:var(--brand);color:#fff}
+.flt select{border-radius:999px;border-color:var(--border);font-size:.85rem}
+
+/* ================= ПОЛОСА РЕЗУЛЬТАТОВ ================= */
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#fff;border-radius:20px;padding:10px 16px;margin-bottom:24px}
+.bar .count{font-weight:700;color:var(--ink);margin-right:4px}
+.chip{display:inline-flex;align-items:center;gap:.2rem;background:var(--chip-bg);color:var(--chip-text);border-radius:999px;padding:.15rem .4rem .15rem .7rem;font-size:.8rem;font-weight:600;text-decoration:none}
+.bar .reset{margin-left:auto;font-size:.85rem;color:var(--accent-text)}
+.bar select{width:auto;border-radius:999px;font-size:.85rem;border-color:var(--border)}
+
+/* ================= РАЗДЕЛЫ И КАРТОЧКИ ================= */
+.dir-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border-radius:12px;font-size:1.25rem}
+.dir-ic.sm{width:34px;height:34px;border-radius:10px;font-size:1rem}
+.d-swimming{background:var(--d-swim-bg);color:var(--d-swim-tx)}
+.d-hydrorehab{background:var(--d-hydro-bg);color:var(--d-hydro-tx)}
+.d-land{background:var(--d-land-bg);color:var(--d-land-tx)}
+.d-management{background:var(--d-mgmt-bg);color:var(--d-mgmt-tx)}
+.sec{margin-bottom:2rem}
+.sec-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;color:#fff}
+.sec-head .dir-ic{background:#fff}
+.sec-head h2{margin:0;font-size:1.2rem;font-weight:800}
+.sec-head small{opacity:.85}
+body.new .sec-head h2{position:relative;padding-bottom:2px}
+body.new .sec-head h2::after{content:"";position:absolute;left:0;bottom:-3px;width:28px;height:3px;border-radius:2px;background:var(--accent)}
+.card-c{background:#fff;border-radius:22px;padding:18px 20px 20px;height:100%;display:flex;flex-direction:column;box-shadow:0 .125rem .25rem rgba(0,0,0,.075);transition:transform .2s,box-shadow .2s}
+.card-c:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,30,45,.22)}
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem}
+.top .dir{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-2)}
+.types{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.type{display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .6rem;border-radius:999px;font-size:.74rem;font-weight:600;white-space:nowrap}
+.type-in_person{background:var(--t-in-bg);color:var(--t-in-tx)}
+.type-distance{background:var(--t-dist-bg);color:var(--t-dist-tx)}
+.type-online{background:var(--t-onl-bg);color:var(--t-onl-tx);box-shadow:inset 0 0 0 1.5px var(--t-onl-ring)}
+.type-blended{background:var(--t-bl-bg);color:var(--t-bl-tx)}
+.card-c h3{font-size:1.06rem;font-weight:700;line-height:1.35;margin:0 0 .45rem}
+.card-c h3 a{color:var(--ink);text-decoration:none}
+.card-c h3 a:hover{color:var(--link)}
+.desc{font-size:.9rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 .75rem}
+.teachers{display:flex;flex-wrap:wrap;gap:.4rem 1rem;list-style:none;padding:0;margin:0 0 .85rem}
+.teacher{display:inline-flex;align-items:center;gap:.5rem;font-size:.88rem;font-weight:500;color:var(--link);text-decoration:none}
+.ava{width:44px;height:44px;border-radius:50%;background:var(--ava-bg);color:var(--ava-tx);display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex:none}
+.opts{margin-top:auto;display:flex;flex-direction:column;gap:.4rem}
+.opt{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:14px;background:var(--soft);color:var(--ink);text-decoration:none;border:1px solid transparent;transition:.15s}
+.opt:hover{background:#fff;border-color:var(--accent);color:var(--ink)}
+.opt .txt{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .75rem;flex:1}
+.opt .n{font-weight:600;font-size:.88rem}
+.opt .m{font-size:.82rem;color:var(--muted);margin-left:auto}
+.opt .bi{color:var(--accent-text);transition:transform .15s}
+.opt:hover .bi{transform:translateX(3px)}
+.foot-note{color:#fff;opacity:.8;font-size:.82rem;margin-top:8px}
+</style>
+</head>
+<body class="new">
+
+<div class="switch-bar">
+  <div class="container d-flex flex-wrap align-items-center gap-3 justify-content-between">
+    <div class="seg" role="group" aria-label="Палитра">
+      <button data-m="old">Было</button>
+      <button data-m="new" class="on">Стало</button>
+    </div>
+    <span class="hint" id="hint">Новая палитра: шкала «океан» и коралловый акцент из шапки</span>
+  </div>
+</div>
+
+<div class="hero">
+  <h1>Образовательные программы и семинары</h1>
+  <a class="tab on" href="#">Программы</a><a class="tab" href="#">Расписание</a><a class="tab" href="#">Выездные семинары</a>
+  <svg viewBox="0 0 1200 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 11 Q15 0 30 11 T60 11 T90 11 T120 11 T150 11 T180 11 T210 11 T240 11 T270 11 T300 11 T330 11 T360 11 T390 11 T420 11 T450 11 T480 11 T510 11 T540 11 T570 11 T600 11 T630 11 T660 11 T690 11 T720 11 T750 11 T780 11 T810 11 T840 11 T870 11 T900 11 T930 11 T960 11 T990 11 T1020 11 T1050 11 T1080 11 T1110 11 T1140 11 T1170 11 T1200 11 V22 H0Z"/></svg>
+</div>
+
+<div class="main">
+<div class="container">
+
+  <!-- Палитра и компоненты -->
+  <div class="pal">
+    <h2 class="only-new">Новая палитра</h2>
+    <h2 class="only-old">Текущая палитра</h2>
+    <p class="only-new">Десять разных синих сведены в одну шкалу, коралл берёт тёплый тон шапки и отмечает действия. Все пары текст/фон — не ниже 4,5:1.</p>
+    <p class="only-old">Синие из style.css: часть похожих оттенков без системы, кнопки — стандартный синий Bootstrap.</p>
+
+    <div class="only-new">
+      <div class="sw-group">Океан</div>
+      <div class="sw-row">
+        <div class="sw"><i style="background:#0b3e52"></i><b>ocean-900</b>#0b3e52 · заголовки</div>
+        <div class="sw"><i style="background:#0b5675"></i><b>ocean-800</b>#0b5675 · текст чипсов</div>
+        <div class="sw"><i style="background:#0f6f93"></i><b>ocean-700</b>#0f6f93 · ссылки, фильтры</div>
+        <div class="sw"><i style="background:#1a7b94"></i><b>ocean-600</b>#1a7b94 · фон страницы</div>
+        <div class="sw"><i style="background:#1f8fa6"></i><b>ocean-500</b>#1f8fa6 · иконки, рамки</div>
+        <div class="sw"><i style="background:#c7e1ec"></i><b>ocean-200</b>#c7e1ec · границы</div>
+        <div class="sw"><i style="background:#e3f0f6"></i><b>ocean-100</b>#e3f0f6 · чипсы</div>
+        <div class="sw"><i style="background:#f2f8fb"></i><b>ocean-50</b>#f2f8fb · строки вариантов</div>
+      </div>
+      <div class="sw-group">Коралл и направления</div>
+      <div class="sw-row">
+        <div class="sw"><i style="background:#c2410c"></i><b>coral-600</b>#c2410c · кнопки действия</div>
+        <div class="sw"><i style="background:#e0683a"></i><b>coral-400</b>#e0683a · акценты, hover</div>
+        <div class="sw"><i style="background:#fdf0e6"></i><b>coral-50</b>#fdf0e6 · тёплые плашки</div>
+        <div class="sw"><i style="background:#0f6f93"></i><b>Плавание</b>#0f6f93 / #e3f0f6</div>
+        <div class="sw"><i style="background:#be3455"></i><b>Гидрореабилитация</b>#be3455 / #fdecef</div>
+        <div class="sw"><i style="background:#b45309"></i><b>Сухопутные</b>#b45309 / #fdf3e3</div>
+        <div class="sw"><i style="background:#4a5560"></i><b>Администрирование</b>#4a5560 / #eef1f3</div>
+      </div>
+    </div>
+    <div class="only-old">
+      <div class="sw-row">
+        <div class="sw"><i style="background:#0d6efd"></i><b>#0d6efd</b>кнопки (Bootstrap)</div>
+        <div class="sw"><i style="background:#1e6c8f"></i><b>#1e6c8f</b>бренд</div>
+        <div class="sw"><i style="background:#1a7b94"></i><b>#1a7b94</b>фон</div>
+        <div class="sw"><i style="background:#237294"></i><b>#237294</b>дизайн-система</div>
+        <div class="sw"><i style="background:#1f8fa6"></i><b>#1f8fa6</b>подписи <span class="cr bad">3,8</span></div>
+        <div class="sw"><i style="background:#1fa3d6"></i><b>#1fa3d6</b>рамки, текст <span class="cr bad">2,9</span></div>
+        <div class="sw"><i style="background:#0f86b8"></i><b>#0f86b8</b>текст <span class="cr bad">4,1</span></div>
+        <div class="sw"><i style="background:#1a6fa3"></i><b>#1a6fa3</b>ссылки</div>
+        <div class="sw"><i style="background:#0f6f93"></i><b>#0f6f93</b>ссылки</div>
+        <div class="sw"><i style="background:#6c7a86"></i><b>#6c7a86</b>мелкий серый <span class="cr bad">4,4</span></div>
+        <div class="sw"><i style="background:#198754"></i><b>#198754</b>цена</div>
+      </div>
+    </div>
+
+    <div class="cmp">
+      <div>
+        <h3>Кнопки</h3>
+        <button class="btn-cta">Записаться на курс</button>
+        <button class="btn-ghost ms-1">Расписание</button>
+      </div>
+      <div>
+        <h3>Страница курса</h3>
+        <div class="sub-label">Дистанционный курс</div>
+        <div>Стоимость: <span class="price only-new">18 000 ₽</span><span class="only-old" style="color:#198754;font-weight:600">18 000 ₽</span></div>
+        <a href="#">Программа курса</a>
+      </div>
+      <div>
+        <h3>Сообщения</h3>
+        <div class="ok"><i class="bi bi-check-circle-fill"></i> Заявка отправлена</div>
+        <div style="font-size:.85rem;color:var(--muted)">Зелёный — только для успеха<span class="only-new">, не для цены</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Фильтры -->
+    <aside class="col-lg-3">
+      <form class="flt" onsubmit="return false">
+        <div class="grp">
+          <div class="search"><i class="bi bi-search"></i><input class="form-control form-control-sm" placeholder="Название или тема"></div>
+        </div>
+        <div class="grp"><h6>Тип курса</h6>
+          <label class="pill"><input type="checkbox"><span><i class="bi bi-geo-alt-fill"></i>Очный</span></label><label class="pill"><input type="checkbox"><span><i class="bi bi-shuffle"></i>Очно-заочный</span></label><label class="pill"><input type="checkbox" checked><span><i class="bi bi-laptop"></i>Дистанционный</span></label><label class="pill"><input type="checkbox"><span><i class="bi bi-camera-video"></i>Онлайн</span></label>
+        </div>
+        <div class="grp"><h6>Часы</h6>
+          <label class="pill"><input type="checkbox"><span>до 10 ч</span></label><label class="pill"><input type="checkbox" checked><span>11–30 ч</span></label><label class="pill"><input type="checkbox"><span>31–60 ч</span></label><label class="pill"><input type="checkbox"><span>60+ ч</span></label>
+        </div>
+        <div class="grp"><h6>Направление работы</h6>
+          <label class="pill"><input type="checkbox"><span>Сухопутные</span></label><label class="pill"><input type="checkbox"><span>Плавание</span></label><label class="pill"><input type="checkbox"><span>Гидрореабилитация</span></label><label class="pill"><input type="checkbox"><span>Администрирование</span></label>
+        </div>
+        <div class="grp"><h6>Преподаватель</h6><select class="form-select form-select-sm"><option>Все преподаватели</option></select></div>
+        <div class="grp"><details><summary>Возраст детей <i class="bi bi-chevron-down"></i></summary></details></div>
+        <div class="grp"><details><summary>Особенности здоровья <i class="bi bi-chevron-down"></i></summary></details></div>
+        <div class="grp"><details><summary>Место проведения <i class="bi bi-chevron-down"></i></summary></details></div>
+      </form>
+    </aside>
+
+    <!-- Список -->
+    <div class="col-lg-9">
+      <div class="bar">
+        <span class="count">9 программ · 14 вариантов</span>
+        <a class="chip" href="#">Дистанционный <i class="bi bi-x"></i></a>
+        <a class="chip" href="#">11–30 часов <i class="bi bi-x"></i></a>
+        <a class="reset" href="#">Сбросить всё</a>
+        <select class="form-select form-select-sm"><option>Сначала ближайшие</option></select>
+      </div>
+      <div id="list"></div>
+      <div class="foot-note">Цены в макете условные — для сравнения стилей.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const SECTIONS=[
+ ["land","Сухопутные","bi-person-arms-up",[
+   ["Патронажное искусство. Специфика и особенности работы с новорождёнными","Цели патронажа, этика профессии, критерии удачного патронажа, физиология новорождённого, позы для ношения грудничков.",["distance"],[["Ольга Белоцерковская","ОБ"]],[["Пакет «Студент»","39 учебных часов","14 500 ₽"],["Пакет «Специалист»","39 учебных часов","19 800 ₽"]]],
+   ["Акваджет тиксотренинг Душем Алексеева в работе с плоскостопием","Струйный тренажёр «Душ Алексеева» в работе с плоскостопием. Два модуля: теоретические основы и практическая часть.",["distance"],[["Елена Нури","ЕН"]],[["Пакет «Студент»","8 учебных часов","4 900 ₽"],["Пакет «Специалист»","8 учебных часов","6 900 ₽"]]]
+ ]],
+ ["swimming","Плавание","bi-water",[
+   ["Грудничковое плавание. Базовый модуль. Работа в бассейне","Индивидуальные тренировки и группы мама+малыш, основы аквагимнастики, особенности тренировочного процесса по возрастным группам.",["online"],[["Наталия Дворяшина","НД"],["Екатерина Любимова","ЕЛ"]],[["Семинар","80 учебных часов","32 000 ₽"],["Повышение квалификации","100 учебных часов","38 000 ₽"]]],
+   ["Плавание для детей раннего возраста от 1 года до 4 лет","В игровой форме обучить детей правилам поведения, объяснить технику движений и добиться здоровой физической активности.",["in_person"],[["Елена Лавренова","ЕЛ"]],[["Семинар","21 учебный час","22 800 ₽"],["Повышение квалификации","21 учебный час","26 800 ₽"]]]
+ ]],
+ ["hydrorehab","Гидрореабилитация","bi-heart-pulse",[
+   ["Гидрореабилитация детей с нарушениями речи, психики, поведения","Работа в воде с детьми с нарушениями речи, психики и поведения: теория и практикум.",["in_person","blended"],[["Ольга Гуляева","ОГ"]],[["Семинар-практикум","32 учебных часа","28 000 ₽"],["Повышение квалификации","42 учебных часа","34 000 ₽"]]],
+   ["Недоношенные дети. Роль грудничкового плавания в физической реабилитации","Особенности развития и гидрореабилитации недоношенных детей: сроки и этапы созревания органов и систем.",["distance"],[["Елена Игнатьева","ЕИ"]],[["Пакет «Студент»","11 учебных часов","5 900 ₽"],["Пакет «Специалист»","11 учебных часов","7 900 ₽"]]]
+ ]],
+ ["management","Администрирование","bi-briefcase",[
+   ["Эффективное управление акваклубом","Юридические, кадровые и психологические аспекты деятельности детских бассейнов.",["online"],[["Дарья Свердлик","ДС"]],[["Семинар","16 учебных часов","12 000 ₽"]]],
+   ["Практический тренинг по продажам в акваклубе","Научитесь не просто консультировать, а доводить клиента до нужного результата.",["online"],[["Екатерина Глущенко","ЕГ"]],[["Тренинг","6 учебных часов","7 500 ₽"]]]
+ ]]
+];
+const T={in_person:["Очный","bi-geo-alt-fill"],blended:["Очно-заочный","bi-shuffle"],distance:["Дистанционный","bi-laptop"],online:["Онлайн","bi-camera-video"]};
+const plural=n=>n%10==1&&n%100!=11?"программа":(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?"программы":"программ";
+document.getElementById("list").innerHTML=SECTIONS.map(([code,label,icon,cards])=>`
+ <section class="sec">
+  <header class="sec-head"><span class="dir-ic d-${code}"><i class="bi ${icon}"></i></span><div><h2>${label}</h2><small>${cards.length} ${plural(cards.length)}</small></div></header>
+  <div class="row g-3">${cards.map(([title,desc,types,teachers,opts])=>`
+   <div class="col-md-6"><article class="card-c">
+    <div class="top"><span class="dir-ic sm d-${code}"><i class="bi ${icon}"></i></span><span class="dir">${label}</span>
+      <span class="types">${types.map(t=>`<span class="type type-${t}"><i class="bi ${T[t][1]}"></i>${T[t][0]}</span>`).join("")}</span></div>
+    <h3><a href="#">${title}</a></h3>
+    <p class="desc">${desc}</p>
+    <ul class="teachers">${teachers.map(([n,i])=>`<li><a class="teacher" href="#"><span class="ava">${i}</span><span>${n}</span></a></li>`).join("")}</ul>
+    <div class="opts">${opts.map(([n,h,p])=>`<a class="opt" href="#"><span class="txt"><span class="n">${n}</span><span class="m">${h} · <span class="price">${p}</span></span></span><i class="bi bi-arrow-right"></i></a>`).join("")}</div>
+   </article></div>`).join("")}
+  </div>
+ </section>`).join("");
+
+const HINT={old:"Текущая палитра из style.css",new:"Новая палитра: шкала «океан» и коралловый акцент из шапки"};
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{
+  document.body.className=b.dataset.m;
+  document.querySelectorAll(".seg button").forEach(x=>x.classList.toggle("on",x===b));
+  document.getElementById("hint").textContent=HINT[b.dataset.m];
+});
+</script>
+</body>
+</html>
