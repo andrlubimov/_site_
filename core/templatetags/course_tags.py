@@ -11,6 +11,14 @@ def rub(value):
     return format_rub(value)
 
 
+@register.filter
+def tel_href(phone):
+    """«+7 (916) 999-09-90» → «tel:+79169990990»"""
+    phone = str(phone or '').strip()
+    digits = ''.join(ch for ch in phone if ch.isdigit())
+    return f"tel:{'+' if phone.startswith('+') else ''}{digits}"
+
+
 FILTER_ICONS = {
     'type': {'in_person': 'bi-geo-alt-fill', 'blended': 'bi-shuffle', 'distance': 'bi-laptop', 'online': 'bi-camera-video'},
     'venue': {'pool': 'bi-water', 'gym': 'bi-person-arms-up', 'home': 'bi-house'},

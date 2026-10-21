@@ -265,55 +265,6 @@ main > section:not(.bg-light):not(.bg-white)::after {
     color: #fff;
 }
 
-/* --- Hero card (home page) --- */
-.hero-card-wrapper {
-    padding: 0.5rem 1rem 2.2rem;
-}
-
-.hero-card {
-    background: rgba(255, 255, 255, 0.86);
-    border-radius: 4px;
-    padding: 1.8rem 2rem;
-    max-width: 620px;
-    margin: 0 auto;
-    font-size: 0.92rem;
-    color: #222;
-    text-align: center;
-}
-
-.hero-card p {
-    margin-bottom: 0.6rem;
-}
-
-.hero-buttons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 1.1rem;
-}
-
-.btn-hero {
-    display: inline-block;
-    color: rgba(255, 255, 255, 0.88);
-    text-decoration: none;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 25px;
-    padding: 0.32rem 1rem;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    background: rgba(0, 0, 0, 0.15);
-}
-
-.btn-hero:hover {
-    background: rgba(0, 0, 0, 0.28);
-    border-color: rgba(255, 255, 255, 0.85);
-    color: #fff;
-}
-
 /* ============================================================
    CARDS / GENERAL
    ============================================================ */
@@ -492,6 +443,11 @@ body:has(.footer-wave) main > section:last-child::after {
     font-size: 1.15rem;
     text-decoration: none;
     transition: all 0.2s;
+}
+
+.footer-social-vk {
+    font-size: 0.8rem;
+    font-weight: 800;
 }
 
 .footer-social-btn:hover {
@@ -1392,6 +1348,55 @@ body:has(.footer-wave) main > section:last-child::after {
     color: var(--ocean-700);
 }
 
+.course-detail-doc {
+    position: relative; /* к строке привязана подсказка .course-hint */
+    flex-wrap: nowrap; /* значок документа остаётся слева и на телефоне */
+}
+
+/* «!» рядом с документом: подсказка при наведении, фокусе с клавиатуры и касании */
+.course-hint {
+    display: inline-flex;
+    padding: 0 0.15rem;
+    border: 0;
+    background: none;
+    color: var(--dir-land);
+    font-size: 0.95rem;
+    line-height: 1;
+    vertical-align: -0.1em;
+    cursor: help;
+}
+
+.course-hint::after {
+    content: attr(data-hint);
+    position: absolute;
+    left: 0.75rem;
+    bottom: calc(100% + 6px);
+    z-index: 5;
+    display: none;
+    max-width: min(320px, calc(100% - 1.5rem));
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    background: var(--ink);
+    box-shadow: 0 8px 20px rgba(0, 30, 45, 0.25);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.course-hint:hover::after,
+.course-hint:focus-visible::after,
+.course-hint:focus::after {
+    display: block;
+}
+
+.course-hint:focus-visible {
+    outline: 2px solid var(--ocean-500);
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
 .course-detail-doc .course-option-price {
     margin-left: auto;
 }
@@ -1484,10 +1489,21 @@ body:has(.footer-wave) main > section:last-child::after {
     color: var(--ink);
 }
 
-.course-aside-member {
-    margin-top: 0.2rem;
+.course-aside-discounts {
+    margin: 0.35rem 0 0;
+    padding: 0;
+    list-style: none;
     font-size: 0.84rem;
+    line-height: 1.4;
     color: var(--muted);
+}
+
+.course-aside-discounts li + li {
+    margin-top: 0.25rem;
+}
+
+.course-aside-discounts strong {
+    color: var(--ink);
 }
 
 .course-aside-list {
@@ -1551,6 +1567,102 @@ body:has(.footer-wave) main > section:last-child::after {
     border-color: var(--ocean-500);
     background: var(--ocean-50);
     text-decoration: none;
+}
+
+/* ============================================================
+   CONTACTS (/page/contacts/)
+   В стиле страниц курсов: способы связи — строками, как варианты в карточке курса
+   ============================================================ */
+.contacts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.contacts-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: var(--ocean-50);
+    color: var(--text);
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.contacts-item:hover {
+    border-color: var(--ocean-500);
+    background: #fff;
+    color: var(--text);
+}
+
+.contacts-item > .bi {
+    margin-left: auto;
+    color: var(--ocean-700);
+}
+
+.contacts-value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.contacts-address p {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.contacts-address .bi {
+    flex: none;
+    color: var(--ocean-700);
+}
+
+.contacts-map {
+    height: 340px;
+    margin-top: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--ocean-50);
+}
+
+.contacts-map iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.contacts-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.contacts-social .course-chip {
+    margin: 0;
+}
+
+/* в Bootstrap Icons нет значка ВКонтакте — буквы, как в шапке */
+.contacts-vk {
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.contacts-regional {
+    margin-top: 1rem;
+}
+
+.contacts-regional p {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--muted);
 }
 
 /* ============================================================

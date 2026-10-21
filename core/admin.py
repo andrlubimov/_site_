@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count, Max, Q
 from django.forms.models import BaseInlineFormSet
 from django.templatetags.static import static
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.text import Truncator
@@ -14,7 +15,7 @@ from PIL import Image
 
 from .models import (
     Teacher, Course, CourseCard, CourseTeacher, CourseSchedule, CourseScheduleDay, Specialist, Representative, Partner,
-    News, PageContent, AboutSection,
+    News, PageContent, AboutSection, ContactInfo,
 )
 from .utils import format_rub
 
@@ -512,3 +513,27 @@ class AboutSectionAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(ContactInfo)
+class ContactInfoAdmin(admin.ModelAdmin):
+    """Контакты — одна запись: страница «Контакты», соцсети в шапке и подвале, телефон для записи на курс"""
+    fieldsets = (
+        ('Организация', {'fields': ('organization', 'legal_name', 'inn')}),
+        ('Связь', {'fields': ('phone_education', 'phone_cooperation', 'email')}),
+        ('Адрес', {'fields': ('address', 'directions', 'work_hours', 'postal_address', 'map_query')}),
+        ('Соцсети', {'fields': ('vk_url', 'telegram_url')}),
+    )
+
+    def has_add_permission(self, request):
+        return not ContactInfo.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        # список из одной записи не нужен — сразу открываем её
+        info = ContactInfo.objects.first()
+        if info:
+            return redirect('admin:core_contactinfo_change', info.pk)
+        return super().changelist_view(request, extra_context)

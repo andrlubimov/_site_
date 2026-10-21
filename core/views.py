@@ -11,6 +11,7 @@ from .about_defaults import ABOUT_SECTIONS
 from .filters import CourseFilterForm
 from .models import (
     Teacher, Course, CourseSchedule, Specialist, Representative, Partner, News, PageContent, AboutSection,
+    ContactInfo,
 )
 from .utils import format_rub, plural_ru
 
@@ -45,11 +46,6 @@ def index(request):
 
     # Получаем контент страниц
     try:
-        about_text = PageContent.objects.get(slug='about_text').content
-    except PageContent.DoesNotExist:
-        about_text = "Основная цель Ассоциации — создание объединения специалистов, дающего возможность выражать свою профессиональную позицию, знакомить с достижениями и инновациями, содействовать получению новых знаний, повышать квалификацию и обмениваться опытом с коллегами."
-
-    try:
         courses_intro = PageContent.objects.get(slug='courses_intro').content
     except PageContent.DoesNotExist:
         courses_intro = "Возможность получать знания у лучших преподавателей с огромным практическим стажем. Качественное интенсивное образование, большой выбор учебных программ разного направления, связанных с детьми. Выпускники курсов получают документы государственного образца."
@@ -58,7 +54,6 @@ def index(request):
         'courses': courses,
         'specialists': specialists,
         'partners': partners,
-        'about_text': about_text,
         'courses_intro': courses_intro,
     }
     return render(request, 'core/index.html', context)
@@ -412,10 +407,24 @@ def about(request):
     return render(request, 'core/about.html', context)
 
 
+def contacts(request):
+    """Страница «Контакты»: данные — из записи «Контакты» в админке (по умолчанию — со старого сайта)"""
+    info = ContactInfo.get()
+    context = {
+        'content': SimpleNamespace(slug='contacts'),
+        'page_title': 'Контакты',
+        'info': info,
+        'map_query': info.map_query or info.address,
+    }
+    return render(request, 'core/contacts.html', context)
+
+
 def page_content(request, slug):
     """Страница с контентом"""
     if slug == 'about':
         return about(request)
+    if slug == 'contacts':
+        return contacts(request)
     try:
         content = PageContent.objects.filter(slug=slug).first()
     except OperationalError:

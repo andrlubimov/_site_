@@ -33,6 +33,10 @@ def make_course(**kwargs):
 class PageContentViewTests(SimpleTestCase):
     def setUp(self):
         self.factory = RequestFactory()
+        # БД недоступна и для контактов в шапке и подвале — берутся значения со старого сайта
+        patcher = patch('core.models.ContactInfo.objects')
+        patcher.start().first.side_effect = OperationalError('db unavailable')
+        self.addCleanup(patcher.stop)
 
     @patch('core.views.PageContent.objects.filter')
     def test_known_page_renders_with_fallback_when_record_missing(self, mock_filter):
@@ -53,12 +57,12 @@ class PageContentViewTests(SimpleTestCase):
     @patch('core.views.PageContent.objects.filter')
     def test_existing_page_content_is_used(self, mock_filter):
         mock_filter.return_value.first.return_value = PageContent(
-            slug='contacts',
+            slug='membership',
             title='Тестовый заголовок',
             content='Тестовый текст',
         )
 
-        response = page_content(self.factory.get('/page/contacts/'), 'contacts')
+        response = page_content(self.factory.get('/page/membership/'), 'membership')
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тестовый заголовок')
@@ -210,6 +214,11 @@ class CourseModelTests(TestCase):
         self.assertEqual(make_course(base_price=22800).member_price, 18240)
         self.assertEqual(make_course(base_price=5700).member_price, 4560)
         self.assertIsNone(Course(base_price=None).member_price)
+
+    def test_alumni_price_is_base_minus_10_percent(self):
+        self.assertEqual(make_course(base_price=22800).alumni_price, 20520)
+        self.assertEqual(make_course(base_price=5700).alumni_price, 5130)
+        self.assertIsNone(Course(base_price=None).alumni_price)
 
     def test_hours_label_plural(self):
         self.assertEqual(make_course(hours=21).hours_label, '21 учебный час')
@@ -395,6 +404,11 @@ class CourseDetailTests(TestCase):
         # стоимость и стоимость для членов Ассоциации (−20%)
         self.assertContains(response, '10\u00a0000\u00a0₽')
         self.assertContains(response, '8\u00a0000\u00a0₽')
+        # и для тех, кто обучался у нас ранее (−10%)
+        self.assertContains(response, '9 000 ₽')
+        self.assertContains(response, 'для тех, кто обучался у нас ранее')
+        # у документа — «!» с подсказкой про зачёт
+        self.assertContains(response, 'data-hint="Документ выдаётся только в случае успешной сдачи зачёта"')
         # по кнопке «Записаться» на каждую ближайшую дату; пока никуда не ведут
         self.assertContains(response, 'course-signup-btn', count=2)
         self.assertNotContains(response, '<a class="btn btn-primary course-signup-btn')
@@ -1022,3 +1036,35 @@ class CourseDetailVariantsTests(TestCase):
     def test_no_switch_for_single_course(self):
         course = make_course(title='Одиночный курс', slug='single')
         self.assertNotContains(self.client.get(course.get_absolute_url()), 'course-variant-switch')
+
+
+class ContactsPageTests(TestCase):
+    def test_page_shows_contacts_from_admin_record(self):
+        from .models import ContactInfo
+        info = ContactInfo.objects.get()  # создана миграцией из данных старого сайта
+        self.assertEqual(info.inn, '7716804870')
+        info.phone_education = '+7 (999) 123-45-67'
+        info.save()
+        response = self.client.get('/page/contacts/')
+        self.assertContains(response, 'href="tel:+79991234567"')
+        self.assertContains(response, 'Улица Малыгина, 1')  # как добраться
+        self.assertContains(response, 'yandex.ru/map-widget')
+        self.assertContains(response, 'href="https://vk.com/plavaniegrud"')
+        # телефон для записи на странице курса — тот же
+        course = make_course(title='Курс', slug='kurs')
+        self.assertContains(self.client.get(course.get_absolute_url()), '+7 (999) 123-45-67')
+
+    def test_falls_back_to_old_site_contacts_without_record(self):
+        from .models import ContactInfo
+        ContactInfo.objects.all().delete()
+        response = self.client.get('/page/contacts/')
+        self.assertContains(response, 'info.babyswim@gmail.com')
+        self.assertContains(response, 'href="https://t.me/babyswimming_association"')
+
+    def test_admin_has_single_record(self):
+        from django.contrib.auth.models import User
+        from .models import ContactInfo
+        self.client.force_login(User.objects.create_superuser('boss', 'boss@example.com', 'pw'))
+        response = self.client.get('/admin/core/contactinfo/')
+        self.assertRedirects(response, f'/admin/core/contactinfo/{ContactInfo.objects.get().pk}/change/')
+        self.assertEqual(self.client.get('/admin/core/contactinfo/add/').status_code, 403)

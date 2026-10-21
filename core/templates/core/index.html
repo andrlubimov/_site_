@@ -8,20 +8,8 @@
 {% endblock %}
 
 {% block header_content %}
-<div class="hero-card-wrapper">
-    <div class="container">
-        <div class="hero-card">
-            <p><strong>Ассоциация — это все мы, счастливые обладатели самой лучшей профессии в мире!</strong><br>
-            Это место, где мы все можем объединиться для продвижения, развития и поддержки грудничкового и раннего плавания.</p>
-            <p>{{ about_text }}</p>
-            <p>Мы надеемся, что благодаря вашему активному участию в жизни Ассоциации, вместе мы сможем помочь воплотить наши идеи развития и поддержки детского плавания.</p>
-            <div class="hero-buttons">
-                <a href="{% url 'core:page_content' slug='about' %}" class="btn-hero">Об Ассоциации</a>
-                <a href="{% url 'core:page_content' slug='membership' %}" class="btn-hero">Членство</a>
-                <a href="{% url 'core:news_list' %}" class="btn-hero">Новости</a>
-            </div>
-        </div>
-    </div>
+<div class="home-welcome">
+    <h1 class="home-welcome-title">Добро пожаловать</h1>
 </div>
 {% endblock %}
 

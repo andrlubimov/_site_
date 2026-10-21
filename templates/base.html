@@ -35,8 +35,8 @@
                         </nav>
                         <div class="top-nav-social">
                             <a href="#" class="top-social-icon"><i class="bi bi-eye"></i></a>
-                            <a href="#" class="top-social-icon"><i class="bi bi-telegram"></i></a>
-                            <a href="#" class="top-social-icon" style="font-size:0.7rem;font-weight:700;">ВК</a>
+                            {% if contacts.telegram_url %}<a href="{{ contacts.telegram_url }}" class="top-social-icon" target="_blank" rel="noopener" title="Telegram"><i class="bi bi-telegram"></i></a>{% endif %}
+                            {% if contacts.vk_url %}<a href="{{ contacts.vk_url }}" class="top-social-icon" target="_blank" rel="noopener" title="ВКонтакте" style="font-size:0.7rem;font-weight:700;">ВК</a>{% endif %}
                         </div>
                         <button class="mobile-menu-btn d-lg-none" data-bs-toggle="collapse" data-bs-target="#mobileNav">
                             <span></span><span></span><span></span>
@@ -109,12 +109,16 @@
 
                 <!-- Social icons -->
                 <div class="footer-social mb-3">
-                    <a href="#" class="footer-social-btn" title="ВКонтакте">
-                        <i class="bi bi-vk"></i>
+                    {% if contacts.vk_url %}
+                    <a href="{{ contacts.vk_url }}" class="footer-social-btn" title="ВКонтакте" target="_blank" rel="noopener">
+                        <span class="footer-social-vk">ВК</span>
                     </a>
-                    <a href="#" class="footer-social-btn" title="Telegram">
+                    {% endif %}
+                    {% if contacts.telegram_url %}
+                    <a href="{{ contacts.telegram_url }}" class="footer-social-btn" title="Telegram" target="_blank" rel="noopener">
                         <i class="bi bi-telegram"></i>
                     </a>
+                    {% endif %}
                 </div>
 
                 <!-- Educational org link -->

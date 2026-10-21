@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Солнце и песок — пример дизайна</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ocean-900:#0b3e52; --ocean-800:#0b5675; --ocean-700:#0f6f93; --ocean-600:#1a7b94; --ocean-500:#1f8fa6;
+  --ocean-200:#c7e1ec; --ocean-100:#e3f0f6; --ocean-50:#f2f8fb;
+  --sun-400:#f4c95d; --sun-100:#fbe8b0; --sand-50:#fbf3e6; --sand-100:#f6e7d8;
+  --ink:#1b2a33; --text:#2a3540; --muted:#55636e; --line:#e6eff4;
+  --dir-swimming:#0f6f93; --dir-swimming-bg:#e3f0f6; --dir-hydrorehab:#be3455; --dir-hydrorehab-bg:#fdecef;
+  --dir-land:#b45309; --dir-land-bg:#fdf3e3; --dir-management:#4a5560; --dir-management-bg:#eef1f3;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;background:var(--ocean-600);color:var(--text)}
+a{color:var(--ocean-700)}
+
+/* панель переключения (только для макета) */
+.bar-top{position:sticky;top:0;z-index:50;background:rgba(8,40,54,.95);color:#fff;padding:9px 0}
+.seg{display:inline-flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:#fff;font-weight:600;font-size:.88rem;padding:.32rem 1rem;border-radius:999px}
+.seg button.on{background:#fff;color:var(--ocean-900)}
+.bar-top .lbl{font-size:.75rem;opacity:.7;margin-right:6px}
+
+/* шапка — упрощённо */
+.hero{background:linear-gradient(110deg,rgba(195,80,10,.78),rgba(10,130,160,.78)),linear-gradient(180deg,#5a8a90,#2c7d93);color:#fff;text-align:center;padding:44px 0 56px;position:relative}
+.hero h1{font-weight:800;text-transform:uppercase;font-size:clamp(1.3rem,3vw,2.1rem);text-shadow:0 2px 8px rgba(0,0,0,.25);margin:0 0 12px}
+.hero .tab{display:inline-block;border:1px solid rgba(255,255,255,.75);border-radius:999px;padding:.28rem .9rem;font-size:.72rem;font-weight:600;text-transform:uppercase;color:#fff;text-decoration:none;margin:3px}
+.hero .tab.on{background:rgba(255,255,255,.22)}
+.hero svg{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:22px}
+.hero svg path{fill:var(--ocean-600)}
+.main{padding:34px 0 70px;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:14px 14px}
+.note{color:#fff;background:rgba(255,255,255,.12);border-radius:16px;padding:12px 16px;font-size:.88rem;margin-bottom:22px}
+
+/* общие */
+.panel{background:#fff;border-radius:24px;box-shadow:0 .125rem .25rem rgba(0,0,0,.075)}
+.btn-p{display:inline-flex;align-items:center;gap:.4rem;background:var(--ocean-700);color:#fff;border:0;border-radius:30px;padding:.55rem 1.4rem;font-weight:600;text-decoration:none;transition:.2s}
+.btn-p:hover{background:var(--ocean-600);color:#fff;transform:translateY(-2px)}
+.btn-o{display:inline-flex;align-items:center;gap:.4rem;background:#fff;color:var(--ocean-700);border:1.5px solid var(--ocean-700);border-radius:30px;padding:.5rem 1.2rem;font-weight:600;text-decoration:none}
+.dir-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border-radius:12px;font-size:1.25rem}
+.dir-ic.sm{width:34px;height:34px;border-radius:10px;font-size:1rem}
+.d-swimming{background:var(--dir-swimming-bg);color:var(--dir-swimming)}
+.d-hydrorehab{background:var(--dir-hydrorehab-bg);color:var(--dir-hydrorehab)}
+.d-land{background:var(--dir-land-bg);color:var(--dir-land)}
+.d-management{background:var(--dir-management-bg);color:var(--dir-management)}
+.type{display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .6rem;border-radius:999px;font-size:.74rem;font-weight:600;white-space:nowrap}
+.type-in_person{background:var(--ocean-700);color:#fff}
+.type-distance{background:var(--ocean-100);color:var(--ocean-800)}
+.type-online{background:#fff;color:var(--ocean-800);box-shadow:inset 0 0 0 1.5px var(--ocean-500)}
+.ava{width:44px;height:44px;border-radius:50%;background:var(--ocean-100);color:var(--ocean-800);display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex:none}
+
+/* ===== фильтры ===== */
+.flt{padding:20px;position:sticky;top:64px}
+.flt .grp{padding:10px 0;border-top:1px solid var(--line)}
+.flt .grp:first-child{border-top:0;padding-top:0}
+.flt h6{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px}
+.pill{display:inline-block;margin:0 4px 6px 0}
+.pill input{position:absolute;opacity:0}
+.pill span{display:inline-flex;align-items:center;gap:.3rem;border:1px solid var(--ocean-200);border-radius:999px;padding:.26rem .7rem;font-size:.82rem;cursor:pointer}
+.pill input:checked+span{background:var(--ocean-700);border-color:var(--ocean-700);color:#fff}
+.search{position:relative}.search .bi{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{padding-left:38px;border-radius:999px;border-color:var(--ocean-200);font-size:.88rem}
+
+/* ===== список ===== */
+.rbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;margin-bottom:24px;border-radius:20px}
+.rbar .count{font-weight:700;color:var(--ink)}
+.chip{display:inline-flex;align-items:center;gap:.2rem;background:var(--ocean-100);color:var(--ocean-800);border-radius:999px;padding:.15rem .4rem .15rem .7rem;font-size:.8rem;font-weight:600;text-decoration:none}
+.sec{margin-bottom:2rem}
+.sec-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem;color:#fff}
+.sec-head .dir-ic{background:#fff}
+.sec-head h2{margin:0 0 .3rem;font-size:1.2rem;font-weight:800;position:relative}
+.sec-head h2::after{content:"";position:absolute;left:0;bottom:-4px;width:28px;height:3px;border-radius:2px;background:var(--line-accent)}
+.sec-head small{opacity:.85}
+.card-c{background:#fff;border-radius:22px;padding:18px 20px 20px;height:100%;display:flex;flex-direction:column;box-shadow:0 .125rem .25rem rgba(0,0,0,.075);transition:.2s;position:relative}
+.card-c:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,30,45,.22)}
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem}
+.top .dir{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.types{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.card-c h3{font-size:1.06rem;font-weight:700;line-height:1.35;margin:0 0 .45rem}
+.card-c h3 a{color:var(--ink);text-decoration:none}
+.desc{font-size:.9rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 .75rem}
+.teachers{display:flex;flex-wrap:wrap;gap:.4rem 1rem;list-style:none;padding:0;margin:0 0 .85rem}
+.teacher{display:inline-flex;align-items:center;gap:.5rem;font-size:.88rem;font-weight:500;color:var(--ocean-700);text-decoration:none}
+.opts{margin-top:auto;display:flex;flex-direction:column;gap:.4rem}
+.opt{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:14px;background:var(--ocean-50);color:var(--ink);text-decoration:none;border:1px solid transparent;transition:.15s}
+.opt:hover{background:#fff;border-color:var(--opt-hover);color:var(--ink)}
+.opt .txt{display:flex;flex-direction:column;gap:.15rem;flex:1}
+.opt .n{font-weight:600;font-size:.88rem}
+.opt .m{font-size:.8rem;color:var(--muted)}
+.opt .m b{color:var(--ink)}
+.opt .bi{color:var(--ocean-700)}
+
+/* ===== солнце и песок: новые элементы ===== */
+.soon{display:inline-flex;align-items:center;gap:.35rem;background:var(--sun-100);color:var(--ocean-900);border-radius:999px;padding:.2rem .65rem;font-size:.75rem;font-weight:700}
+.soon .bi{color:#b7860b}
+.member{display:flex;align-items:center;gap:.55rem;background:var(--sand-50);border-radius:14px;padding:.5rem .75rem;font-size:.82rem;color:var(--ocean-900);margin-bottom:.6rem}
+.member .sunb{width:26px;height:26px;border-radius:50%;background:var(--sun-400);color:var(--ocean-900);display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;flex:none}
+.sand-block{background:var(--sand-50);border-radius:24px;padding:26px 28px;display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.sand-block h3{font-size:1.15rem;font-weight:800;color:var(--ocean-900);margin:0 0 4px}
+.sand-block p{margin:0;color:var(--muted);font-size:.92rem}
+.sun-ic{width:56px;height:56px;border-radius:16px;background:var(--sun-400);color:var(--ocean-900);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex:none}
+
+/* ===== страница курса ===== */
+.cd{padding:30px 32px}
+.kind{text-transform:uppercase;letter-spacing:.06em;font-size:.8rem;font-weight:700;color:var(--ocean-700)}
+.cd h1{font-size:clamp(1.3rem,2.4vw,1.75rem);font-weight:700;color:var(--ink);margin:.25rem 0 1rem}
+.lead{font-size:1.05rem;color:var(--ink)}
+.audience{border-radius:16px;padding:16px 18px;margin:20px 0}
+.audience h2,.cd h2{font-size:1.05rem;font-weight:800;color:var(--ink);margin:0 0 .5rem}
+.dates{border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.drow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:14px 18px}
+.drow+.drow{border-top:1px solid var(--line)}
+.drow .d{font-weight:700;color:var(--ink);min-width:200px}
+.drow .mt{font-size:.85rem;color:var(--muted)}
+.drow .btn-p{margin-left:auto;padding:.4rem 1.1rem;font-size:.9rem}
+.tcard{display:flex;gap:14px;align-items:center;border-radius:18px;padding:14px 16px}
+.tcard .ava{width:64px;height:64px;font-size:1.1rem}
+.tcard b{color:var(--ink)}
+.aside{padding:20px;position:sticky;top:64px}
+.arow{display:grid;grid-template-columns:44% 1fr;gap:.5rem;padding:.55rem 0;font-size:.9rem}
+.arow+.arow{border-top:1px solid var(--line)}
+.arow dt{font-weight:500;color:var(--muted)}
+.arow dd{margin:0}
+.price-big{font-size:1.5rem;font-weight:800;color:var(--ink);line-height:1.1}
+.price-member{display:flex;align-items:center;gap:.5rem;border-radius:12px;padding:.45rem .7rem;margin-top:.5rem;font-size:.85rem;color:var(--ocean-900)}
+
+/* ===== режимы ===== */
+body.cur{--line-accent:var(--ocean-200);--opt-hover:var(--ocean-500)}
+body.sun{--line-accent:var(--sun-400);--opt-hover:var(--sun-400)}
+body.cur .only-sun{display:none!important}
+body.sun .only-cur{display:none!important}
+body.cur .audience{background:var(--ocean-50);border-left:4px solid var(--ocean-500)}
+body.sun .audience{background:var(--sand-50)}
+body.cur .tcard{border:1px solid var(--line)}
+body.sun .tcard{background:var(--sand-100)}
+body.cur .price-member{background:var(--ocean-50)}
+body.sun .price-member{background:var(--sun-100)}
+body.sun .hero .tab.on{background:var(--sun-400);border-color:var(--sun-400);color:var(--ocean-900)}
+[data-page]{display:none}
+body.p-list [data-page=list],body.p-course [data-page=course]{display:block}
+.sw-row{display:flex;flex-wrap:wrap;gap:10px}
+.sw{font-size:.75rem;color:#fff;opacity:.9;width:120px;line-height:1.3}
+.sw i{display:block;height:36px;border-radius:10px;margin-bottom:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+</style>
+</head>
+<body class="sun p-list">
+
+<div class="bar-top">
+  <div class="container d-flex flex-wrap gap-3 align-items-center justify-content-between">
+    <div><span class="lbl">Страница</span><span class="seg" id="segP"><button data-p="list" class="on">Программы</button><button data-p="course">Страница курса</button></span></div>
+    <div><span class="lbl">Палитра</span><span class="seg" id="segM"><button data-m="cur">Сейчас</button><button data-m="sun" class="on">Солнце и песок</button></span></div>
+  </div>
+</div>
+
+<div class="hero">
+  <h1>Образовательные программы и семинары</h1>
+  <a class="tab on" href="#">Программы</a><a class="tab" href="#">Расписание</a><a class="tab" href="#">Выездные семинары</a>
+  <svg viewBox="0 0 1200 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 11 Q15 0 30 11 T60 11 T90 11 T120 11 T150 11 T180 11 T210 11 T240 11 T270 11 T300 11 T330 11 T360 11 T390 11 T420 11 T450 11 T480 11 T510 11 T540 11 T570 11 T600 11 T630 11 T660 11 T690 11 T720 11 T750 11 T780 11 T810 11 T840 11 T870 11 T900 11 T930 11 T960 11 T990 11 T1020 11 T1050 11 T1080 11 T1110 11 T1140 11 T1170 11 T1200 11 V22 H0Z"/></svg>
+</div>
+
+<div class="main"><div class="container">
+
+  <div class="note only-sun">
+    <div class="mb-2"><b>Солнце и песок.</b> Жёлтый — только акценты: «Скоро старт», черта под разделом, значок скидки, активная вкладка, рамка при наведении. Песочный — тёплые фоны: скидка для членов Ассоциации, «Для кого», карточка преподавателя, блок-приглашение. Кнопки и ссылки остаются в цветах «океан».</div>
+    <div class="sw-row">
+      <div class="sw"><i style="background:#f4c95d"></i><b>sun-400</b> #f4c95d — акценты, не текст</div>
+      <div class="sw"><i style="background:#fbe8b0"></i><b>sun-100</b> #fbe8b0 — фон бейджей</div>
+      <div class="sw"><i style="background:#fbf3e6"></i><b>sand-50</b> #fbf3e6 — тёплые фоны</div>
+      <div class="sw"><i style="background:#f6e7d8"></i><b>sand-100</b> #f6e7d8 — подложки</div>
+    </div>
+  </div>
+  <div class="note only-cur"><b>Сейчас.</b> Текущая палитра сайта: только шкала «океан».</div>
+
+  <!-- ================= ПРОГРАММЫ ================= -->
+  <div data-page="list">
+  <div class="row g-4">
+    <aside class="col-lg-3">
+      <form class="panel flt" onsubmit="return false">
+        <div class="grp"><div class="search"><i class="bi bi-search"></i><input class="form-control form-control-sm" placeholder="Название или тема"></div></div>
+        <div class="grp"><h6>Тип курса</h6>
+          <label class="pill"><input type="checkbox"><span><i class="bi bi-geo-alt-fill"></i>Очный</span></label><label class="pill"><input type="checkbox"><span><i class="bi bi-shuffle"></i>Очно-заочный</span></label><label class="pill"><input type="checkbox" checked><span><i class="bi bi-laptop"></i>Дистанционный</span></label><label class="pill"><input type="checkbox"><span><i class="bi bi-camera-video"></i>Онлайн</span></label></div>
+        <div class="grp"><h6>Часы</h6>
+          <label class="pill"><input type="checkbox"><span>до 10 ч</span></label><label class="pill"><input type="checkbox"><span>11–30 ч</span></label><label class="pill"><input type="checkbox"><span>31–60 ч</span></label><label class="pill"><input type="checkbox"><span>60+ ч</span></label></div>
+        <div class="grp"><h6>Направление работы</h6>
+          <label class="pill"><input type="checkbox"><span>Сухопутные</span></label><label class="pill"><input type="checkbox"><span>Плавание</span></label><label class="pill"><input type="checkbox"><span>Гидрореабилитация</span></label><label class="pill"><input type="checkbox"><span>Администрирование</span></label></div>
+      </form>
+    </aside>
+    <div class="col-lg-9">
+      <div class="panel rbar"><span class="count">6 программ · 10 вариантов</span><a class="chip" href="#">Дистанционный <i class="bi bi-x"></i></a></div>
+      <div id="list"></div>
+      <div class="sand-block only-sun">
+        <span class="sun-ic"><i class="bi bi-sun"></i></span>
+        <div class="flex-grow-1"><h3>Не нашли подходящий курс?</h3><p>Проведём выездной семинар в вашем городе или бассейне — для группы от 8 специалистов.</p></div>
+        <a class="btn-p" href="#">Выездные семинары <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="panel p-4 only-cur d-flex flex-wrap gap-3 align-items-center">
+        <div class="flex-grow-1"><h3 style="font-size:1.15rem;font-weight:800;color:var(--ink);margin:0 0 4px">Не нашли подходящий курс?</h3><p class="m-0" style="color:var(--muted)">Проведём выездной семинар в вашем городе или бассейне — для группы от 8 специалистов.</p></div>
+        <a class="btn-p" href="#">Выездные семинары <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ================= СТРАНИЦА КУРСА ================= -->
+  <div data-page="course">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <article class="panel cd">
+        <div class="d-flex align-items-center gap-2 flex-wrap"><span class="kind">Дистанционный курс</span><span class="soon only-sun"><i class="bi bi-star-fill"></i>Новый набор</span></div>
+        <h1>Патронажное искусство. Специфика и особенности работы с новорождёнными</h1>
+        <p class="lead">Цели патронажа, этика профессии, критерии удачного и неудачного патронажа. Подробный разбор физиологии новорождённого и позы для ношения грудничков.</p>
+
+        <div class="audience">
+          <h2><i class="bi bi-people only-sun" style="color:#b7860b"></i> Для кого</h2>
+          <p class="m-0">Инструкторы по грудничковому плаванию, специалисты по раннему развитию, молодые родители, которые хотят глубже понимать малыша.</p>
+        </div>
+
+        <h2>Ближайшие даты</h2>
+        <div class="dates mb-4">
+          <div class="drow"><span class="d">Доступ 30 дней</span><span class="mt">Пакет «Студент» · 39 учебных часов</span><span class="soon only-sun"><i class="bi bi-lightning-charge-fill"></i>Старт сразу после оплаты</span><a class="btn-p" href="#">Записаться</a></div>
+          <div class="drow"><span class="d">Доступ 45 дней</span><span class="mt">Пакет «Специалист» · 39 учебных часов</span><a class="btn-p" href="#">Записаться</a></div>
+        </div>
+
+        <h2>Преподаватель</h2>
+        <div class="tcard"><span class="ava">ОБ</span><div><b>Ольга Белоцерковская</b><div style="font-size:.88rem;color:var(--muted)">Инструктор по грудничковому плаванию, автор методики патронажа</div><a href="#" style="font-size:.88rem">Все курсы преподавателя</a></div></div>
+      </article>
+    </div>
+    <div class="col-lg-4">
+      <aside class="panel aside">
+        <div class="price-big">14 500 ₽</div>
+        <div style="font-size:.85rem;color:var(--muted)">с сертификатом о прохождении курса</div>
+        <div class="price-member"><span class="only-sun" style="width:26px;height:26px;border-radius:50%;background:var(--sun-400);display:inline-flex;align-items:center;justify-content:center;flex:none"><i class="bi bi-percent"></i></span><span>Членам Ассоциации — <b>11 600 ₽</b> (−20%)</span></div>
+        <dl class="mt-3 mb-3">
+          <div class="arow"><dt>Тип</dt><dd>Дистанционный</dd></div>
+          <div class="arow"><dt>Часы</dt><dd>39 учебных часов</dd></div>
+          <div class="arow"><dt>Направление</dt><dd><span class="dir-ic sm d-land" style="width:24px;height:24px;font-size:.8rem;border-radius:7px"><i class="bi bi-person-arms-up"></i></span> Сухопутные</dd></div>
+          <div class="arow"><dt>Возраст детей</dt><dd>Грудной (0–1 год)</dd></div>
+        </dl>
+        <a class="btn-p w-100 justify-content-center" href="#">Записаться на курс</a>
+      </aside>
+    </div>
+  </div>
+  </div>
+
+  <div style="color:#fff;opacity:.75;font-size:.8rem;margin-top:14px">Даты, цены и тексты в макете условные — для сравнения стилей.</div>
+</div></div>
+
+<script>
+const S=[
+ ["land","Сухопутные","bi-person-arms-up",[
+  ["Патронажное искусство. Работа с новорождёнными","Цели патронажа, этика профессии, критерии удачного патронажа, физиология новорождённого, позы для ношения грудничков.",["distance"],[["Ольга Белоцерковская","ОБ"]],[["Пакет «Студент»","39 учебных часов","14 500 ₽"],["Пакет «Специалист»","39 учебных часов","19 800 ₽"]],"Новый набор"],
+  ["Акваджет тиксотренинг Душем Алексеева в работе с плоскостопием","Струйный тренажёр «Душ Алексеева» в работе с плоскостопием. Два модуля: теория и практика.",["distance"],[["Елена Нури","ЕН"]],[["Пакет «Студент»","8 учебных часов","4 900 ₽"],["Пакет «Специалист»","8 учебных часов","6 900 ₽"]],""]
+ ]],
+ ["swimming","Плавание","bi-water",[
+  ["Грудничковое плавание. Базовый модуль. Работа в бассейне","Индивидуальные тренировки и группы мама+малыш, основы аквагимнастики, особенности тренировочного процесса по возрастам.",["online"],[["Наталия Дворяшина","НД"],["Екатерина Любимова","ЕЛ"]],[["Семинар","80 учебных часов","32 000 ₽"],["Повышение квалификации","100 учебных часов","38 000 ₽"]],"Старт 10 ноября"],
+  ["Плавание для детей раннего возраста от 1 года до 4 лет","В игровой форме обучить детей правилам поведения и технике движений.",["in_person"],[["Елена Лавренова","ЕЛ"]],[["Семинар","21 учебный час","22 800 ₽"],["Повышение квалификации","21 учебный час","26 800 ₽"]],""]
+ ]],
+ ["hydrorehab","Гидрореабилитация","bi-heart-pulse",[
+  ["Недоношенные дети. Роль грудничкового плавания в реабилитации","Особенности развития и гидрореабилитации недоношенных детей: сроки и этапы созревания органов и систем.",["distance"],[["Елена Игнатьева","ЕИ"]],[["Пакет «Студент»","11 учебных часов","5 900 ₽"],["Пакет «Специалист»","11 учебных часов","7 900 ₽"]],""],
+  ["Психосоматика расстройств аутистического спектра (РАС)","Базовые понятия, методы и инструменты психосоматики.",["distance"],[["Ирина Новоселова","ИН"],["Мария Куликова","МК"]],[["Семинар","15 учебных часов","8 500 ₽"]],"Старт 2 декабря"]
+ ]]
+];
+const T={in_person:["Очный","bi-geo-alt-fill"],distance:["Дистанционный","bi-laptop"],online:["Онлайн","bi-camera-video"]};
+const pl=n=>n%10==1&&n%100!=11?"программа":(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?"программы":"программ";
+document.getElementById("list").innerHTML=S.map(([c,l,ic,cards])=>`
+<section class="sec"><header class="sec-head"><span class="dir-ic d-${c}"><i class="bi ${ic}"></i></span><div><h2>${l}</h2><small>${cards.length} ${pl(cards.length)}</small></div></header>
+<div class="row g-3">${cards.map(([t,d,ty,te,op,soon])=>`<div class="col-md-6"><article class="card-c">
+ <div class="top"><span class="dir-ic sm d-${c}"><i class="bi ${ic}"></i></span><span class="dir">${l}</span><span class="types">${ty.map(x=>`<span class="type type-${x}"><i class="bi ${T[x][1]}"></i>${T[x][0]}</span>`).join("")}</span></div>
+ ${soon?`<div class="only-sun mb-2"><span class="soon"><i class="bi bi-star-fill"></i>${soon}</span></div>`:""}
+ <h3><a href="#">${t}</a></h3><p class="desc">${d}</p>
+ <ul class="teachers">${te.map(([n,i])=>`<li><a class="teacher" href="#"><span class="ava">${i}</span><span>${n}</span></a></li>`).join("")}</ul>
+ <div class="member only-sun"><span class="sunb"><i class="bi bi-percent"></i></span>Членам Ассоциации — скидка 20%</div>
+ <div class="opts">${op.map(([n,h,p])=>`<a class="opt" href="#"><span class="txt"><span class="n">${n}</span><span class="m">${h} · <b>${p}</b></span></span><i class="bi bi-arrow-right"></i></a>`).join("")}</div>
+</article></div>`).join("")}</div></section>`).join("");
+
+const setCls=()=>{document.body.className=document.querySelector("#segM .on").dataset.m+" p-"+document.querySelector("#segP .on").dataset.p};
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));setCls();scrollTo({top:0})});
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load course_tags %}
+
+{% block title %}Контакты - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">Контакты</h1>
+    <div class="header-tabs">
+        <a href="{% url 'core:page_content' slug='contacts' %}" class="header-tab-btn active">Контакты</a>
+        <a href="{% url 'core:specialists_list' %}" class="header-tab-btn">Региональные представители</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Данные — из записи «Контакты» в админке #}
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- Способы связи и адрес (на телефоне — первыми) -->
+            <div class="col-lg-8">
+                <article class="course-detail contacts-main">
+                    <div class="course-card-top">
+                        <span class="course-dir-icon course-dir-icon--sm"><i class="bi bi-chat-dots"></i></span>
+                        <span class="course-card-dir">Свяжитесь с нами</span>
+                    </div>
+                    <h2 class="course-detail-title">{{ info.organization }}</h2>
+
+                    <section class="course-detail-block">
+                        <h3 class="course-detail-h">Телефоны и почта</h3>
+                        <ul class="contacts-list">
+                            <li>
+                                <a class="contacts-item" href="{{ info.phone_education|tel_href }}">
+                                    <span class="course-dir-icon course-dir-icon--sm"><i class="bi bi-mortarboard"></i></span>
+                                    <span class="course-option-text">
+                                        <span class="course-option-meta">По вопросам обучения и записи на курсы</span>
+                                        <span class="contacts-value">{{ info.phone_education }}</span>
+                                    </span>
+                                    <i class="bi bi-telephone" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                            {% if info.phone_cooperation %}
+                            <li>
+                                <a class="contacts-item" href="{{ info.phone_cooperation|tel_href }}">
+                                    <span class="course-dir-icon course-dir-icon--sm"><i class="bi bi-people"></i></span>
+                                    <span class="course-option-text">
+                                        <span class="course-option-meta">По вопросам сотрудничества и организационным вопросам</span>
+                                        <span class="contacts-value">{{ info.phone_cooperation }}</span>
+                                    </span>
+                                    <i class="bi bi-telephone" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li>
+                                <a class="contacts-item" href="mailto:{{ info.email }}">
+                                    <span class="course-dir-icon course-dir-icon--sm"><i class="bi bi-envelope"></i></span>
+                                    <span class="course-option-text">
+                                        <span class="course-option-meta">Электронная почта</span>
+                                        <span class="contacts-value">{{ info.email }}</span>
+                                    </span>
+                                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="course-detail-block">
+                        <h3 class="course-detail-h">Как нас найти</h3>
+                        <div class="contacts-address">
+                            <p class="contacts-value"><i class="bi bi-geo-alt"></i> {{ info.address }}</p>
+                            {% if info.work_hours %}<p><i class="bi bi-clock"></i> {{ info.work_hours }}</p>{% endif %}
+                            {% if info.directions %}<p><i class="bi bi-bus-front"></i> {{ info.directions }}</p>{% endif %}
+                        </div>
+                        <div class="contacts-map">
+                            <iframe src="https://yandex.ru/map-widget/v1/?text={{ map_query|urlencode }}&amp;z=16"
+                                    title="Карта: {{ info.address }}" loading="lazy" allowfullscreen></iframe>
+                        </div>
+                    </section>
+                </article>
+            </div>
+
+            <!-- Реквизиты, соцсети, представители -->
+            <aside class="col-lg-4">
+                <div class="course-aside">
+                    <dl class="course-aside-list">
+                        {% if info.postal_address %}
+                        <div class="course-aside-row">
+                            <dt>Почтовый адрес</dt>
+                            <dd>{{ info.postal_address }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if info.legal_name %}
+                        <div class="course-aside-row">
+                            <dt>Организация</dt>
+                            <dd>{{ info.legal_name }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if info.inn %}
+                        <div class="course-aside-row">
+                            <dt>ИНН</dt>
+                            <dd><span class="course-chip">{{ info.inn }}</span></dd>
+                        </div>
+                        {% endif %}
+                        {% if info.vk_url or info.telegram_url %}
+                        <div class="course-aside-row">
+                            <dt>Мы в соцсетях</dt>
+                            <dd class="contacts-social">
+                                {% if info.vk_url %}<a class="course-chip course-chip--link" href="{{ info.vk_url }}" target="_blank" rel="noopener"><span class="contacts-vk">ВК</span> ВКонтакте</a>{% endif %}
+                                {% if info.telegram_url %}<a class="course-chip course-chip--link" href="{{ info.telegram_url }}" target="_blank" rel="noopener"><i class="bi bi-telegram"></i> Telegram</a>{% endif %}
+                            </dd>
+                        </div>
+                        {% endif %}
+                    </dl>
+                    <div class="course-aside-price-block contacts-regional">
+                        <p>Представители Ассоциации работают в разных городах — найдите ближайшего.</p>
+                        <a href="{% url 'core:specialists_list' %}" class="btn btn-primary rounded-pill w-100">Региональные представители</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}

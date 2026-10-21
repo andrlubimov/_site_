@@ -1,9 +1,12 @@
+from types import SimpleNamespace
+
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import DatabaseError, models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
 
+from .contact_defaults import CONTACT_DEFAULTS
 from .utils import format_date_range, format_day_list, plural_ru, sentence_case, slugify_ru
 
 
@@ -110,6 +113,7 @@ class Course(models.Model):
     DATED_TYPES = (TYPE_IN_PERSON, TYPE_ONLINE, TYPE_BLENDED)
 
     MEMBER_DISCOUNT_PERCENT = 20  # скидка для членов Ассоциации (на старом сайте — тоже 20%)
+    ALUMNI_DISCOUNT_PERCENT = 10  # скидка для тех, кто уже обучался в Ассоциации
 
     DIRECTION_CHOICES = [
         ('land', 'Сухопутные'),
@@ -318,12 +322,21 @@ class Course(models.Model):
     def hours_label(self):
         return f'{self.hours} {plural_ru(self.hours, ("учебный час", "учебных часа", "учебных часов"))}'
 
-    @property
-    def member_price(self):
-        """Стоимость для членов Ассоциации: базовая минус MEMBER_DISCOUNT_PERCENT"""
+    def discounted_price(self, percent):
+        """Базовая стоимость минус percent процентов"""
         if self.base_price is None:
             return None
-        return round(self.base_price * (100 - self.MEMBER_DISCOUNT_PERCENT) / 100)
+        return round(self.base_price * (100 - percent) / 100)
+
+    @property
+    def member_price(self):
+        """Стоимость для членов Ассоциации"""
+        return self.discounted_price(self.MEMBER_DISCOUNT_PERCENT)
+
+    @property
+    def alumni_price(self):
+        """Стоимость для тех, кто обучался у нас ранее"""
+        return self.discounted_price(self.ALUMNI_DISCOUNT_PERCENT)
 
     @property
     def documents(self):
@@ -663,3 +676,41 @@ class AboutSection(models.Model):
 
     def __str__(self):
         return self.get_key_display()
+
+
+class ContactInfo(models.Model):
+    """Контакты Ассоциации: страница «Контакты», ссылки на соцсети в шапке и подвале, телефон для записи.
+    Запись одна — её можно только редактировать."""
+    organization = models.CharField('Название', max_length=255)
+    legal_name = models.CharField('Юридическое название', max_length=255, blank=True)
+    inn = models.CharField('ИНН', max_length=12, blank=True)
+    address = models.CharField('Адрес', max_length=255)
+    directions = models.TextField('Как добраться', blank=True)
+    work_hours = models.CharField('Режим работы', max_length=255, blank=True)
+    phone_education = models.CharField('Телефон по вопросам обучения', max_length=30,
+                                       help_text='Показывается и на страницах курсов — для записи.')
+    phone_cooperation = models.CharField('Телефон по вопросам сотрудничества', max_length=30, blank=True,
+                                         help_text='И по организационным вопросам.')
+    email = models.EmailField('Электронная почта')
+    postal_address = models.CharField('Почтовый адрес', max_length=255, blank=True)
+    vk_url = models.URLField('ВКонтакте', blank=True)
+    telegram_url = models.URLField('Telegram', blank=True)
+    map_query = models.CharField('Адрес для карты', max_length=255, blank=True,
+                                 help_text='Что искать на Яндекс Картах. Если пусто — карта по адресу выше.')
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Контакты'
+        verbose_name_plural = 'Контакты'
+
+    def __str__(self):
+        return 'Контакты Ассоциации'
+
+    @classmethod
+    def get(cls):
+        """Контакты из БД, а если записи нет или БД недоступна — со старого сайта (contact_defaults)"""
+        try:
+            info = cls.objects.first()
+        except DatabaseError:
+            info = None
+        return info or SimpleNamespace(**CONTACT_DEFAULTS)

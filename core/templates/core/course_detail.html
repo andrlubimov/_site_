@@ -105,7 +105,10 @@
                             <li class="course-detail-doc">
                                 <i class="bi bi-award" aria-hidden="true"></i>
                                 <span class="course-option-text">
-                                    <span class="course-option-name">{{ name }}</span>
+                                    <span class="course-option-name">{{ name }}
+                                        <button type="button" class="course-hint" data-hint="Документ выдаётся только в случае успешной сдачи зачёта"
+                                                aria-label="Документ выдаётся только в случае успешной сдачи зачёта"><i class="bi bi-exclamation-circle"></i></button>
+                                    </span>
                                     {% if note %}<span class="course-option-meta">{{ note }}</span>{% endif %}
                                 </span>
                                 {% if not forloop.first and price %}<span class="course-option-price">{{ price|rub }}</span>{% endif %}
@@ -145,9 +148,9 @@
                         <span class="course-dir-icon course-dir-icon--sm"><i class="bi bi-telephone"></i></span>
                         <div>
                             <strong>Запись и вопросы:</strong>
-                            <a href="tel:+79169990990">+7 (916) 999-09-90</a>,
-                            <a href="mailto:info.babyswim@gmail.com">info.babyswim@gmail.com</a>
-                            <div class="course-detail-signup-hours">С понедельника по пятницу, 10:00–18:00 по московскому времени</div>
+                            <a href="{{ contacts.phone_education|tel_href }}">{{ contacts.phone_education }}</a>,
+                            <a href="mailto:{{ contacts.email }}">{{ contacts.email }}</a>
+                            {% if contacts.work_hours %}<div class="course-detail-signup-hours">{{ contacts.work_hours }}</div>{% endif %}
                         </div>
                     </div>
                 </article>
@@ -159,7 +162,10 @@
                     {% if course.base_price %}
                     <div class="course-aside-price-block">
                         <div class="course-aside-price">{{ course.base_price|rub }}</div>
-                        <div class="course-aside-member">{{ course.member_price|rub }} — для членов Ассоциации</div>
+                        <ul class="course-aside-discounts">
+                            <li><strong>{{ course.member_price|rub }}</strong> — для членов Ассоциации</li>
+                            <li><strong>{{ course.alumni_price|rub }}</strong> — для тех, кто обучался у нас ранее</li>
+                        </ul>
                         <a href="#dates" class="btn btn-primary rounded-pill w-100 mt-3">{% if schedules %}Выбрать дату{% else %}Даты проведения{% endif %}</a>
                     </div>
                     {% endif %}

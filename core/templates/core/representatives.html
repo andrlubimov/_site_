@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static course_tags %}
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
@@ -74,7 +74,7 @@
     <div class="container rep-narrow text-center">
         <h2 class="rep-title">Хотите стать региональным представителем ассоциации?</h2>
         <p>Мы готовы рассмотреть вашу организацию в качестве регионального представителя.</p>
-        <p>Звоните <a class="rep-link" href="tel:+79169990990">+7 (916) 999-09-90</a> или пишите на <a class="rep-link" href="mailto:info.babyswim@gmail.com">info.babyswim@gmail.com</a>.</p>
+        <p>Звоните <a class="rep-link" href="{{ contacts.phone_education|tel_href }}">{{ contacts.phone_education }}</a> или пишите на <a class="rep-link" href="mailto:{{ contacts.email }}">{{ contacts.email }}</a>.</p>
     </div>
 </section>
 {% endblock %}

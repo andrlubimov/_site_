@@ -51,28 +51,30 @@
     backdrop-filter: blur(4px);
 }
 
-/* Белый логотип → тёмно-бирюзовый, чтобы читался на песке */
+/* Белый логотип → тёмно-бирюзовый, чтобы читался на песке; на главной — крупнее */
+.page-home .site-logo {
+    padding: 3rem 1rem 0.5rem;
+}
+
 .page-home .logo-image {
+    width: min(900px, 92vw);
     filter: brightness(0) saturate(100%) invert(24%) sepia(62%) saturate(1200%) hue-rotate(160deg) brightness(88%);
 }
 
-.page-home .hero-card {
-    background: rgba(255, 253, 247, 0.9);
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(120, 85, 30, 0.18);
-    color: #1f3640;
+/* «Добро пожаловать» под логотипом — тем же тёмно-бирюзовым */
+.home-welcome {
+    padding: 1rem 1rem 2.5rem;
+    text-align: center;
 }
 
-.page-home .btn-hero {
-    background: #1f8fa6;
-    border-color: #1f8fa6;
-    color: #fff;
-}
-
-.page-home .btn-hero:hover {
-    background: #167489;
-    border-color: #167489;
-    color: #fff;
+.home-welcome-title {
+    margin: 0;
+    font-size: clamp(1.9rem, 4.5vw, 3.4rem);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1d5f73;
+    text-shadow: 0 2px 0 rgba(255, 248, 225, 0.6);
 }
 
 /* Ракушки на песке */
