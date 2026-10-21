@@ -85,10 +85,7 @@ def courses_list(request):
         sort = ''
     cards = build_course_cards(courses)
     sections = group_cards_by_direction(cards, sort)
-    variants_count = sum(len(card.variants) for card in cards)
-    found_label = f'{len(cards)} {plural_ru(len(cards), ("программа", "программы", "программ"))}'
-    if variants_count != len(cards):
-        found_label += f' · {variants_count} {plural_ru(variants_count, ("вариант", "варианта", "вариантов"))}'
+    found_label = cards_found_label(cards)
     context = {
         'courses': courses,
         'cards': cards,
@@ -102,6 +99,15 @@ def courses_list(request):
         'page_title': 'Обучающие программы',
     }
     return render(request, 'core/courses_list.html', context)
+
+
+def cards_found_label(cards):
+    """«N программ · M вариантов» — над списком карточек"""
+    variants_count = sum(len(card.variants) for card in cards)
+    label = f'{len(cards)} {plural_ru(len(cards), ("программа", "программы", "программ"))}'
+    if variants_count != len(cards):
+        label += f' · {variants_count} {plural_ru(variants_count, ("вариант", "варианта", "вариантов"))}'
+    return label
 
 
 def build_course_cards(courses):
@@ -205,14 +211,19 @@ def upcoming_schedules():
 def course_detail(request, slug):
     """Детальная страница курса: /education/courses/<slug>/"""
     course = get_object_or_404(
-        Course.objects.select_related('required_course').prefetch_related(
+        Course.objects.select_related('required_course__card', 'card').prefetch_related(
             'course_teachers__teacher', 'child_ages', 'health_features',
             Prefetch('schedules', queryset=upcoming_schedules(), to_attr='upcoming'),
         ),
         slug=slug, is_active=True,
     )
+    # другие варианты этого же курса (семинар / повышение квалификации, пакеты) — переключатель вверху
+    variants = []
+    if course.card_id and course.card.is_active:
+        variants = [c for c in course.card.ordered_courses if c.is_active]
     context = {
         'course': course,
+        'variants': variants if len(variants) > 1 else [],
         'schedules': course.upcoming,
         'page_title': course.title,
     }
@@ -225,12 +236,23 @@ def teacher_detail(request, slug):
     courses = (
         Course.objects.filter(is_active=True, teachers=teacher)
         .annotate(next_date=Min('schedules__start_date', filter=Q(schedules__start_date__gte=date.today())))
-        .prefetch_related(Prefetch('schedules', queryset=upcoming_schedules(), to_attr='upcoming'))
+        .select_related('card', 'card__description_course')
+        .prefetch_related('course_teachers__teacher',
+                          Prefetch('schedules', queryset=upcoming_schedules(), to_attr='upcoming'))
         .order_by(F('next_date').asc(nulls_last=True), 'title')
     )
+    # те же карточки, что на странице «Программы»; порядок — по ближайшей дате
+    cards = build_course_cards(courses)
+    found_label = cards_found_label(cards)
+    directions = []
+    for card in cards:
+        if card.direction and card.direction not in [code for code, _, _ in directions]:
+            directions.append((card.direction, card.direction_label, card.direction_icon))
     context = {
         'teacher': teacher,
-        'courses': courses,
+        'cards': cards,
+        'found_label': found_label,
+        'directions': directions,
         'page_title': teacher.display_name,
     }
     return render(request, 'core/teacher_detail.html', context)

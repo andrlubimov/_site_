@@ -203,11 +203,12 @@ class CourseAdmin(admin.ModelAdmin):
             'fields': ('course_type', 'direction', 'venue', 'skill_level', 'child_ages', 'health_features'),
         }),
         ('Стоимость и документ по окончании курса', {
-            'fields': ('base_price', 'has_diploma', 'diploma_price',
+            'fields': ('main_document', 'base_price', 'has_diploma', 'diploma_price',
                        'has_qualification_certificate', 'qualification_certificate_price'),
-            'description': 'По окончании курса слушатель получает сертификат о прохождении курса — '
-                           'по базовой стоимости. Если у курса есть вариант с дипломом или с удостоверением '
-                           'о повышении квалификации, отметьте его и укажите стоимость.',
+            'description': 'По окончании курса слушатель получает выбранный документ по базовой стоимости: '
+                           'у курсов повышения квалификации — удостоверение, у остальных — сертификат. '
+                           'Если у семинара есть вариант с дипломом или с удостоверением о повышении '
+                           'квалификации, отметьте его и укажите стоимость.',
         }),
         ('Требования', {
             'fields': ('required_course',),

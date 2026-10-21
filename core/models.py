@@ -129,6 +129,14 @@ class Course(models.Model):
         TYPE_DISTANCE: 'bi-laptop',
         TYPE_ONLINE: 'bi-camera-video',
     }
+    DOC_CERTIFICATE = 'certificate'
+    DOC_QUALIFICATION = 'qualification'
+    DOCUMENT_CHOICES = [
+        (DOC_CERTIFICATE, 'Сертификат о прохождении курса'),
+        (DOC_QUALIFICATION, 'Удостоверение о повышении квалификации'),
+    ]
+    DOCUMENT_NOTES = {DOC_QUALIFICATION: 'с занесением данных в ФИС ФРДО'}
+
     VENUE_CHOICES = [
         ('pool', 'В бассейне'),
         ('gym', 'В спортзале'),
@@ -176,9 +184,13 @@ class Course(models.Model):
         help_text='От типа зависят даты в расписании: у очных и онлайн — начало и конец, '
                   'у очно-заочных — ещё очные дни и доступ к материалам, у дистанционных — срок доступа.',
     )
+    main_document = models.CharField(
+        'Документ по окончании курса', max_length=20, choices=DOCUMENT_CHOICES, default=DOC_CERTIFICATE,
+        help_text='По окончании курсов повышения квалификации выдаётся удостоверение, остальных — сертификат.',
+    )
     base_price = models.PositiveIntegerField(
         'Базовая стоимость, ₽', null=True,
-        help_text='Стоимость обучения с сертификатом о прохождении курса.',
+        help_text='Стоимость обучения с документом, выбранным выше.',
     )
     has_diploma = models.BooleanField('Есть вариант с дипломом', default=False,
                                       help_text='Диплом — для слушателей с высшим образованием.')
@@ -234,6 +246,9 @@ class Course(models.Model):
                     errors[price_field] = 'Укажите стоимость для этого варианта документа.'
             else:
                 setattr(self, price_field, None)  # вариант выключен — цена не нужна
+        if self.main_document == self.DOC_QUALIFICATION and self.has_qualification_certificate:
+            errors['has_qualification_certificate'] = (
+                'Удостоверение уже выбрано документом по окончании курса — отдельный вариант с ним не нужен.')
         if self.required_course_id:
             if self.pk and self.required_course_id == self.pk:
                 errors['required_course'] = 'Курс не может требовать сам себя.'
@@ -265,6 +280,12 @@ class Course(models.Model):
     def list_title(self):
         """Название курса без карточки на странице «Программы» (заглавные буквы — в обычные)"""
         return sentence_case(self.title)
+
+    @property
+    def display_title(self):
+        """Заголовок страницы курса: общее название карточки (там регистр выверен вручную),
+        вариант — пакет, семинар — показывается рядом переключателем"""
+        return self.card.title if self.card_id else self.list_title
 
     @property
     def variant_name(self):
@@ -306,11 +327,12 @@ class Course(models.Model):
 
     @property
     def documents(self):
-        """Документ по окончании курса: (название, для кого, стоимость). Сертификат — всегда."""
-        docs = [('Сертификат о прохождении курса', '', self.base_price)]
+        """Документ по окончании курса: (название, примечание, стоимость). Первым — основной документ
+        (сертификат или, у курсов повышения квалификации, удостоверение) по базовой стоимости."""
+        docs = [(self.get_main_document_display(), self.DOCUMENT_NOTES.get(self.main_document, ''), self.base_price)]
         if self.has_diploma:
             docs.append(('Диплом', 'для слушателей с высшим образованием', self.diploma_price))
-        if self.has_qualification_certificate:
+        if self.has_qualification_certificate and self.main_document != self.DOC_QUALIFICATION:
             docs.append(('Удостоверение о повышении квалификации',
                          'для слушателей со средним или высшим физкультурным образованием',
                          self.qualification_certificate_price))

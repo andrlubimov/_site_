@@ -1149,12 +1149,12 @@ body:has(.footer-wave) main > section:last-child::after {
 
 /* ============================================================
    COURSE DETAIL (/education/courses/<slug>/)
+   В стиле страницы «Программы»: белые блоки с крупным скруглением, подписи — мелкими заглавными,
+   строки (даты, документы) — как варианты в карточке курса.
    Слева — краткая информация (.course-aside), справа — основной блок (.course-detail)
    ============================================================ */
-.course-detail {
-    color: #2a3540;
-}
 
+/* используются и на других страницах (преподаватель, расписание) */
 .course-detail-kind {
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -1168,178 +1168,157 @@ body:has(.footer-wave) main > section:last-child::after {
     font-weight: 700;
 }
 
-.course-chip {
+/* --- Строка над блоком: назад к списку и варианты курса --- */
+.course-detail-bar {
+    margin-bottom: 1rem;
+}
+
+.course-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+.course-detail-back:hover {
+    color: var(--ocean-800);
+}
+
+.course-variant-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-left: auto;
+}
+
+.course-variant {
     display: inline-block;
-    margin: 0 0.35rem 0.35rem 0;
-    padding: 0.1rem 0.65rem;
-    border-radius: 20px;
-    background: var(--ocean-100);
-    color: var(--ocean-700);
-    font-size: 0.85rem;
+    padding: 0.28rem 0.85rem;
+    border: 1px solid var(--ocean-200);
+    border-radius: 999px;
+    font-size: 0.84rem;
+    line-height: 1.3;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.15s, background-color 0.15s;
 }
 
-/* --- Боковой блок с краткой информацией --- */
-.course-aside {
-    background: #fff;
-    color: #2a3540;
-    border-radius: 28px;
-    padding: 1.25rem 1.25rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+.course-variant:hover {
+    border-color: var(--ocean-500);
+    color: var(--text);
 }
 
-@media (min-width: 992px) {
-    .course-aside {
-        position: sticky;
-        top: 1.5rem;
-    }
-}
-
-.course-aside-list {
-    margin: 0;
-}
-
-.course-aside-row {
-    display: grid;
-    grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
-    gap: 0.5rem;
-    align-items: baseline;
-    padding: 0.55rem 0;
-}
-
-.course-aside-row + .course-aside-row {
-    border-top: 1px solid var(--line);
-}
-
-.course-aside-row dt {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #55636e;
-}
-
-.course-aside-row dd {
-    margin: 0;
-    font-size: 0.9rem;
-    overflow-wrap: anywhere;
-}
-
-.course-aside-teacher {
-    display: block;
-    color: var(--ocean-700);
-    font-weight: 500;
-}
-
-.course-aside-price {
-    color: var(--ink);
-    font-weight: 700;
-}
-
-.course-aside .course-chip {
-    margin: 0 0.25rem 0.25rem 0;
-    font-size: 0.78rem;
+.course-variant.is-current {
+    background: var(--ocean-700);
+    border-color: var(--ocean-700);
+    color: #fff;
 }
 
 /* --- Основной блок --- */
+.course-detail {
+    padding: 1.5rem 1.5rem 1.75rem;
+    background: #fff;
+    color: var(--text);
+    border-radius: 28px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+@media (min-width: 768px) {
+    .course-detail {
+        padding: 2rem 2.5rem 2.25rem;
+    }
+}
+
 .course-detail-title {
-    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
-    font-weight: 600;
-    text-align: center;
-    color: #1b2a33;
-    margin-bottom: 1.25rem;
+    margin: 0.25rem 0 0.75rem;
+    font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--ink);
 }
 
 .course-detail-lead {
-    font-size: 1.1rem;
-    line-height: 1.55;
-    color: #1b2a33;
+    margin-bottom: 1.25rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.course-detail .course-card-teachers {
+    gap: 0.6rem 1.5rem;
     margin-bottom: 1.5rem;
 }
 
-.course-detail-teachers {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem 1rem;
-    margin-bottom: 1.75rem;
+.course-detail .course-teacher-name {
+    font-size: 0.95rem;
 }
 
-.course-detail-teacher {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.4rem 1.25rem 0.4rem 0.4rem;
-    border: 1px solid var(--line);
-    border-radius: 60px;
-    color: inherit;
-    line-height: 1.3;
-    text-decoration: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.course-detail-teacher:hover {
-    color: inherit;
-    border-color: var(--ocean-500);
-    box-shadow: 0 4px 12px rgba(0, 60, 90, 0.1);
-}
-
-.course-detail-teacher img,
-.course-detail-teacher-placeholder {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex: none;
-}
-
-.course-detail-teacher-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--ocean-100);
-    color: var(--ocean-500);
-    font-size: 1.8rem;
-}
-
-.course-detail-audience {
-    border-left: 4px solid var(--ocean-500);
-    background: var(--ocean-50);
-    padding: 0.75rem 1rem;
-    margin: 0 0 1.75rem;
-}
-
-.course-detail-audience h2 {
+.course-detail .course-teacher-ava {
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
     font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
 }
 
-.course-detail-audience p {
-    font-style: italic;
+.course-detail .course-teacher-ava img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.course-detail-audience p:last-child {
+/* разделы: заголовок — как подписи групп в фильтрах */
+.course-detail-block {
+    margin-top: 1.75rem;
+}
+
+.course-detail-h {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.course-detail-h::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+}
+
+.course-detail-block p:last-child {
     margin-bottom: 0;
 }
 
-.course-description {
-    margin-bottom: 1.75rem;
+/* «Для кого» — мягкая подложка */
+.course-detail-audience {
+    padding: 1rem 1.25rem 1.1rem;
+    border-radius: 20px;
+    background: var(--ocean-50);
 }
 
-.course-description p,
-.course-program-body p {
-    text-align: justify;
+.course-detail-audience .course-detail-h::after {
+    background: var(--ocean-100);
 }
 
-/* Программа курса: свёрнута до нескольких строк (см. course-detail.js) */
+/* Программа курса — в рамке; свёрнута до нескольких строк (см. course-detail.js) */
 .course-program {
-    border: 1px solid var(--line);
-    border-radius: 16px;
     padding: 1.25rem 1.25rem 1rem;
-    margin-bottom: 1.75rem;
+    border: 1px solid var(--line);
+    border-radius: 20px;
 }
 
-.course-program h2 {
-    font-size: 1.15rem;
-    font-weight: 600;
+.course-program-title {
     margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ink);
 }
 
 .course-program-body {
@@ -1352,7 +1331,7 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-program-body.is-collapsed::after {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     right: 0;
@@ -1368,15 +1347,17 @@ body:has(.footer-wave) main > section:last-child::after {
     gap: 0.75rem;
     width: 100%;
     margin-top: 0.75rem;
-    padding: 0.4rem 1rem;
-    border: 1px solid #cfe3ee;
-    border-radius: 30px;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--ocean-200);
+    border-radius: 999px;
     background: var(--ocean-50);
     color: var(--ocean-700);
     font-weight: 500;
+    transition: border-color 0.15s, background-color 0.15s;
 }
 
 .course-program-toggle:hover {
+    border-color: var(--ocean-500);
     background: var(--ocean-100);
 }
 
@@ -1384,65 +1365,35 @@ body:has(.footer-wave) main > section:last-child::after {
     display: none;
 }
 
-/* Документ по окончании курса */
-.course-detail-doc {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 1.5rem;
-    padding: 0.75rem 0;
-    margin-bottom: 1.5rem;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-}
-
-.course-detail-doc-label {
-    font-weight: 600;
-}
-
-.course-detail-doc-list {
-    flex: 1 1 260px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.course-detail-doc-list small {
-    color: var(--muted);
-}
-
-/* Ближайшие даты проведения */
-.course-dates {
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1.75rem;
-}
-
-.course-dates-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 0.75rem;
-}
-
+/* Документ по окончании курса и даты — строки как варианты в карточке курса */
+.course-detail-doc-list,
 .course-dates-list {
-    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     margin: 0;
     padding: 0;
+    list-style: none;
 }
 
+.course-detail-doc,
 .course-dates-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 1rem;
-    padding: 0.75rem 0;
+    gap: 0.5rem 0.9rem;
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
 }
 
-.course-dates-row + .course-dates-row {
-    border-top: 1px solid var(--line);
+.course-detail-doc > .bi {
+    font-size: 1.2rem;
+    color: var(--ocean-700);
+}
+
+.course-detail-doc .course-option-price {
+    margin-left: auto;
 }
 
 .course-dates-info {
@@ -1450,16 +1401,17 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-dates-label {
-    font-size: 1.02rem;
+    font-size: 1rem;
+    color: var(--ink);
 }
 
 .course-dates-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 0.15rem 1rem;
-    margin-top: 0.15rem;
-    font-size: 0.85rem;
-    color: #55636e;
+    margin-top: 0.2rem;
+    font-size: 0.84rem;
+    color: var(--muted);
 }
 
 .course-dates-meta .bi {
@@ -1467,129 +1419,232 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-dates-comment {
-    margin-top: 0.15rem;
-    font-size: 0.85rem;
-    color: #55636e;
+    margin-top: 0.2rem;
+    font-size: 0.84rem;
+    color: var(--muted);
 }
 
 .course-signup-btn {
-    min-width: 150px;
+    min-width: 140px;
+    font-weight: 600;
 }
 
 .course-dates-empty {
     margin: 0;
+    padding: 1rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
     text-align: center;
     color: var(--muted);
 }
 
+/* Контакты для записи */
 .course-detail-signup {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
     padding-top: 1.25rem;
     border-top: 1px solid var(--line);
+    font-size: 0.95rem;
 }
 
-/* ============================================================
-   TEACHER (/education/teachers/<slug>/)
-   ============================================================ */
-.teacher-detail {
-    color: #2a3540;
+.course-detail-signup-hours {
+    font-size: 0.84rem;
+    color: var(--muted);
 }
 
-.teacher-detail-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1.25rem 1.75rem;
-    margin-bottom: 1.5rem;
+/* --- Боковой блок с краткой информацией (как панель фильтров) --- */
+.course-aside {
+    padding: 1.25rem;
+    background: #fff;
+    color: var(--text);
+    border-radius: 28px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-.teacher-detail-photo {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex: none;
-    box-shadow: 0 6px 18px rgba(0, 40, 70, 0.15);
+@media (min-width: 992px) {
+    .course-aside {
+        position: sticky;
+        top: 1.5rem;
+    }
 }
 
-.teacher-detail-photo--empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--ocean-100);
-    color: var(--ocean-500);
-    font-size: 4rem;
+.course-aside-price-block {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 20px;
+    background: var(--ocean-50);
 }
 
-.teacher-detail-role {
-    margin: 0 0 0.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--ocean-700);
+.course-aside-price {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--ink);
 }
 
-.teacher-detail-name {
+.course-aside-member {
+    margin-top: 0.2rem;
+    font-size: 0.84rem;
+    color: var(--muted);
+}
+
+.course-aside-list {
     margin: 0;
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    font-weight: 600;
-    color: #1b2a33;
 }
 
-.teacher-detail-bio {
-    margin-bottom: 2rem;
+.course-aside-row {
+    padding: 0.7rem 0;
 }
 
-.teacher-detail-bio p {
-    text-align: justify;
-}
-
-.teacher-detail-subtitle {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-}
-
-.teacher-courses {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.teacher-course {
-    padding: 1rem 0;
+.course-aside-row + .course-aside-row {
     border-top: 1px solid var(--line);
 }
 
-.teacher-course-title {
-    font-weight: 600;
-    font-size: 1.02rem;
+.course-aside-row dt {
+    margin-bottom: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.course-aside-row dd {
+    margin: 0;
+    font-size: 0.92rem;
+    overflow-wrap: anywhere;
+}
+
+.course-aside-row dd a {
     color: var(--ocean-700);
     text-decoration: none;
 }
 
-.teacher-course-title:hover {
+.course-aside-row dd a:hover {
     text-decoration: underline;
 }
 
-.teacher-course-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem 1rem;
-    margin: 0.3rem 0;
-    font-size: 0.88rem;
-    color: #55636e;
+
+/* значения справочников — «таблетки», как варианты в фильтрах */
+.course-chip {
+    display: inline-block;
+    margin: 0 0.25rem 0.3rem 0;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--ocean-200);
+    border-radius: 1rem; /* длинное значение переносится — углы остаются аккуратными */
+    font-size: 0.8rem;
+    line-height: 1.3;
+    color: var(--text);
 }
 
-.teacher-course-meta .bi {
+/* преподаватель — ссылка на его страницу */
+.course-aside-row dd a.course-chip--link {
+    font-weight: 600;
     color: var(--ocean-700);
+    text-decoration: none;
+    transition: border-color 0.15s, background-color 0.15s;
 }
 
-.teacher-course-desc {
-    margin: 0;
-    font-size: 0.92rem;
-    color: #3d4a55;
+.course-aside-row dd a.course-chip--link:hover {
+    border-color: var(--ocean-500);
+    background: var(--ocean-50);
+    text-decoration: none;
+}
+
+/* ============================================================
+   TEACHER (/education/teachers/<slug>/)
+   В стиле страниц курсов: слева белая панель профиля (как фильтры и краткая информация о курсе),
+   справа — «О преподавателе» и карточки его курсов, как на странице «Программы»
+   ============================================================ */
+.teacher-profile {
+    padding: 1.5rem 1.25rem 1.25rem;
+    background: #fff;
+    color: var(--text);
+    border-radius: 28px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+@media (min-width: 992px) {
+    .teacher-profile {
+        position: sticky;
+        top: 1.5rem;
+    }
+}
+
+.teacher-profile-photo {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 1;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 6px var(--ocean-50), 0 8px 20px rgba(0, 40, 70, 0.15);
+}
+
+.teacher-profile-photo--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ocean-100);
+    color: var(--ocean-800);
+    font-size: 3rem;
+    font-weight: 700;
+}
+
+.teacher-profile-role {
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--muted);
+}
+
+.teacher-profile-name {
+    margin: 0 0 1rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--ink);
+}
+
+.teacher-profile .course-aside-list {
+    border-top: 1px solid var(--line);
+}
+
+.teacher-profile-dirs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.teacher-profile-dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 600;
+}
+
+/* «О преподавателе» — белый блок, как основной блок страницы курса */
+.teacher-bio {
+    margin-bottom: 2rem;
+}
+
+.teacher-bio .course-detail-h {
+    margin-bottom: 1rem;
+}
+
+.teacher-bio p:last-child {
+    margin-bottom: 0;
+}
+
+.teacher-courses .course-section-head .course-dir-icon {
+    color: var(--ocean-700);
 }
 
 /* --- Расписание: дистанционные курсы --- */
@@ -1960,18 +2015,36 @@ body:has(.footer-wave) main > section:last-child::after {
     list-style: none;
 }
 
+/* преподаватель — «таблетка»: фото, имя, под ним фамилия */
 .course-teacher {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: var(--course-link);
+    gap: 0.65rem;
+    padding: 0.3rem 1.1rem 0.3rem 0.3rem;
+    border: 1px solid var(--ocean-100);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--course-text);
+    line-height: 1.25;
     text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.course-teacher:hover span:last-child {
-    text-decoration: underline;
+.course-teacher:hover {
+    border-color: var(--ocean-500);
+    box-shadow: 0 4px 12px rgba(0, 60, 90, 0.1);
+    color: var(--course-text);
+}
+
+.course-teacher-name {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.88rem;
+}
+
+.course-teacher-name strong {
+    font-weight: 700;
+    color: var(--course-ink);
 }
 
 .course-teacher-ava {
@@ -2157,9 +2230,16 @@ body:has(.footer-wave) main > section:last-child::after {
 /* вариант курса: название, под ним часы и цена, стрелка справа */
 .course-option-text {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: 0.35rem;
     min-width: 0;
+}
+
+@media (max-width: 575.98px) {
+    .course-option {
+        flex-wrap: nowrap; /* длинная строка с часами и ценой переносится внутри текста, стрелка — справа */
+    }
 }
 
 .course-option-text .course-option-meta {
@@ -2189,4 +2269,10 @@ body:has(.footer-wave) main > section:last-child::after {
     margin-bottom: 0.5rem;
     font-size: 2rem;
     opacity: 0.85;
+}
+
+@media (max-width: 575.98px) {
+    .course-variant-switch {
+        margin-left: 0; /* на телефоне варианты переносятся под ссылку «Все программы» */
+    }
 }

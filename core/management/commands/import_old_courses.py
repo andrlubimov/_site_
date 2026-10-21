@@ -30,9 +30,11 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from core.legacy_attributes import fill_course_attributes
 from core.legacy_cards import assign_course_cards
 from core.legacy_directions import LEGACY_DIRECTIONS
-from core.models import Course, CourseCard, CourseSchedule, CourseTeacher, Teacher
+from core.models import ChildAge, Course, CourseCard, CourseSchedule, CourseTeacher, HealthFeature, Teacher
+from core.utils import is_qualification_course
 
 BASE_URL = 'https://www.grudnichkovoe-plavanie.ru/'
 USER_AGENT = 'Mozilla/5.0 (course import)'
@@ -258,6 +260,9 @@ class Command(BaseCommand):
                     'is_active': True,
                 })
                 stats['courses_new' if created else 'courses_upd'] += 1
+                if created and is_qualification_course(course.title):
+                    course.main_document = Course.DOC_QUALIFICATION  # после ПК выдаётся удостоверение
+                    course.save(update_fields=['main_document'])
                 if not course.direction and slug in LEGACY_DIRECTIONS:
                     course.direction = LEGACY_DIRECTIONS[slug]  # направления на старом сайте нет
                     course.save(update_fields=['direction'])
@@ -300,11 +305,14 @@ class Command(BaseCommand):
 
         # новые курсы — по карточкам страницы «Программы» (варианты одного курса — вместе)
         stats['cards_new'] = assign_course_cards(Course, CourseCard)
+        # возраст детей, особенности здоровья, место и уровень — для фильтров (только пустые)
+        stats['attrs_filled'] = fill_course_attributes(Course, ChildAge, HealthFeature)
 
         self.stdout.write(self.style.SUCCESS(
             f'Готово. Курсы: новых {stats["courses_new"]}, обновлено {stats["courses_upd"]}. '
             f'Записи расписания: новых {stats["schedules_new"]}, обновлено {stats["schedules_upd"]}. '
-            f'Новых преподавателей: {stats["teachers_new"]}. Новых карточек курсов: {stats["cards_new"]}.'))
+            f'Новых преподавателей: {stats["teachers_new"]}. Новых карточек курсов: {stats["cards_new"]}. '
+            f'Заполнены характеристики у курсов: {stats["attrs_filled"]}.'))
 
     def upsert_schedule(self, stats, course, start_date, values, on_create):
         """Запись расписания по курсу и дате начала (у дистанционных — без даты).

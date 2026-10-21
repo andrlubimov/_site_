@@ -180,6 +180,21 @@ class CourseModelTests(TestCase):
             ('Удостоверение о повышении квалификации', 14000),
         ])
 
+    def test_qualification_course_gives_certificate_of_qualification_only(self):
+        course = make_course(base_price=12900, main_document=Course.DOC_QUALIFICATION)
+        self.assertEqual(course.documents, [
+            ('Удостоверение о повышении квалификации', 'с занесением данных в ФИС ФРДО', 12900),
+        ])
+        course.has_qualification_certificate, course.qualification_certificate_price = True, 14000
+        with self.assertRaises(ValidationError):
+            course.clean()  # удостоверение уже основной документ — второй вариант с ним не нужен
+
+    def test_is_qualification_course(self):
+        from .utils import is_qualification_course
+        self.assertTrue(is_qualification_course('Плавание. ПОВЫШЕНИЕ КВАЛИФИКАЦИИ'))
+        self.assertTrue(is_qualification_course('Плавание', 'Повышение квалификации'))
+        self.assertFalse(is_qualification_course('Плавание. Семинар', 'Пакет «Специалист»'))
+
     def test_required_course_cannot_be_self_or_cycle(self):
         a = make_course(title='A')
         b = make_course(title='B', required_course=a)
@@ -270,7 +285,8 @@ class CourseAdminTests(TestCase):
             'course_type': 'online', 'direction': 'swimming', 'venue': 'pool', 'skill_level': 'beginner',
             'child_ages': [ChildAge.objects.get(code='infant').pk],
             'health_features': [HealthFeature.objects.get(code='normotypical').pk],
-            'base_price': '10000', 'diploma_price': '', 'qualification_certificate_price': '',
+            'main_document': 'certificate', 'base_price': '10000', 'diploma_price': '',
+            'qualification_certificate_price': '',
             'required_course': '', 'order': '0', 'is_active': 'on',
             'card': '', 'variant_label': '', 'card_position': '0',
             'course_teachers-TOTAL_FORMS': '1', 'course_teachers-INITIAL_FORMS': '0',
@@ -428,8 +444,9 @@ class TeacherPageTests(TestCase):
         other = make_course(title='Чужой курс', slug='other')
         for course in (active, hidden):
             CourseTeacher.objects.create(course=course, teacher=self.teacher)
-        CourseSchedule.objects.create(course=active, format='group', start_date=date.today() + timedelta(days=5),
-                                      end_date=date.today() + timedelta(days=6))
+        schedule = CourseSchedule.objects.create(course=active, format='group',
+                                                 start_date=date.today() + timedelta(days=5),
+                                                 end_date=date.today() + timedelta(days=6))
         response = self.client.get('/education/teachers/olga-belotserkovskaya/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Ольга Ивановна Белоцерковская')
@@ -437,7 +454,11 @@ class TeacherPageTests(TestCase):
         self.assertContains(response, 'href="/education/courses/patronage/"')
         self.assertNotContains(response, hidden.title)
         self.assertNotContains(response, other.title)
-        self.assertEqual(list(response.context['courses']), [active])
+        cards = response.context['cards']
+        self.assertEqual([card.variants for card in cards], [[active]])
+        self.assertContains(response, 'class="course-card"', count=1)  # та же карточка, что на «Программах»
+        self.assertContains(response, schedule.date_label)  # ближайшая дата в строке варианта
+        self.assertContains(response, '1 программа')
 
     def test_unknown_teacher_404(self):
         self.assertEqual(self.client.get('/education/teachers/nobody/').status_code, 404)
@@ -767,7 +788,7 @@ class CourseFilterTests(TestCase):
     def test_courses_are_cards_with_teacher_links(self):
         response = self.client.get('/education/courses/')
         self.assertContains(response, 'class="course-card"', count=3)
-        self.assertContains(response, 'Анна Швыдко')
+        self.assertContains(response, 'Анна <strong>Швыдко</strong>')  # «таблетка»: имя, под ним фамилия
         self.assertContains(response, 'href="/education/teachers/anna-shvydko/"')
         self.assertContains(response, 'name="type"')
 
@@ -945,3 +966,59 @@ class VariantTitleTests(SimpleTestCase):
     def test_sentence_case(self):
         self.assertEqual(sentence_case('ГИДРОРЕАБИЛИТАЦИЯ ДЕТЕЙ. ВВЕДЕНИЕ'), 'Гидрореабилитация детей. Введение')
         self.assertEqual(sentence_case('Обычный Заголовок'), 'Обычный Заголовок')
+
+
+class LegacyAttributesTests(TestCase):
+    """Характеристики курсов для фильтров (core/legacy_attributes.py)"""
+
+    def test_mapping_uses_known_codes_and_courses(self):
+        from core.legacy_attributes import LEGACY_ATTRIBUTES, LEGACY_REQUIRED
+        from core.legacy_cards import LEGACY_CARDS
+        known = {slug for _, members in LEGACY_CARDS for slug, _ in members}
+        self.assertEqual(set(LEGACY_ATTRIBUTES), known, 'характеристики заданы для всех курсов старого сайта')
+        self.assertTrue(set(LEGACY_REQUIRED) | set(LEGACY_REQUIRED.values()) <= known)
+        venues, skills = dict(Course.VENUE_CHOICES), dict(Course.SKILL_CHOICES)
+        for slug, attrs in LEGACY_ATTRIBUTES.items():
+            self.assertIn(attrs['venue'], venues, slug)
+            self.assertIn(attrs['skill'], skills, slug)
+            self.assertTrue(set(attrs['ages']) <= {'infant', 'early', 'preschool'}, slug)
+            self.assertTrue(set(attrs['health']) <= {'normotypical', 'special_care', 'pregnant'}, slug)
+
+    def test_fills_only_empty_values(self):
+        from core.legacy_attributes import fill_course_attributes
+        part1 = make_course(title='Патронаж. Часть 1', slug='nursing-art-basic2', venue='', skill_level='')
+        part2 = make_course(title='Патронаж. Часть 2', slug='advanced', venue='gym', skill_level='')
+        speech = make_course(title='Речь', slug='speech', audience='', short_description='Своё описание')
+        self.assertEqual(fill_course_attributes(Course, ChildAge, HealthFeature), 3)
+
+        part1.refresh_from_db()
+        self.assertEqual((part1.venue, part1.skill_level), ('home', 'beginner'))
+        self.assertEqual(list(part1.child_ages.values_list('code', flat=True)), ['infant'])
+        part2.refresh_from_db()
+        self.assertEqual(part2.venue, 'gym')  # правка из админки не затирается
+        self.assertEqual(part2.required_course, part1)
+        speech.refresh_from_db()
+        self.assertEqual(speech.short_description, 'Своё описание')
+        self.assertTrue(speech.audience)
+
+        part1.child_ages.set([ChildAge.objects.get(code='preschool')])
+        fill_course_attributes(Course, ChildAge, HealthFeature)
+        self.assertEqual(list(part1.child_ages.values_list('code', flat=True)), ['preschool'])
+
+
+class CourseDetailVariantsTests(TestCase):
+    def test_variant_switch_links_other_variants_of_card(self):
+        from .models import CourseCard
+        card = CourseCard.objects.create(title='Плавание')
+        seminar = make_course(title='Плавание. Семинар', slug='swim-seminar', card=card, card_position=0,
+                              variant_label='Семинар')
+        make_course(title='Плавание. ПК', slug='swim-pk', card=card, card_position=1,
+                    variant_label='Повышение квалификации')
+        response = self.client.get(seminar.get_absolute_url())
+        self.assertContains(response, '<span class="course-variant is-current" aria-current="page">Семинар</span>',
+                            html=True)
+        self.assertContains(response, 'href="/education/courses/swim-pk/"')
+
+    def test_no_switch_for_single_course(self):
+        course = make_course(title='Одиночный курс', slug='single')
+        self.assertNotContains(self.client.get(course.get_absolute_url()), 'course-variant-switch')

@@ -109,3 +109,12 @@ def split_variant_title(title):
         if count and base.strip():
             return base.strip(), label
     return title.strip(), ''
+
+
+QUALIFICATION_RE = re.compile(r'повышени\w*\s+квалификаци', re.IGNORECASE)
+
+
+def is_qualification_course(*texts):
+    """Курс повышения квалификации — по названию или подписи варианта.
+    По окончании такого курса выдаётся удостоверение, а не сертификат."""
+    return any(QUALIFICATION_RE.search(text or '') for text in texts)

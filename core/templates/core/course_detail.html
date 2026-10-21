@@ -17,130 +17,75 @@
 {% block content %}
 <section class="py-5">
     <div class="container">
-        <div class="row g-4 justify-content-center">
+        <div class="row g-4">
 
-            <!-- Краткая информация о курсе -->
-            <aside class="col-lg-3">
-                <div class="course-aside">
-                    <dl class="course-aside-list">
-                        {% if course.course_type %}
-                        <div class="course-aside-row">
-                            <dt>Тип</dt>
-                            <dd><span class="course-detail-kind">{{ course.get_course_type_display }}</span></dd>
-                        </div>
+            <!-- Основной блок (на телефоне — первым) -->
+            <div class="col-lg-9 order-lg-2">
+                <!-- Назад к списку и другие варианты этого курса -->
+                <nav class="course-list-bar course-detail-bar" aria-label="Варианты курса">
+                    <a class="course-detail-back" href="{% url 'core:courses_list' %}"><i class="bi bi-arrow-left"></i> Все программы</a>
+                    {% if variants %}
+                    <div class="course-variant-switch">
+                        {% for variant in variants %}
+                        {% if variant.pk == course.pk %}
+                        <span class="course-variant is-current" aria-current="page">{{ variant.variant_name }}</span>
+                        {% else %}
+                        <a class="course-variant" href="{{ variant.get_absolute_url }}">{{ variant.variant_name }}</a>
                         {% endif %}
-                        <div class="course-aside-row">
-                            <dt>Часы</dt>
-                            <dd><span class="course-block-hours">{{ course.hours_label }}</span></dd>
-                        </div>
-                        {% with teachers=course.teacher_list %}
-                        {% if teachers %}
-                        <div class="course-aside-row">
-                            <dt>{% if teachers|length > 1 %}Преподаватели{% else %}Преподаватель{% endif %}</dt>
-                            <dd>
-                                {% for teacher in teachers %}
-                                <a class="course-aside-teacher" href="{% url 'core:teacher_detail' slug=teacher.slug %}">{{ teacher.full_name }}</a>
-                                {% endfor %}
-                            </dd>
-                        </div>
-                        {% endif %}
-                        {% endwith %}
-                        {% if course.base_price %}
-                        <div class="course-aside-row">
-                            <dt>Стоимость</dt>
-                            <dd class="course-aside-price">{{ course.base_price|rub }}</dd>
-                        </div>
-                        <div class="course-aside-row">
-                            <dt>Стоимость для членов Ассоциации</dt>
-                            <dd class="course-aside-price">{{ course.member_price|rub }}</dd>
-                        </div>
-                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </nav>
+
+                <article class="course-detail">
+                    <div class="course-card-top">
                         {% if course.direction %}
-                        <div class="course-aside-row">
-                            <dt>Направление работы</dt>
-                            <dd>{{ course.get_direction_display }}</dd>
-                        </div>
+                        <span class="course-dir-icon course-dir-icon--sm course-dir--{{ course.direction }}"><i class="bi {{ course.direction_icon }}"></i></span>
+                        <span class="course-card-dir">{{ course.get_direction_display }}</span>
                         {% endif %}
-                        {% with health=course.health_features.all %}
-                        {% if health %}
-                        <div class="course-aside-row">
-                            <dt>Особенности здоровья</dt>
-                            <dd>{% for item in health %}<span class="course-chip">{{ item.name }}</span>{% endfor %}</dd>
-                        </div>
+                        {% if course.course_type %}
+                        <span class="course-card-types">
+                            <span class="course-type course-type--{{ course.course_type }}"><i class="bi {{ course.type_icon }}"></i>{{ course.get_course_type_display }}</span>
+                        </span>
                         {% endif %}
-                        {% endwith %}
-                        {% with ages=course.child_ages.all %}
-                        {% if ages %}
-                        <div class="course-aside-row">
-                            <dt>Возраст детей</dt>
-                            <dd>{% for age in ages %}<span class="course-chip">{{ age.name }}</span>{% endfor %}</dd>
-                        </div>
-                        {% endif %}
-                        {% endwith %}
-                        {% if course.venue %}
-                        <div class="course-aside-row">
-                            <dt>Место проведения</dt>
-                            <dd>{{ course.get_venue_display }}</dd>
-                        </div>
-                        {% endif %}
-                        {% if course.skill_level %}
-                        <div class="course-aside-row">
-                            <dt>Навыки учащегося</dt>
-                            <dd>{{ course.get_skill_level_display }}</dd>
-                        </div>
-                        {% endif %}
-                        {% with required=course.required_course %}
-                        {% if required %}
-                        <div class="course-aside-row">
-                            <dt>Необходимый курс</dt>
-                            <dd>{% if required.is_active %}<a href="{% url 'core:course_detail' slug=required.slug %}">{{ required.title }}</a>{% else %}{{ required.title }}{% endif %}</dd>
-                        </div>
-                        {% endif %}
-                        {% endwith %}
-                    </dl>
-                </div>
-            </aside>
+                    </div>
 
-            <!-- Основной блок -->
-            <div class="col-lg-9">
-                <article class="course-detail bg-white p-4 p-md-5 rounded shadow-sm">
-                    <h1 class="course-detail-title">{{ course.title }}</h1>
+                    <h1 class="course-detail-title">{{ course.display_title }}</h1>
 
                     {% if course.short_description %}
                     <p class="course-detail-lead">{{ course.short_description|linebreaksbr }}</p>
                     {% endif %}
 
                     {% if course.teacher_list %}
-                    <div class="course-detail-teachers">
+                    <ul class="course-card-teachers course-detail-teachers">
                         {% for teacher in course.teacher_list %}
-                        <a class="course-detail-teacher" href="{% url 'core:teacher_detail' slug=teacher.slug %}">
-                            {% if teacher.photo %}
-                            <img src="{{ teacher.photo.url }}" alt="">
-                            {% else %}
-                            <span class="course-detail-teacher-placeholder"><i class="bi bi-person"></i></span>
-                            {% endif %}
-                            <span>{{ teacher.first_name }}<br><strong>{{ teacher.last_name }}</strong></span>
-                        </a>
+                        <li>
+                            <a class="course-teacher" href="{% url 'core:teacher_detail' slug=teacher.slug %}">
+                                <span class="course-teacher-ava">{% if teacher.photo %}<img src="{{ teacher.photo.url }}" alt="">{% else %}{{ teacher.initials }}{% endif %}</span>
+                                <span class="course-teacher-name">{{ teacher.first_name }} <strong>{{ teacher.last_name }}</strong></span>
+                            </a>
+                        </li>
                         {% endfor %}
-                    </div>
+                    </ul>
                     {% endif %}
 
                     {% if course.audience %}
-                    <div class="course-detail-audience">
-                        <h2>Для кого</h2>
+                    <section class="course-detail-block course-detail-audience">
+                        <h2 class="course-detail-h">Для кого</h2>
                         {{ course.audience|linebreaks }}
-                    </div>
+                    </section>
                     {% endif %}
 
                     {% if course.full_description %}
-                    <div class="course-description">
+                    <section class="course-detail-block course-description">
+                        <h2 class="course-detail-h">О курсе</h2>
                         {{ course.full_description|linebreaks }}
-                    </div>
+                    </section>
                     {% endif %}
 
                     {% if course.program %}
-                    <section class="course-program">
-                        <h2>Программа курса</h2>
+                    <section class="course-detail-block course-program">
+                        <h2 class="course-program-title">Программа курса</h2>
                         <div class="course-program-body" id="course-program">
                             {{ course.program|linebreaks }}
                         </div>
@@ -153,20 +98,24 @@
                     </section>
                     {% endif %}
 
-                    <div class="course-detail-doc">
-                        <span class="course-detail-doc-label">Документ по окончании курса</span>
+                    <section class="course-detail-block">
+                        <h2 class="course-detail-h">Документ по окончании курса</h2>
                         <ul class="course-detail-doc-list">
                             {% for name, note, price in course.documents %}
-                            <li>
-                                {{ name }}{% if note %} <small>({{ note }})</small>{% endif %}
-                                {% if not forloop.first and price %} — <span class="course-detail-price">{{ price|rub }}</span>{% endif %}
+                            <li class="course-detail-doc">
+                                <i class="bi bi-award" aria-hidden="true"></i>
+                                <span class="course-option-text">
+                                    <span class="course-option-name">{{ name }}</span>
+                                    {% if note %}<span class="course-option-meta">{{ note }}</span>{% endif %}
+                                </span>
+                                {% if not forloop.first and price %}<span class="course-option-price">{{ price|rub }}</span>{% endif %}
                             </li>
                             {% endfor %}
                         </ul>
-                    </div>
+                    </section>
 
-                    <section class="course-dates">
-                        <h2 class="course-dates-title">Ближайшие даты проведения</h2>
+                    <section class="course-detail-block course-dates" id="dates">
+                        <h2 class="course-detail-h">Ближайшие даты проведения</h2>
                         {% if schedules %}
                         <ul class="course-dates-list">
                             {% for s in schedules %}
@@ -174,16 +123,16 @@
                                 <div class="course-dates-info">
                                     <strong class="course-dates-label">{{ s.date_label }}</strong>
                                     <div class="course-dates-meta">
-                                        {% if s.format %}<span>{{ s.get_format_display }}</span>{% endif %}
+                                        {% if s.format %}<span><i class="bi bi-people"></i> {{ s.get_format_display }}</span>{% endif %}
                                         {% if s.time_label %}<span><i class="bi bi-clock"></i> {{ s.time_label }}</span>{% endif %}
-                                        {% if s.in_person_days_label %}<span><i class="bi bi-people"></i> Очные занятия: {{ s.in_person_days_label }}</span>{% endif %}
+                                        {% if s.in_person_days_label %}<span><i class="bi bi-geo-alt"></i> Очные занятия: {{ s.in_person_days_label }}</span>{% endif %}
                                         {% if s.materials_label %}<span><i class="bi bi-journal-text"></i> Доступ к материалам: {{ s.materials_label }}</span>{% endif %}
-                                        {% if s.price_override is not None %}<span class="course-detail-price">{{ s.price_override|rub }}</span>{% endif %}
+                                        {% if s.price_override is not None %}<span class="course-option-price">{{ s.price_override|rub }}</span>{% endif %}
                                     </div>
                                     {% if s.comment %}<div class="course-dates-comment">{{ s.comment|linebreaksbr }}</div>{% endif %}
                                 </div>
                                 {# Запись пока никуда не ведёт — кнопка-заготовка #}
-                                <button type="button" class="btn btn-primary course-signup-btn" data-schedule-id="{{ s.pk }}">Записаться</button>
+                                <button type="button" class="btn btn-primary rounded-pill course-signup-btn" data-schedule-id="{{ s.pk }}">Записаться</button>
                             </li>
                             {% endfor %}
                         </ul>
@@ -193,22 +142,84 @@
                     </section>
 
                     <div class="course-detail-signup">
-                        <strong>Запись:</strong>
-                        <a href="tel:+79169990990">+7 (916) 999-09-90</a>,
-                        <a href="mailto:info.babyswim@gmail.com">info.babyswim@gmail.com</a>
-                        <div class="small text-muted">Режим работы: с понедельника по пятницу с 10:00 до 18:00 по московскому времени</div>
+                        <span class="course-dir-icon course-dir-icon--sm"><i class="bi bi-telephone"></i></span>
+                        <div>
+                            <strong>Запись и вопросы:</strong>
+                            <a href="tel:+79169990990">+7 (916) 999-09-90</a>,
+                            <a href="mailto:info.babyswim@gmail.com">info.babyswim@gmail.com</a>
+                            <div class="course-detail-signup-hours">С понедельника по пятницу, 10:00–18:00 по московскому времени</div>
+                        </div>
                     </div>
                 </article>
-
-                <div class="mt-4">
-                    <a href="{% url 'core:courses_list' %}" class="btn btn-outline-light">
-                        <i class="bi bi-arrow-left"></i> Вернуться к списку курсов
-                    </a>
-                    <a href="{% url 'core:page_content' slug='timetable' %}" class="btn btn-primary ms-2">
-                        Расписание курсов
-                    </a>
-                </div>
             </div>
+
+            <!-- Краткая информация о курсе -->
+            <aside class="col-lg-3 order-lg-1">
+                <div class="course-aside">
+                    {% if course.base_price %}
+                    <div class="course-aside-price-block">
+                        <div class="course-aside-price">{{ course.base_price|rub }}</div>
+                        <div class="course-aside-member">{{ course.member_price|rub }} — для членов Ассоциации</div>
+                        <a href="#dates" class="btn btn-primary rounded-pill w-100 mt-3">{% if schedules %}Выбрать дату{% else %}Даты проведения{% endif %}</a>
+                    </div>
+                    {% endif %}
+
+                    <dl class="course-aside-list">
+                        <div class="course-aside-row">
+                            <dt>Длительность</dt>
+                            <dd><span class="course-chip">{{ course.hours_label }}</span></dd>
+                        </div>
+                        {% with teachers=course.teacher_list %}
+                        {% if teachers %}
+                        <div class="course-aside-row">
+                            <dt>{% if teachers|length > 1 %}Преподаватели{% else %}Преподаватель{% endif %}</dt>
+                            <dd>
+                                {% for teacher in teachers %}
+                                <a class="course-chip course-chip--link" href="{% url 'core:teacher_detail' slug=teacher.slug %}">{{ teacher.full_name }}</a>
+                                {% endfor %}
+                            </dd>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        {% with ages=course.child_ages.all %}
+                        {% if ages %}
+                        <div class="course-aside-row">
+                            <dt>Возраст детей</dt>
+                            <dd>{% for age in ages %}<span class="course-chip">{{ age.name }}</span>{% endfor %}</dd>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        {% with health=course.health_features.all %}
+                        {% if health %}
+                        <div class="course-aside-row">
+                            <dt>Особенности здоровья</dt>
+                            <dd>{% for item in health %}<span class="course-chip">{{ item.name }}</span>{% endfor %}</dd>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        {% if course.venue %}
+                        <div class="course-aside-row">
+                            <dt>Место проведения занятий</dt>
+                            <dd><span class="course-chip">{{ course.get_venue_display }}</span></dd>
+                        </div>
+                        {% endif %}
+                        {% if course.skill_level %}
+                        <div class="course-aside-row">
+                            <dt>Уровень учащегося</dt>
+                            <dd><span class="course-chip">{{ course.get_skill_level_display }}</span></dd>
+                        </div>
+                        {% endif %}
+                        {% with required=course.required_course %}
+                        {% if required %}
+                        <div class="course-aside-row">
+                            <dt>Сначала пройдите</dt>
+                            <dd>{% if required.is_active %}<a href="{% url 'core:course_detail' slug=required.slug %}">{{ required.display_title }}</a>{% else %}{{ required.display_title }}{% endif %}</dd>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </dl>
+                </div>
+            </aside>
         </div>
     </div>
 </section>

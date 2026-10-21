@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load course_tags %}
+{% load static %}
 
 {% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
 
@@ -17,60 +17,75 @@
 {% block content %}
 <section class="py-5">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <article class="teacher-detail bg-white p-4 p-md-5 rounded shadow-sm">
-                    <header class="teacher-detail-head">
-                        {% if teacher.photo %}
-                        <img class="teacher-detail-photo" src="{{ teacher.photo.url }}" alt="{{ teacher.display_name }}">
-                        {% else %}
-                        <span class="teacher-detail-photo teacher-detail-photo--empty"><i class="bi bi-person"></i></span>
+        <div class="row g-4">
+
+            <!-- Профиль преподавателя -->
+            <aside class="col-lg-3">
+                <div class="teacher-profile">
+                    {% if teacher.photo %}
+                    <img class="teacher-profile-photo" src="{{ teacher.photo.url }}" alt="{{ teacher.display_name }}">
+                    {% else %}
+                    <span class="teacher-profile-photo teacher-profile-photo--empty">{{ teacher.initials }}</span>
+                    {% endif %}
+                    <p class="teacher-profile-role">Преподаватель</p>
+                    <h1 class="teacher-profile-name">{{ teacher.display_name }}</h1>
+
+                    <dl class="course-aside-list">
+                        <div class="course-aside-row">
+                            <dt>Программы</dt>
+                            <dd><span class="course-chip">{{ found_label }}</span></dd>
+                        </div>
+                        {% if directions %}
+                        <div class="course-aside-row">
+                            <dt>Направления</dt>
+                            <dd class="teacher-profile-dirs">
+                                {% for code, label, icon in directions %}
+                                <span class="teacher-profile-dir"><span class="course-dir-icon course-dir-icon--sm course-dir--{{ code }}"><i class="bi {{ icon }}"></i></span>{{ label }}</span>
+                                {% endfor %}
+                            </dd>
+                        </div>
                         {% endif %}
+                    </dl>
+                </div>
+            </aside>
+
+            <div class="col-lg-9">
+                <nav class="course-list-bar course-detail-bar" aria-label="Навигация">
+                    <a class="course-detail-back" href="{% url 'core:courses_list' %}"><i class="bi bi-arrow-left"></i> Все программы</a>
+                    <a class="course-detail-back ms-auto" href="{% url 'core:page_content' slug='timetable' %}"><i class="bi bi-calendar-event"></i> Расписание</a>
+                </nav>
+
+                {% if teacher.bio %}
+                <article class="course-detail teacher-bio">
+                    <h2 class="course-detail-h">О преподавателе</h2>
+                    {{ teacher.bio|linebreaks }}
+                </article>
+                {% endif %}
+
+                <section class="course-section teacher-courses" aria-labelledby="teacher-courses-title">
+                    <header class="course-section-head">
+                        <span class="course-dir-icon"><i class="bi bi-mortarboard"></i></span>
                         <div>
-                            <p class="teacher-detail-role">Преподаватель</p>
-                            <h1 class="teacher-detail-name">{{ teacher.display_name }}</h1>
+                            <h2 class="course-section-title" id="teacher-courses-title">Курсы преподавателя</h2>
+                            <small>{% if cards %}{{ found_label }} · ближайшие по дате — первыми{% else %}пока нет открытых курсов{% endif %}</small>
                         </div>
                     </header>
-
-                    {% if teacher.bio %}
-                    <div class="teacher-detail-bio">
-                        {{ teacher.bio|linebreaks }}
+                    {% if cards %}
+                    <div class="row g-3">
+                        {% for card in cards %}
+                        <div class="col-md-6">
+                            {% include "core/includes/course_card.html" with show_dates=True %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="course-list-empty">
+                        <i class="bi bi-calendar-x" aria-hidden="true"></i>
+                        <p>Сейчас у преподавателя нет открытых курсов.</p>
+                        <a class="btn btn-light btn-sm rounded-pill" href="{% url 'core:courses_list' %}">Все программы</a>
                     </div>
                     {% endif %}
-
-                    <h2 class="teacher-detail-subtitle">Курсы преподавателя</h2>
-                    {% if courses %}
-                    <ul class="teacher-courses">
-                        {% for course in courses %}
-                        <li class="teacher-course">
-                            <a class="teacher-course-title" href="{% url 'core:course_detail' slug=course.slug %}">{{ course.title }}</a>
-                            <div class="teacher-course-meta">
-                                {% if course.course_type %}<span class="course-detail-kind">{{ course.get_course_type_display }}</span>{% endif %}
-                                <span>{{ course.hours_label }}</span>
-                                {% if course.base_price %}<span class="course-detail-price">{{ course.base_price|rub }}</span>{% endif %}
-                                {% with next=course.upcoming|first %}
-                                {% if next %}<span><i class="bi bi-calendar-event"></i> {{ next.date_label }}</span>{% endif %}
-                                {% endwith %}
-                            </div>
-                            {% if course.short_description %}
-                            <p class="teacher-course-desc">{{ course.short_description|truncatewords:30 }}</p>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p class="text-muted">Сейчас у преподавателя нет открытых курсов.</p>
-                    {% endif %}
-                </article>
-
-                <div class="mt-4">
-                    <a href="{% url 'core:courses_list' %}" class="btn btn-outline-light">
-                        <i class="bi bi-arrow-left"></i> Все программы
-                    </a>
-                    <a href="{% url 'core:page_content' slug='timetable' %}" class="btn btn-primary ms-2">
-                        Расписание курсов
-                    </a>
-                </div>
+                </section>
             </div>
         </div>
     </div>

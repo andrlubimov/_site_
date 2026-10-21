@@ -1,0 +1,39 @@
+{% load course_tags %}
+{% comment %}Карточка курса на странице «Программы» и странице преподавателя: варианты одного курса — строками.
+card — из views.build_course_cards; show_dates — показать ближайшую дату варианта (нужен prefetch upcoming){% endcomment %}
+<article class="course-card">
+    <div class="course-card-top">
+        {% if card.direction_label %}
+        <span class="course-dir-icon course-dir-icon--sm course-dir--{{ card.direction }}"><i class="bi {{ card.direction_icon }}"></i></span>
+        <span class="course-card-dir">{{ card.direction_label }}</span>
+        {% endif %}
+        <span class="course-card-types">
+            {% for code, label, icon in card.types %}<span class="course-type course-type--{{ code }}"><i class="bi {{ icon }}"></i>{{ label }}</span>{% endfor %}
+        </span>
+    </div>
+    <h3 class="course-card-title"><a href="{{ card.url }}">{{ card.title }}</a></h3>
+    {% if card.description %}<p class="course-card-desc">{{ card.description }}</p>{% endif %}
+    {% if card.teachers %}
+    <ul class="course-card-teachers">
+        {% for teacher in card.teachers %}
+        <li>
+            <a href="{% url 'core:teacher_detail' slug=teacher.slug %}" class="course-teacher">
+                <span class="course-teacher-ava">{% if teacher.photo %}<img src="{{ teacher.photo.url }}" alt="" loading="lazy">{% else %}{{ teacher.initials }}{% endif %}</span>
+                <span class="course-teacher-name">{{ teacher.first_name }} <strong>{{ teacher.last_name }}</strong></span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="course-card-options">
+        {% for variant in card.variants %}
+        <a class="course-option" href="{% url 'core:course_detail' slug=variant.slug %}">
+            <span class="course-option-text">
+                <span class="course-option-name">{{ variant.variant_name }}</span>
+                <span class="course-option-meta">{{ variant.hours_label }}{% if variant.base_price %} · <span class="course-option-price">{{ variant.base_price|rub }}</span>{% endif %}{% if show_dates %}{% with next=variant.upcoming|first %}{% if next %} · <i class="bi bi-calendar-event"></i> {{ next.date_label }}{% endif %}{% endwith %}{% endif %}</span>
+            </span>
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+        {% endfor %}
+    </div>
+</article>
