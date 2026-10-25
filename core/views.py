@@ -20,7 +20,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-HOME_CARDS_LIMIT = 4  # карточек курсов на главной — остальные по кнопке «Больше курсов»
+HOME_CARDS_LIMIT = 8  # карточек курсов в карусели на главной — остальные по кнопке «Больше курсов»
 
 FALLBACK_PAGE_TITLES = {
     'about': 'Об Ассоциации',
@@ -47,7 +47,7 @@ def index(request):
     all_cards = build_course_cards(courses)  # порядок карточек — по ближайшей дате
     cards = all_cards[:HOME_CARDS_LIMIT]
     more_count = len(all_cards) - len(cards)
-    specialists = Specialist.objects.filter(is_active=True).order_by('order')[:4]
+    specialists = Specialist.objects.filter(is_active=True).order_by('order')
     # сначала региональные представители (regional), затем зарубежные (foreign)
     representatives = Representative.objects.filter(is_active=True).order_by('-kind', 'order')
     partners = Partner.objects.filter(is_active=True).order_by('order')

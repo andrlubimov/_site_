@@ -433,16 +433,43 @@
 }
 
 .sea-carousel-item {
+    display: flex;
     flex: 0 0 calc((100% - 3rem) / 4);
+    flex-direction: column;
     scroll-snap-align: start;
+}
+
+.sea-carousel-item > * {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* ширина ячейки — по расчёту выше, а не по содержимому: длинная строка «направление + формат»
+   у карточки курса переносится, а не растягивает ячейку */
+.sea-carousel-item {
+    min-width: 0;
+}
+
+.sea-carousel-item .course-card-top {
+    flex-wrap: wrap;
 }
 
 @media (max-width: 1199.98px) {
     .sea-carousel-item { flex-basis: calc((100% - 2rem) / 3); }
 }
 
+/* Карусель курсов: карточки курса содержательнее — по 3 в ряд (на планшете по 2), чтобы не вытягивались */
+.sea-carousel--wide .sea-carousel-item {
+    flex-basis: calc((100% - 2rem) / 3);
+}
+
+@media (max-width: 1199.98px) {
+    .sea-carousel--wide .sea-carousel-item { flex-basis: calc((100% - 1rem) / 2); }
+}
+
 @media (max-width: 767.98px) {
     .sea-carousel { padding: 0; }
+    .sea-carousel--wide .sea-carousel-item { flex-basis: 82%; }
     .sea-carousel-item { flex-basis: 82%; }
     .sea-carousel .sea-carousel-btn { display: none; } /* на телефоне листают свайпом */
 }
@@ -566,6 +593,7 @@
 .page-home .depth-3 .sea-btn,
 .page-home .depth-4 .sea-btn,
 .page-home .depth-5 .sea-btn,
+.page-home .depth-3 .sea-carousel-btn,
 .page-home .depth-4 .sea-carousel-btn,
 .page-home .depth-5 .sea-carousel-btn {
     border: 1px solid rgba(174, 239, 255, 0.55);
@@ -577,6 +605,7 @@
 .page-home .depth-3 .sea-btn:hover,
 .page-home .depth-4 .sea-btn:hover,
 .page-home .depth-5 .sea-btn:hover,
+.page-home .depth-3 .sea-carousel-btn:hover,
 .page-home .depth-4 .sea-carousel-btn:hover,
 .page-home .depth-5 .sea-carousel-btn:hover {
     border-color: var(--sea-link);
@@ -584,6 +613,7 @@
     color: #fff;
 }
 
+.page-home .depth-3 .sea-card,
 .page-home .depth-4 .sea-card,
 .page-home .depth-5 .sea-card {
     border: 1px solid rgba(174, 239, 255, 0.22);
@@ -599,6 +629,7 @@
     background: rgba(232, 246, 250, 0.92);
 }
 
+.page-home .depth-3 .sea-card-title,
 .page-home .depth-4 .sea-card-title,
 .page-home .depth-5 .sea-card-title {
     color: #fff;
@@ -608,12 +639,15 @@
     color: var(--sea-link);
 }
 
+.page-home .depth-3 .sea-card-meta,
+.page-home .depth-3 .sea-card-desc,
 .page-home .depth-4 .sea-card-meta,
 .page-home .depth-5 .sea-card-meta,
 .page-home .depth-5 .sea-card-desc {
     color: rgba(230, 246, 250, 0.75);
 }
 
+.page-home .depth-3 .sea-card-meta .bi,
 .page-home .depth-4 .sea-card-meta .bi,
 .page-home .depth-5 .sea-card-meta .bi {
     color: var(--sea-link);
@@ -633,12 +667,36 @@
     color: #fff;
 }
 
-/* Карточки специалистов — «стекло» под водой */
-.glass-card {
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 14px;
-    backdrop-filter: blur(2px);
+/* Карточка специалиста (блок «Членство»): фото, имя, должность, город */
+.sea-card--person {
+    align-items: center;
+    text-align: center;
+}
+
+.sea-card-photo {
+    width: 104px;
+    height: 104px;
+    margin: 0.25rem 0 0.9rem;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 4px rgba(174, 239, 255, 0.25);
+}
+
+.sea-card-photo--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(174, 239, 255, 0.14);
+    color: var(--sea-link);
+    font-size: 2.6rem;
+}
+
+.sea-card--person .sea-card-desc {
+    margin: 0 0 0.5rem;
+}
+
+.sea-card--person .sea-card-meta {
+    margin-top: auto;
 }
 
 /* Пузырьки воздуха */

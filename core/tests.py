@@ -507,11 +507,11 @@ class IndexViewTests(TestCase):
         cards = self.client.get('/').context['cards']
         self.assertEqual([card.variants for card in cards[:2]], [[near], [far]])
 
-    def test_index_shows_few_cards_and_more_button(self):
-        for i in range(6):
+    def test_index_courses_carousel_and_more_button(self):
+        for i in range(10):
             make_course(title=f'Курс {i}', slug=f'kurs-{i}', order=i)
         response = self.client.get('/')
-        self.assertContains(response, 'class="course-card"', count=4)
+        self.assertContains(response, 'class="course-card"', count=8)  # в карусели — 8 ближайших
         self.assertEqual(response.context['more_label'], 'Ещё 2 программы')
         self.assertContains(response, 'Больше курсов')
 
@@ -520,6 +520,7 @@ class IndexViewTests(TestCase):
         Representative.objects.create(name='Клуб AquaBaby', city='Алматы', country='Казахстан', phone='+7 (727) 329-33-80')
         Partner.objects.create(name='Дарин', description='Станции дозирования', website='https://darin7.ru/')
         response = self.client.get('/')
+        # представители и партнёры (курсов и специалистов в этом тесте нет — их каруселей нет)
         self.assertContains(response, 'class="sea-carousel" data-carousel>', count=2)
         self.assertContains(response, 'Клуб AquaBaby')
         self.assertContains(response, 'href="tel:+77273293380"')
@@ -527,6 +528,13 @@ class IndexViewTests(TestCase):
         self.assertContains(response, 'Подробнее о представителях')
         self.assertContains(response, 'Подробнее о партнёрах')
         self.assertContains(response, 'js/sea-carousel.js')
+
+    def test_membership_specialists_carousel(self):
+        from .models import Specialist
+        for i in range(6):
+            Specialist.objects.create(name=f'Специалист {i}', position='Тренер', city='Москва', country='Россия')
+        response = self.client.get('/')
+        self.assertContains(response, 'sea-card sea-card--person', count=6)  # все активные, не только 4
 
     def test_index_page_renders_without_courses(self):
         response = self.client.get('/')

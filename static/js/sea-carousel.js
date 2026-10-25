@@ -1,9 +1,10 @@
-/* Карусели на главной (представители, партнёры): бесконечная лента с автопрокруткой.
-   - Карточки продублированы один раз (копии скрыты от чтения с экрана и Tab). Когда лента уходит в копии,
-     она незаметно перескакивает на те же карточки в начале — листать можно бесконечно в обе стороны.
+/* Карусели на главной (курсы, специалисты, представители, партнёры): бесконечная лента с автопрокруткой.
+   - Карточки продублированы (копии скрыты от чтения с экрана и Tab) — столько раз, чтобы было куда листать,
+     даже если исходные карточки помещаются целиком. Когда лента уходит в копии, она незаметно
+     перескакивает на те же карточки в начале — листать можно бесконечно в обе стороны.
    - Каждые AUTOPLAY_MS лента сдвигается на одну карточку. Пауза — пока над каруселью курсор, в ней фокус,
      её касаются, она не видна на экране или вкладка скрыта. При «уменьшении движения» автопрокрутки нет.
-   - Если все карточки помещаются — листать нечего: кнопки скрыты, без копий и автопрокрутки.
+   - Одна карточка — листать нечего: кнопки скрыты, без копий и автопрокрутки.
    Без JS лента просто прокручивается (CSS scroll-snap). */
 (function () {
     'use strict';
@@ -18,18 +19,25 @@
         if (!track || !prev || !next) return;
 
         var originals = Array.prototype.slice.call(track.children);
-        if (track.scrollWidth - track.clientWidth <= 8) {
+        if (originals.length < 2) {
             carousel.classList.add('is-static');
             return;
         }
 
-        // копии карточек — продолжение ленты
-        originals.forEach(function (item) {
-            var clone = item.cloneNode(true);
-            clone.setAttribute('aria-hidden', 'true');
-            clone.querySelectorAll('a, button').forEach(function (el) { el.tabIndex = -1; });
-            track.appendChild(clone);
-        });
+        // копии карточек — продолжение ленты; добавляем наборы, пока за исходным набором
+        // не окажется хотя бы экран карточек (иначе «перескок» был бы заметен)
+        function appendCopies() {
+            originals.forEach(function (item) {
+                var clone = item.cloneNode(true);
+                clone.setAttribute('aria-hidden', 'true');
+                clone.querySelectorAll('a, button').forEach(function (el) { el.tabIndex = -1; });
+                track.appendChild(clone);
+            });
+        }
+        appendCopies();
+        for (var sets = 1; sets < 6 && track.scrollWidth - track.clientWidth < loopWidth() + step(); sets++) {
+            appendCopies();
+        }
 
         function step() {   // шаг — расстояние между соседними карточками (с учётом промежутка)
             return originals[1] ? originals[1].offsetLeft - originals[0].offsetLeft : track.clientWidth;

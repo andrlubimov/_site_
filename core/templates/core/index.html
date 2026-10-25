@@ -71,13 +71,19 @@
             <p>{{ courses_intro }}</p>
         </div>
 
-        <div class="row g-3">
-            {% for card in cards %}
-            <div class="col-md-6 col-xl-3">
-                {% include "core/includes/course_card.html" with show_dates=True %}
-            </div>
-            {% endfor %}
+        {% if cards %}
+        <div class="sea-carousel sea-carousel--wide" data-carousel>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--prev" data-carousel-prev aria-label="Назад"><i class="bi bi-chevron-left"></i></button>
+            <ul class="sea-carousel-track" data-carousel-track>
+                {% for card in cards %}
+                <li class="sea-carousel-item">
+                    {% include "core/includes/course_card.html" with show_dates=True %}
+                </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--next" data-carousel-next aria-label="Вперёд"><i class="bi bi-chevron-right"></i></button>
         </div>
+        {% endif %}
 
         <div class="sea-more">
             <a href="{% url 'core:courses_list' %}" class="sea-btn sea-btn--big">
@@ -129,24 +135,28 @@
             </div>
         </div>
 
-        <div class="row g-4">
-            {% for specialist in specialists %}
-            <div class="col-md-6 col-lg-3">
-                <div class="text-center p-3 glass-card h-100">
-                    {% if specialist.photo %}
-                    <img src="{{ specialist.photo.url }}" class="rounded-circle mb-3" alt="{{ specialist.name }}" style="width: 100px; height: 100px; object-fit: cover;">
-                    {% else %}
-                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
-                        <i class="bi bi-person fs-1"></i>
-                    </div>
-                    {% endif %}
-                    <h5>{{ specialist.name }}</h5>
-                    <p class="text-muted mb-1">{{ specialist.position }}</p>
-                    <p class="small text-muted">{{ specialist.city }} • {{ specialist.country }}</p>
-                </div>
-            </div>
-            {% endfor %}
+        {% if specialists %}
+        <div class="sea-carousel" data-carousel>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--prev" data-carousel-prev aria-label="Назад"><i class="bi bi-chevron-left"></i></button>
+            <ul class="sea-carousel-track" data-carousel-track>
+                {% for specialist in specialists %}
+                <li class="sea-carousel-item">
+                    <article class="sea-card sea-card--person">
+                        {% if specialist.photo %}
+                        <img class="sea-card-photo" src="{{ specialist.photo.url }}" alt="" loading="lazy">
+                        {% else %}
+                        <span class="sea-card-photo sea-card-photo--empty"><i class="bi bi-person"></i></span>
+                        {% endif %}
+                        <h3 class="sea-card-title">{{ specialist.name }}</h3>
+                        <p class="sea-card-desc">{{ specialist.position }}</p>
+                        <p class="sea-card-meta"><i class="bi bi-geo-alt"></i> {{ specialist.city }}, {{ specialist.country }}</p>
+                    </article>
+                </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--next" data-carousel-next aria-label="Вперёд"><i class="bi bi-chevron-right"></i></button>
         </div>
+        {% endif %}
     </div>
 </section>
 
