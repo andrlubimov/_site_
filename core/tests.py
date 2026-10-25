@@ -488,7 +488,14 @@ class IndexViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тестовый курс')
         self.assertContains(response, '40 учебных часов')
-        self.assertContains(response, 'Иван Петров')
+        self.assertContains(response, 'Иван <strong>Петров</strong>')  # карточка как на странице «Программы»
+        self.assertContains(response, 'class="course-card"', count=1)
+
+    def test_beach_figures_link_to_partner_sites(self):
+        response = self.client.get('/')
+        self.assertContains(response, 'class="beach-figure beach-figure--whale" href="https://моредетям.рф/"')
+        self.assertContains(response, 'class="beach-figure beach-figure--matryoshka" '
+                                      'href="https://convent.grudnichkovoe-plavanie.ru/"')
 
     def test_index_shows_nearest_courses_first(self):
         far = make_course(title='Дальний курс', slug='far', order=1)
@@ -497,8 +504,29 @@ class IndexViewTests(TestCase):
                                       end_date=date.today() + timedelta(days=61))
         CourseSchedule.objects.create(course=near, format='group', start_date=date.today() + timedelta(days=3),
                                       end_date=date.today() + timedelta(days=4))
-        courses = list(self.client.get('/').context['courses'])
-        self.assertEqual(courses[:2], [near, far])
+        cards = self.client.get('/').context['cards']
+        self.assertEqual([card.variants for card in cards[:2]], [[near], [far]])
+
+    def test_index_shows_few_cards_and_more_button(self):
+        for i in range(6):
+            make_course(title=f'Курс {i}', slug=f'kurs-{i}', order=i)
+        response = self.client.get('/')
+        self.assertContains(response, 'class="course-card"', count=4)
+        self.assertEqual(response.context['more_label'], 'Ещё 2 программы')
+        self.assertContains(response, 'Больше курсов')
+
+    def test_representatives_and_partners_carousels(self):
+        from .models import Partner
+        Representative.objects.create(name='Клуб AquaBaby', city='Алматы', country='Казахстан', phone='+7 (727) 329-33-80')
+        Partner.objects.create(name='Дарин', description='Станции дозирования', website='https://darin7.ru/')
+        response = self.client.get('/')
+        self.assertContains(response, 'class="sea-carousel" data-carousel>', count=2)
+        self.assertContains(response, 'Клуб AquaBaby')
+        self.assertContains(response, 'href="tel:+77273293380"')
+        self.assertContains(response, 'Дарин')
+        self.assertContains(response, 'Подробнее о представителях')
+        self.assertContains(response, 'Подробнее о партнёрах')
+        self.assertContains(response, 'js/sea-carousel.js')
 
     def test_index_page_renders_without_courses(self):
         response = self.client.get('/')
@@ -1068,3 +1096,87 @@ class ContactsPageTests(TestCase):
         response = self.client.get('/admin/core/contactinfo/')
         self.assertRedirects(response, f'/admin/core/contactinfo/{ContactInfo.objects.get().pk}/change/')
         self.assertEqual(self.client.get('/admin/core/contactinfo/add/').status_code, 403)
+
+
+class TeachersListTests(TestCase):
+    def setUp(self):
+        self.anna = Teacher.objects.create(first_name='Анна', last_name='Швыдко')
+        self.olga = Teacher.objects.create(first_name='Ольга', last_name='Белоцерковская')
+        self.idle = Teacher.objects.create(first_name='Мария', last_name='Абрамова')  # без открытых курсов
+        swim = make_course(title='Плавание', slug='swim', direction='swimming')
+        swim_pk = make_course(title='Плавание. ПК', slug='swim-pk', direction='swimming')
+        land = make_course(title='Патронаж', slug='land', direction='land')
+        from .models import CourseCard
+        card = CourseCard.objects.create(title='Плавание')
+        Course.objects.filter(pk__in=[swim.pk, swim_pk.pk]).update(card=card)
+        for course in (swim, swim_pk):
+            CourseTeacher.objects.create(course=course, teacher=self.anna)
+        CourseTeacher.objects.create(course=land, teacher=self.olga)
+
+    def test_list_shows_teachers_with_programs_first(self):
+        response = self.client.get('/education/teachers/')
+        self.assertEqual(response.status_code, 200)
+        cards = response.context['cards']
+        self.assertEqual([c.teacher for c in cards], [self.olga, self.anna, self.idle])
+        anna = cards[1]
+        self.assertEqual(anna.programs_label, '1 программа')  # два варианта одной карточки — одна программа
+        self.assertEqual([code for code, _, _ in anna.directions], ['swimming'])
+        self.assertEqual(cards[2].programs_label, 'Сейчас нет открытых курсов')
+        self.assertContains(response, 'href="/education/teachers/anna-shvydko/"')
+        self.assertContains(response, '3 преподавателя')
+
+    def test_filter_by_direction(self):
+        cards = self.client.get('/education/teachers/?direction=land').context['cards']
+        self.assertEqual([c.teacher for c in cards], [self.olga])
+        self.assertEqual(len(self.client.get('/education/teachers/?direction=bad').context['cards']), 3)
+
+
+class NavigationTests(TestCase):
+    def test_menu_has_courses_dropdown_with_all_course_pages(self):
+        response = self.client.get('/education/teachers/')
+        menu = {item.label: item for item in response.context['site_menu']}
+        self.assertNotIn('Просвещение', menu)
+        courses = menu['Курсы']
+        self.assertTrue(courses.active)  # раздел подсвечен на любой странице /education/
+        self.assertEqual([c.label for c in courses.children],
+                         ['Программы', 'Расписание', 'Преподаватели', 'Выездные семинары',
+                          'Почему стоит учиться у нас'])
+        self.assertEqual([c.label for c in courses.children if c.active], ['Преподаватели'])
+        self.assertContains(response, 'class="top-nav-menu"', count=2)  # Ассоциация и Курсы
+        self.assertContains(response, 'href="/education/teachers/" class="is-active" aria-current="page"')
+
+    def test_association_dropdown_and_external_convention(self):
+        response = self.client.get('/page/membership/')
+        menu = {item.label: item for item in response.context['site_menu']}
+        self.assertTrue(menu['Ассоциация'].active)
+        self.assertFalse(menu['Курсы'].active)
+        self.assertTrue(menu['Конвенция'].external)
+        self.assertContains(response, 'href="https://convent.grudnichkovoe-plavanie.ru/" target="_blank" rel="noopener"')
+
+
+class EducationInfoPageTests(TestCase):
+    def test_page_shows_sections_leaders_and_documents(self):
+        leader = Teacher.objects.create(first_name='Екатерина', last_name='Любимова')
+        response = self.client.get('/page/info/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Основные сведения')
+        self.assertContains(response, 'Дата создания')
+        self.assertContains(response, 'Генеральный директор')
+        # руководитель есть среди преподавателей — ссылка на его страницу (в двух разделах)
+        self.assertContains(response, f'href="{leader.get_absolute_url()}"', count=2)
+        self.assertContains(response, '/static/documents/signed/rejim_zaniati.pdf.sig')
+        self.assertContains(response, 'Аннотация к программе', count=3)  # у «Коррекции» аннотации нет
+
+    def test_all_documents_exist(self):
+        from django.contrib.staticfiles import finders
+        from core import info_page
+        docs = [d for _, group in info_page.REGULATIONS for d in group] + info_page.PAID_SERVICES + [
+            info_page.TEACHING_STAFF, info_page.MATERIAL_DOC]
+        docs += [d for _, program, annotation in info_page.PROGRAMS for d in (program, annotation) if d]
+        paths = [d.path for d in docs] + [d.sig_path for d in docs if d.sig_path]
+        paths += [item.path for item in info_page.LICENSES] + [item.thumb for item in info_page.LICENSES]
+        self.assertEqual([p for p in paths if not finders.find(p)], [])
+        self.assertTrue(all(d.size for d in docs))
+
+    def test_old_site_address_redirects(self):
+        self.assertRedirects(self.client.get('/information/'), '/page/info/', status_code=301)

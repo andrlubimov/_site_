@@ -25,13 +25,24 @@
             <div class="top-nav-bar">
                 <div class="container">
                     <div class="top-nav-inner">
-                        <nav class="top-nav-links">
-                            <a href="{% url 'core:page_content' slug='about' %}">Ассоциация</a>
-                            <a href="{% url 'core:courses_list' %}">Просвещение</a>
-                            <a href="http://convent.grudnichkovoe-plavanie.ru/" target="_blank">Конвенция</a>
-                            <a href="{% url 'core:specialists_list' %}">Представители</a>
-                            <a href="{% url 'core:partners_list' %}">Партнеры</a>
-                            <a href="{% url 'core:page_content' slug='contacts' %}">Контакты</a>
+                        {# Меню — core/context_processors.py: navigation #}
+                        <nav class="top-nav-links" aria-label="Главное меню">
+                            {% for item in site_menu %}
+                            {% if item.children %}
+                            <div class="top-nav-item">
+                                <a class="top-nav-link{% if item.active %} is-active{% endif %}" href="{{ item.url }}" aria-haspopup="true">
+                                    {{ item.label }} <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                                </a>
+                                <div class="top-nav-menu">
+                                    {% for child in item.children %}
+                                    <a href="{{ child.url }}"{% if child.active %} class="is-active" aria-current="page"{% endif %}>{{ child.label }}</a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <a class="top-nav-link{% if item.active %} is-active{% endif %}" href="{{ item.url }}"{% if item.external %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a>
+                            {% endif %}
+                            {% endfor %}
                         </nav>
                         <div class="top-nav-social">
                             <a href="#" class="top-social-icon"><i class="bi bi-eye"></i></a>
@@ -44,13 +55,19 @@
                     </div>
                     <!-- Mobile nav -->
                     <div class="collapse" id="mobileNav">
-                        <nav class="mobile-nav-links py-2">
-                            <a href="{% url 'core:page_content' slug='about' %}">Ассоциация</a>
-                            <a href="{% url 'core:courses_list' %}">Просвещение</a>
-                            <a href="http://convent.grudnichkovoe-plavanie.ru/" target="_blank">Конвенция</a>
-                            <a href="{% url 'core:specialists_list' %}">Представители</a>
-                            <a href="{% url 'core:partners_list' %}">Партнеры</a>
-                            <a href="{% url 'core:page_content' slug='contacts' %}">Контакты</a>
+                        <nav class="mobile-nav-links py-2" aria-label="Меню">
+                            {% for item in site_menu %}
+                            {% if item.children %}
+                            <div class="mobile-nav-group">
+                                <span class="mobile-nav-title">{{ item.label }}</span>
+                                {% for child in item.children %}
+                                <a class="mobile-nav-sub" href="{{ child.url }}"{% if child.active %} aria-current="page"{% endif %}>{{ child.label }}</a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <a href="{{ item.url }}"{% if item.external %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a>
+                            {% endif %}
+                            {% endfor %}
                         </nav>
                     </div>
                 </div>
@@ -94,17 +111,10 @@
 
                 <!-- Navigation -->
                 <nav class="footer-nav mb-3">
-                    <a href="{% url 'core:page_content' slug='about' %}">Ассоциация</a>
-                    <span class="footer-sep">•</span>
-                    <a href="{% url 'core:courses_list' %}">Просвещение</a>
-                    <span class="footer-sep">•</span>
-                    <a href="http://convent.grudnichkovoe-plavanie.ru/" target="_blank">Конвенция</a>
-                    <span class="footer-sep">•</span>
-                    <a href="{% url 'core:specialists_list' %}">Представители</a>
-                    <span class="footer-sep">•</span>
-                    <a href="{% url 'core:partners_list' %}">Партнеры</a>
-                    <span class="footer-sep">•</span>
-                    <a href="{% url 'core:page_content' slug='contacts' %}">Контакты</a>
+                    {% for item in site_menu %}
+                    <a href="{{ item.url }}"{% if item.external %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a>
+                    {% if not forloop.last %}<span class="footer-sep">•</span>{% endif %}
+                    {% endfor %}
                 </nav>
 
                 <!-- Social icons -->

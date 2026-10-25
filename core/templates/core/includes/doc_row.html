@@ -1,0 +1,13 @@
+{% load static %}
+{# Строка документа: название, «PDF · размер», ссылка на электронную подпись, если есть. d — из core/info_page.py #}
+<li class="info-doc">
+    <a class="info-doc-link" href="{% static d.path %}" target="_blank" rel="noopener">
+        <span class="info-doc-icon"><i class="bi bi-file-earmark-pdf"></i></span>
+        <span class="course-option-text">
+            <span class="info-doc-title">{{ d.title }}</span>
+            <span class="course-option-meta">PDF{% if d.size %} · {{ d.size }}{% endif %}</span>
+        </span>
+        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+    </a>
+    {% if d.sig_path %}<a class="info-doc-sig" href="{% static d.sig_path %}" target="_blank" rel="noopener"><i class="bi bi-patch-check"></i> Электронная подпись документа</a>{% endif %}
+</li>

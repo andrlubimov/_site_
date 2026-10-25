@@ -7,6 +7,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils.text import Truncator
+from . import info_page
 from .about_defaults import ABOUT_SECTIONS
 from .filters import CourseFilterForm
 from .models import (
@@ -19,7 +20,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-HOME_COURSES_LIMIT = 6
+HOME_CARDS_LIMIT = 4  # карточек курсов на главной — остальные по кнопке «Больше курсов»
 
 FALLBACK_PAGE_TITLES = {
     'about': 'Об Ассоциации',
@@ -34,14 +35,21 @@ FALLBACK_PAGE_TITLES = {
 
 def index(request):
     """Главная страница"""
-    # На главной — курсы с ближайшими датами; полный список на странице «Программы»
+    # На главной — несколько карточек (как на странице «Программы») с ближайшими датами
     courses = (
         Course.objects.filter(is_active=True)
         .annotate(next_date=Min('schedules__start_date', filter=Q(schedules__start_date__gte=date.today())))
-        .prefetch_related('course_teachers__teacher')
-        .order_by(F('next_date').asc(nulls_last=True), 'order', '-created_at')[:HOME_COURSES_LIMIT]
+        .select_related('card', 'card__description_course')
+        .prefetch_related('course_teachers__teacher',
+                          Prefetch('schedules', queryset=upcoming_schedules(), to_attr='upcoming'))
+        .order_by(F('next_date').asc(nulls_last=True), 'order', '-created_at')
     )
+    all_cards = build_course_cards(courses)  # порядок карточек — по ближайшей дате
+    cards = all_cards[:HOME_CARDS_LIMIT]
+    more_count = len(all_cards) - len(cards)
     specialists = Specialist.objects.filter(is_active=True).order_by('order')[:4]
+    # сначала региональные представители (regional), затем зарубежные (foreign)
+    representatives = Representative.objects.filter(is_active=True).order_by('-kind', 'order')
     partners = Partner.objects.filter(is_active=True).order_by('order')
 
     # Получаем контент страниц
@@ -51,8 +59,11 @@ def index(request):
         courses_intro = "Возможность получать знания у лучших преподавателей с огромным практическим стажем. Качественное интенсивное образование, большой выбор учебных программ разного направления, связанных с детьми. Выпускники курсов получают документы государственного образца."
 
     context = {
-        'courses': courses,
+        'cards': cards,
+        'more_label': (f'Ещё {more_count} {plural_ru(more_count, ("программа", "программы", "программ"))}'
+                       if more_count else ''),
         'specialists': specialists,
+        'representatives': representatives,
         'partners': partners,
         'courses_intro': courses_intro,
     }
@@ -223,6 +234,41 @@ def course_detail(request, slug):
         'page_title': course.title,
     }
     return render(request, 'core/course_detail.html', context)
+
+
+def teachers_list(request):
+    """Список преподавателей: карточки с фото, числом программ и направлениями; фильтр по направлению"""
+    teachers = Teacher.objects.prefetch_related(Prefetch(
+        'courses', queryset=Course.objects.filter(is_active=True), to_attr='active_courses',
+    )).order_by('last_name', 'first_name')
+    labels = dict(Course.DIRECTION_CHOICES)
+    direction = request.GET.get('direction', '')
+    if direction not in labels:
+        direction = ''
+    cards = []
+    for teacher in teachers:
+        codes = {c.direction for c in teacher.active_courses if c.direction}
+        if direction and direction not in codes:
+            continue
+        # программа — карточка на странице «Программы»: варианты одного курса считаются один раз
+        programs = len({('card', c.card_id) if c.card_id else ('course', c.pk) for c in teacher.active_courses})
+        cards.append(SimpleNamespace(
+            teacher=teacher,
+            programs_label=(f'{programs} {plural_ru(programs, ("программа", "программы", "программ"))}'
+                            if programs else 'Сейчас нет открытых курсов'),
+            directions=[(code, labels[code], Course.DIRECTION_ICONS[code])
+                        for code in DIRECTION_SECTION_ORDER if code in codes],
+        ))
+    # сначала те, у кого есть открытые курсы (порядок по фамилии сохраняется)
+    cards.sort(key=lambda card: not card.teacher.active_courses)
+    context = {
+        'cards': cards,
+        'found_label': f'{len(cards)} {plural_ru(len(cards), ("преподаватель", "преподавателя", "преподавателей"))}',
+        'direction': direction,
+        'direction_choices': [(code, labels[code], Course.DIRECTION_ICONS[code]) for code in DIRECTION_SECTION_ORDER],
+        'page_title': 'Преподаватели',
+    }
+    return render(request, 'core/teachers_list.html', context)
 
 
 def teacher_detail(request, slug):
@@ -419,12 +465,27 @@ def contacts(request):
     return render(request, 'core/contacts.html', context)
 
 
+def education_info(request):
+    """«Сведения об образовательной организации»: тексты и документы — core/info_page.py"""
+    teachers = {t.slug: t for t in Teacher.objects.filter(slug__in=[l.teacher_slug for l in info_page.LEADERS])}
+    leaders = [SimpleNamespace(**vars(leader), teacher=teachers.get(leader.teacher_slug)) for leader in info_page.LEADERS]
+    context = {
+        'content': SimpleNamespace(slug='info'),
+        'page_title': 'Сведения об образовательной организации',
+        'info': info_page,
+        'leaders': leaders,
+    }
+    return render(request, 'core/education_info.html', context)
+
+
 def page_content(request, slug):
     """Страница с контентом"""
     if slug == 'about':
         return about(request)
     if slug == 'contacts':
         return contacts(request)
+    if slug == 'info':
+        return education_info(request)
     try:
         content = PageContent.objects.filter(slug=slug).first()
     except OperationalError:

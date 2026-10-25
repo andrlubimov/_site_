@@ -1,0 +1,5 @@
+{# Вкладки раздела «Ассоциация» в шапке; active — about, membership, news или info #}
+<a href="{% url 'core:page_content' slug='about' %}" class="header-tab-btn{% if active == 'about' %} active{% endif %}">Об Ассоциации</a>
+<a href="{% url 'core:page_content' slug='membership' %}" class="header-tab-btn{% if active == 'membership' %} active{% endif %}">Членство</a>
+<a href="{% url 'core:news_list' %}" class="header-tab-btn{% if active == 'news' %} active{% endif %}">Новости Ассоциации</a>
+<a href="{% url 'core:page_content' slug='info' %}" class="header-tab-btn{% if active == 'info' %} active{% endif %}">Сведения об организации</a>

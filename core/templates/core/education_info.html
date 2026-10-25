@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static course_tags %}
+
+{% block title %}Сведения об образовательной организации - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">Сведения об образовательной организации</h1>
+    <div class="header-tabs">
+        {% include "core/includes/association_tabs.html" with active='info' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Тексты и документы — core/info_page.py (перенесены со старого сайта) #}
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- Оглавление -->
+            <aside class="col-lg-3">
+                <nav class="course-aside info-toc" aria-label="Разделы страницы">
+                    <p class="info-toc-title">Разделы</p>
+                    <ol>
+                        {% for anchor, title in info.TOC %}
+                        <li><a href="#{{ anchor }}">{{ title }}</a></li>
+                        {% endfor %}
+                    </ol>
+                </nav>
+            </aside>
+
+            <div class="col-lg-9 info-sections">
+
+                <!-- Основные сведения -->
+                <section class="course-detail info-section" id="basic">
+                    <h2 class="course-detail-h">Основные сведения</h2>
+                    <dl class="info-facts">
+                        {% for label, value in info.BASIC_INFO %}
+                        <div class="info-fact"><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+                        {% endfor %}
+                        <div class="info-fact">
+                            <dt>Контактные телефоны</dt>
+                            <dd>{% for phone in info.PHONES %}<a href="{{ phone|tel_href }}">{{ phone }}</a>{% if not forloop.last %} и {% endif %}{% endfor %}</dd>
+                        </div>
+                        <div class="info-fact"><dt>Адрес сайта в сети Интернет</dt><dd><a href="{{ info.SITE_URL }}">{{ info.SITE_URL }}</a></dd></div>
+                        <div class="info-fact"><dt>Электронная почта</dt><dd><a href="mailto:{{ contacts.email }}">{{ contacts.email }}</a></dd></div>
+                    </dl>
+                </section>
+
+                <!-- Структура и органы управления -->
+                <section class="course-detail info-section" id="structure">
+                    <h2 class="course-detail-h">Структура и органы управления образовательной организацией</h2>
+                    {% include "core/includes/info_leaders.html" %}
+                    <p class="info-note">{{ info.STRUCTURE_NOTE }}</p>
+                </section>
+
+                <!-- Документы -->
+                <section class="course-detail info-section" id="documents">
+                    <h2 class="course-detail-h">Документы, регламентирующие деятельность организации</h2>
+                    {% include "core/includes/info_licenses.html" %}
+                    {% for group, docs in info.REGULATIONS %}
+                    <h3 class="info-subtitle">{{ group }}</h3>
+                    <ul class="info-docs">
+                        {% for d in docs %}{% include "core/includes/doc_row.html" %}{% endfor %}
+                    </ul>
+                    {% endfor %}
+                </section>
+
+                <!-- Руководство. Педагогический состав -->
+                <section class="course-detail info-section" id="staff">
+                    <h2 class="course-detail-h">Руководство. Педагогический (научно-педагогический) состав</h2>
+                    {% include "core/includes/info_leaders.html" %}
+                    <ul class="info-docs">
+                        {% include "core/includes/doc_row.html" with d=info.TEACHING_STAFF %}
+                    </ul>
+                    <a class="course-detail-back mt-3" href="{% url 'core:teachers_list' %}"><i class="bi bi-people"></i> Все преподаватели на сайте</a>
+                </section>
+
+                <!-- Образование -->
+                <section class="course-detail info-section" id="education">
+                    <h2 class="course-detail-h">Образование</h2>
+                    {% for paragraph in info.EDUCATION_TEXT %}<p>{{ paragraph }}</p>{% endfor %}
+                    {% include "core/includes/info_licenses.html" %}
+
+                    <h3 class="info-subtitle">Реализуемые образовательные программы</h3>
+                    <ul class="info-programs">
+                        {% for title, program, annotation in info.PROGRAMS %}
+                        <li class="info-program">
+                            <span class="info-program-kind">Программа повышения квалификации</span>
+                            <span class="info-program-title">«{{ title }}»</span>
+                            <span class="info-program-files">
+                                <a class="course-chip course-chip--link" href="{% static program.path %}" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> {{ program.title }} · {{ program.size }}</a>
+                                {% if annotation %}<a class="course-chip course-chip--link" href="{% static annotation.path %}" target="_blank" rel="noopener"><i class="bi bi-file-earmark-text"></i> {{ annotation.title }} · {{ annotation.size }}</a>{% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <ul class="info-docs mt-3">
+                        {% include "core/includes/doc_row.html" with d=info.TEACHING_STAFF %}
+                    </ul>
+
+                    <h3 class="info-subtitle">Численность обучающихся</h3>
+                    {% for paragraph in info.STUDENTS_TEXT %}<p>{{ paragraph }}</p>{% endfor %}
+
+                    <h3 class="info-subtitle">Образовательные стандарты</h3>
+                    <p>{{ info.STANDARDS_TEXT }}</p>
+                </section>
+
+                <!-- Материально-техническое обеспечение -->
+                <section class="course-detail info-section" id="material">
+                    <h2 class="course-detail-h">Материально-техническое обеспечение и оснащенность образовательного процесса</h2>
+                    <ul class="info-docs">
+                        {% include "core/includes/doc_row.html" with d=info.MATERIAL_DOC %}
+                    </ul>
+                    <h3 class="info-subtitle">Охрана здоровья</h3>
+                    <p>{{ info.HEALTH_TEXT }}</p>
+                    <h3 class="info-subtitle">Организация питания</h3>
+                    <p>{{ info.FOOD_TEXT }}</p>
+                </section>
+
+                <!-- Доступная среда -->
+                <section class="course-detail info-section" id="accessibility">
+                    <h2 class="course-detail-h">Доступная среда</h2>
+                    <p>{{ info.ACCESSIBILITY_TEXT }}</p>
+                </section>
+
+                <!-- Платные образовательные услуги -->
+                <section class="course-detail info-section" id="paid">
+                    <h2 class="course-detail-h">Платные образовательные услуги</h2>
+                    <ul class="info-docs">
+                        {% for d in info.PAID_SERVICES %}{% include "core/includes/doc_row.html" %}{% endfor %}
+                    </ul>
+                </section>
+
+                <!-- Стипендии, вакантные места, международное сотрудничество -->
+                {% for anchor, title, text in info.SHORT_SECTIONS %}
+                <section class="course-detail info-section" id="{{ anchor }}">
+                    <h2 class="course-detail-h">{{ title }}</h2>
+                    <p>{{ text }}</p>
+                </section>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

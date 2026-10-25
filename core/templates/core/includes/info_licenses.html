@@ -1,0 +1,12 @@
+{% load static %}
+{# Лицензия, приложение и выписка — миниатюры со ссылками на PDF #}
+<ul class="info-licenses">
+    {% for item in info.LICENSES %}
+    <li>
+        <a href="{% static item.path %}" target="_blank" rel="noopener">
+            <img src="{% static item.thumb %}" alt="" loading="lazy">
+            <span>{{ item.title }}</span>
+        </a>
+    </li>
+    {% endfor %}
+</ul>

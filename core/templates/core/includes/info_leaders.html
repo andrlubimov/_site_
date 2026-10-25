@@ -1,0 +1,26 @@
+{% load course_tags %}
+{# Руководство организации — карточки; фото и ссылка — со страницы преподавателя, если она есть #}
+<div class="row g-3 info-leaders">
+    {% for leader in leaders %}
+    <div class="col-md-6">
+        <article class="info-leader">
+            {% if leader.teacher.photo %}
+            <img class="info-leader-photo" src="{{ leader.teacher.photo.url }}" alt="" loading="lazy">
+            {% else %}
+            <span class="info-leader-photo info-leader-photo--empty"><i class="bi bi-person"></i></span>
+            {% endif %}
+            <div class="info-leader-body">
+                <span class="course-card-dir">{{ leader.role }}</span>
+                <h3 class="info-leader-name">
+                    {% if leader.teacher %}<a href="{% url 'core:teacher_detail' slug=leader.teacher.slug %}">{{ leader.name }}</a>{% else %}{{ leader.name }}{% endif %}
+                </h3>
+                {% for line in leader.education %}<p>{{ line }}</p>{% endfor %}
+                <p class="info-leader-contacts">
+                    <a href="{{ contacts.phone_education|tel_href }}">{{ contacts.phone_education }}</a> ·
+                    <a href="mailto:{{ contacts.email }}">{{ contacts.email }}</a>
+                </p>
+            </div>
+        </article>
+    </div>
+    {% endfor %}
+</div>

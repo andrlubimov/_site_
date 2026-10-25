@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Преподаватели - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <p class="header-page-title">Образовательные программы и семинары</p>
+    <div class="header-tabs">
+        {% include "core/includes/courses_tabs.html" with active='teachers' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <h1 class="visually-hidden">Преподаватели</h1>
+
+        <!-- Сколько найдено и фильтр по направлению -->
+        <nav class="course-list-bar teachers-bar" aria-label="Направления">
+            <span class="course-list-found">{{ found_label }}</span>
+            <div class="course-variant-switch">
+                <a class="course-variant{% if not direction %} is-current{% endif %}" href="{{ request.path }}"{% if not direction %} aria-current="page"{% endif %}>Все направления</a>
+                {% for code, label, icon in direction_choices %}
+                <a class="course-variant{% if direction == code %} is-current{% endif %}" href="?direction={{ code }}"{% if direction == code %} aria-current="page"{% endif %}><i class="bi {{ icon }}"></i> {{ label }}</a>
+                {% endfor %}
+            </div>
+        </nav>
+
+        <div class="row g-3">
+            {% for card in cards %}
+            {% with teacher=card.teacher %}
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <article class="teacher-card">
+                    {% if teacher.photo %}
+                    <img class="teacher-card-photo" src="{{ teacher.photo.url }}" alt="" loading="lazy">
+                    {% else %}
+                    <span class="teacher-card-photo teacher-card-photo--empty">{{ teacher.initials }}</span>
+                    {% endif %}
+                    <h2 class="teacher-card-name">
+                        <a class="stretched-link" href="{% url 'core:teacher_detail' slug=teacher.slug %}">{{ teacher.full_name }}</a>
+                    </h2>
+                    <p class="teacher-card-programs">{{ card.programs_label }}</p>
+                    {% if card.directions %}
+                    <ul class="teacher-card-dirs">
+                        {% for code, label, icon in card.directions %}
+                        <li><span class="course-dir-icon course-dir-icon--sm course-dir--{{ code }}"><i class="bi {{ icon }}"></i></span>{{ label }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <span class="teacher-card-more">Подробнее <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                </article>
+            </div>
+            {% endwith %}
+            {% empty %}
+            <div class="col-12">
+                <div class="course-list-empty">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <p>По этому направлению преподавателей пока нет.</p>
+                    <a class="btn btn-light btn-sm rounded-pill" href="{{ request.path }}">Все направления</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -95,6 +95,10 @@ main > section:not(.bg-light):not(.bg-white)::after {
 
 /* --- Top nav bar --- */
 .top-nav-bar {
+    /* над логотипом и заголовком шапки: выпадающие списки меню не должны уходить под них
+       (на главной у логотипа filter, а у полосы backdrop-filter — оба создают свои слои) */
+    position: relative;
+    z-index: 20;
     background: rgba(0, 0, 0, 0.22);
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     padding: 7px 0;
@@ -115,7 +119,10 @@ main > section:not(.bg-light):not(.bg-white)::after {
     justify-content: center;
 }
 
-.top-nav-links a {
+.top-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     font-size: 0.78rem;
@@ -125,8 +132,88 @@ main > section:not(.bg-light):not(.bg-white)::after {
     transition: color 0.2s;
 }
 
-.top-nav-links a:hover {
+.top-nav-link:hover,
+.top-nav-link.is-active {
     color: #fff;
+}
+
+.top-nav-link.is-active {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+}
+
+.top-nav-link .bi {
+    font-size: 0.65rem;
+    transition: transform 0.2s;
+}
+
+/* Выпадающий список: при наведении и при переходе по меню клавишей Tab */
+.top-nav-item {
+    position: relative;
+}
+
+.top-nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    min-width: 230px;
+    margin-top: 10px;
+    padding: 0.4rem;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 14px 34px rgba(0, 30, 45, 0.25);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 6px);
+    transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+}
+
+/* «мостик» между пунктом и списком — чтобы список не закрывался, пока ведёшь к нему мышь */
+.top-nav-menu::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -12px;
+    height: 12px;
+}
+
+.top-nav-item:hover .top-nav-menu,
+.top-nav-item:focus-within .top-nav-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.top-nav-item:hover .top-nav-link .bi,
+.top-nav-item:focus-within .top-nav-link .bi {
+    transform: rotate(180deg);
+}
+
+.top-nav-menu a {
+    padding: 0.5rem 0.85rem;
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 0.88rem;
+    line-height: 1.3;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.top-nav-menu a:hover,
+.top-nav-menu a:focus-visible {
+    background: var(--ocean-50);
+    color: var(--ocean-800);
+}
+
+.top-nav-menu a.is-active {
+    background: var(--ocean-100);
+    color: var(--ocean-800);
+    font-weight: 600;
 }
 
 .top-nav-social {
@@ -197,6 +284,35 @@ main > section:not(.bg-light):not(.bg-white)::after {
 
 .mobile-nav-links a:hover {
     color: #fff;
+}
+
+/* раздел с подпунктами: название — подписью, страницы — списком под ним */
+.mobile-nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.mobile-nav-title {
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.mobile-nav-links a.mobile-nav-sub {
+    padding-left: 0.9rem;
+    border-left: 2px solid rgba(255, 255, 255, 0.25);
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.mobile-nav-links a.mobile-nav-sub[aria-current] {
+    border-left-color: #fff;
+    color: #fff;
+    font-weight: 600;
 }
 
 /* --- Site logo --- */
@@ -649,111 +765,6 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 /* ============================================================
-   COURSE BLOCKS (homepage)
-   ============================================================ */
-.course-block {
-    display: flex;
-    background: var(--ocean-50);
-    border-radius: 12px;
-    overflow: hidden;
-    height: 100%;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.course-block:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.14);
-}
-
-.course-block-info {
-    flex: 1;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.course-block-zone1 {
-    margin-bottom: 0.5rem;
-}
-
-.course-block-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0;
-    color: var(--ink);
-}
-
-.course-block-zone2 {
-    margin-bottom: 0.75rem;
-}
-
-.course-block-hours {
-    display: inline-block;
-    background: #d4edda;
-    color: #155724;
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 0.2rem 0.7rem;
-    border-radius: 20px;
-}
-
-.course-block-zone3 {
-    flex: 1;
-    margin-bottom: 0.75rem;
-}
-
-.course-block-desc {
-    font-size: 0.88rem;
-    color: var(--muted);
-    margin: 0;
-    line-height: 1.5;
-}
-
-.course-block-zone5 {
-    margin-top: auto;
-}
-
-.course-block-teacher-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.4rem;
-}
-
-.course-block-photo {
-    width: 180px;
-    min-width: 180px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 0.5rem;
-}
-
-.course-block-photo img {
-    max-width: 100%;
-    max-height: 220px;
-    object-fit: contain;
-}
-
-@media (max-width: 576px) {
-    .course-block {
-        flex-direction: column;
-    }
-
-    .course-block-photo {
-        width: 100%;
-        min-width: auto;
-        justify-content: center;
-        padding: 1rem;
-    }
-
-    .course-block-photo img {
-        max-height: 180px;
-    }
-}
-
-/* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 991px) {
@@ -777,7 +788,7 @@ body:has(.footer-wave) main > section:last-child::after {
         gap: 0.7rem;
     }
 
-    .top-nav-links a {
+    .top-nav-link {
         font-size: 0.7rem;
     }
 
@@ -1567,6 +1578,451 @@ body:has(.footer-wave) main > section:last-child::after {
     border-color: var(--ocean-500);
     background: var(--ocean-50);
     text-decoration: none;
+}
+
+/* ============================================================
+   TEACHERS LIST (/education/teachers/)
+   Карточки преподавателей — как карточки курсов: белые, со скруглением, вся карточка — ссылка
+   ============================================================ */
+.teachers-bar .course-variant-switch {
+    margin-left: auto;
+}
+
+.teachers-bar .course-variant .bi {
+    margin-right: 0.2rem;
+}
+
+.teacher-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    padding: 1.5rem 1.25rem 1.25rem;
+    background: #fff;
+    color: var(--text);
+    border-radius: 22px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    text-align: center;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.teacher-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 30, 45, 0.22);
+}
+
+.teacher-card-photo {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 5px var(--ocean-50), 0 6px 16px rgba(0, 40, 70, 0.15);
+}
+
+.teacher-card-photo--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ocean-100);
+    color: var(--ocean-800);
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+.teacher-card-name {
+    margin: 0 0 0.3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.teacher-card-name a {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.teacher-card:hover .teacher-card-name a {
+    color: var(--ocean-700);
+}
+
+.teacher-card-programs {
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.teacher-card-dirs {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.teacher-card-dirs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.teacher-card-dirs .course-dir-icon--sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.teacher-card-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: auto;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    background: var(--ocean-50);
+    color: var(--ocean-700);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background-color 0.15s;
+}
+
+.teacher-card:hover .teacher-card-more {
+    background: var(--ocean-100);
+}
+
+/* ============================================================
+   EDUCATION INFO (/page/info/) — «Сведения об образовательной организации»
+   Слева — оглавление (как панель фильтров), справа — разделы белыми блоками,
+   документы — строками, как варианты в карточке курса
+   ============================================================ */
+@media (min-width: 992px) {
+    .info-toc {
+        position: sticky;
+        top: 1.5rem;
+    }
+}
+
+.info-toc-title {
+    margin-bottom: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.info-toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: toc;
+}
+
+.info-toc li {
+    counter-increment: toc;
+}
+
+.info-toc a {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 0.88rem;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.info-toc a::before {
+    content: counter(toc);
+    flex: none;
+    min-width: 1.2rem;
+    font-weight: 700;
+    color: var(--ocean-700);
+}
+
+.info-toc a:hover {
+    background: var(--ocean-50);
+    color: var(--ocean-800);
+}
+
+.info-section {
+    margin-bottom: 1.25rem;
+    scroll-margin-top: 1rem; /* переход по оглавлению — заголовок не прижат к краю */
+}
+
+.info-section p:last-child {
+    margin-bottom: 0;
+}
+
+.info-subtitle {
+    margin: 1.5rem 0 0.6rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+/* Основные сведения — строки «подпись: значение» */
+.info-facts {
+    margin: 0;
+}
+
+.info-fact {
+    display: grid;
+    grid-template-columns: minmax(0, 32%) minmax(0, 1fr);
+    gap: 0.25rem 1.25rem;
+    padding: 0.65rem 0;
+}
+
+.info-fact + .info-fact {
+    border-top: 1px solid var(--line);
+}
+
+.info-fact dt {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.info-fact dd {
+    margin: 0;
+}
+
+@media (max-width: 575.98px) {
+    .info-fact {
+        grid-template-columns: 1fr;
+    }
+}
+
+.info-note {
+    margin-top: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
+    font-size: 0.92rem;
+}
+
+/* Руководство */
+.info-leader {
+    display: flex;
+    gap: 1rem;
+    height: 100%;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+}
+
+.info-leader-photo {
+    flex: none;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 4px var(--ocean-50);
+}
+
+.info-leader-photo--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ocean-100);
+    color: var(--ocean-700);
+    font-size: 2rem;
+}
+
+.info-leader-name {
+    margin: 0.2rem 0 0.4rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.info-leader-name a {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.info-leader-name a:hover {
+    color: var(--ocean-700);
+}
+
+.info-leader-body p {
+    margin-bottom: 0.3rem;
+    font-size: 0.86rem;
+    color: var(--muted);
+}
+
+.info-leader-body .info-leader-contacts {
+    margin: 0.5rem 0 0;
+}
+
+.info-leader-contacts a {
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+/* Документы — строки как варианты в карточке курса */
+.info-docs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.info-doc-link {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: var(--ocean-50);
+    color: var(--text);
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.info-doc-link:hover {
+    border-color: var(--ocean-500);
+    background: #fff;
+    color: var(--text);
+}
+
+.info-doc-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--dir-hydrorehab);
+    font-size: 1.1rem;
+}
+
+.info-doc-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ink);
+}
+
+.info-doc-link > .bi {
+    flex: none;
+    margin-left: auto;
+    color: var(--ocean-700);
+}
+
+.info-doc-sig {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.3rem 0 0 1rem;
+    font-size: 0.82rem;
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+.info-doc-sig:hover {
+    text-decoration: underline;
+}
+
+/* Лицензия — миниатюры */
+.info-licenses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1rem 0 0.5rem;
+    padding: 0;
+    list-style: none;
+}
+
+.info-licenses a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 130px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.3;
+    text-decoration: none;
+}
+
+.info-licenses img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 40, 70, 0.18);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.info-licenses a:hover img {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(0, 40, 70, 0.25);
+}
+
+.info-licenses a:hover span {
+    color: var(--ocean-700);
+}
+
+/* Программы повышения квалификации */
+.info-programs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.info-program {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.85rem 1rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
+}
+
+.info-program-kind {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.info-program-title {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.info-program-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+
+.info-program-files .course-chip {
+    margin: 0;
+    background: #fff;
+    font-weight: 600;
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+.info-program-files .course-chip:hover {
+    border-color: var(--ocean-500);
 }
 
 /* ============================================================

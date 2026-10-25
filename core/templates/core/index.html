@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static course_tags %}
 
 {% block body_class %}page-home{% endblock %}
 
@@ -7,26 +7,17 @@
 <link rel="stylesheet" href="{% static 'css/ocean.css' %}">
 {% endblock %}
 
-{% block header_content %}
-<div class="home-welcome">
-    <h1 class="home-welcome-title">Добро пожаловать</h1>
-</div>
-{% endblock %}
-
 {% block header_decor %}
-<!-- Пляж: ракушки и кромка прибоя -->
-<div class="beach-decor" aria-hidden="true">
-    <svg class="beach-starfish" viewBox="0 0 100 100">
-        <path d="M50 4 L61 37 L96 38 L68 59 L78 93 L50 73 L22 93 L32 59 L4 38 L39 37 Z"
-              fill="#e9875a" stroke="#c96a42" stroke-width="3" stroke-linejoin="round"/>
-        <g fill="#f6b48c"><circle cx="50" cy="26" r="3"/><circle cx="70" cy="44" r="3"/><circle cx="62" cy="70" r="3"/><circle cx="38" cy="70" r="3"/><circle cx="30" cy="44" r="3"/></g>
-    </svg>
-    <svg class="beach-shell" viewBox="0 0 100 90">
-        <path d="M50 86 C20 86 4 60 6 40 C8 18 30 4 50 4 C70 4 92 18 94 40 C96 60 80 86 50 86 Z" fill="#f7e6d6" stroke="#d9b49a" stroke-width="3"/>
-        <g stroke="#d9b49a" stroke-width="2.5" fill="none" stroke-linecap="round">
-            <path d="M50 84 L50 8"/><path d="M50 84 L28 12"/><path d="M50 84 L72 12"/><path d="M50 84 L12 32"/><path d="M50 84 L88 32"/>
-        </g>
-    </svg>
+<!-- Пляж: кит «Море детям», матрёшка (как на сайте конвенции) и кромка прибоя -->
+<div class="beach-decor">
+    <a class="beach-figure beach-figure--whale" href="https://моредетям.рф/" target="_blank" rel="noopener"
+       title="Море детям" aria-label="Сайт «Море детям»">
+        <span class="beach-figure-clip"><img src="{% static 'whale.svg' %}" alt=""></span>
+    </a>
+    <a class="beach-figure beach-figure--matryoshka" href="https://convent.grudnichkovoe-plavanie.ru/" target="_blank" rel="noopener"
+       title="Конвенция" aria-label="Сайт конвенции">
+        <span class="beach-figure-clip"><img src="{% static 'matryoshka.svg' %}" alt=""></span>
+    </a>
 </div>
 <div class="shore" aria-hidden="true">
     <div class="shore-layer shore-wet"></div>
@@ -61,63 +52,38 @@
     <span></span><span></span><span></span><span></span><span></span>
 </div>
 
-<!-- Courses Section -->
+<!-- Курсы: несколько карточек, как на странице «Программы» -->
 <section class="py-5 ocean-slice depth-1">
     <div class="container">
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <h2 class="h3 mb-3">Обучающие программы</h2>
-                <div class="d-flex flex-wrap gap-3 mb-4">
-                    <a href="{% url 'core:courses_list' %}" class="text-decoration-none">Программы</a>
-                    <span>•</span>
-                    <a href="{% url 'core:page_content' slug='timetable' %}" class="text-decoration-none">Расписание курсов и семинаров</a>
-                    <span>•</span>
-                    <a href="{% url 'core:page_content' slug='seminars' %}" class="text-decoration-none">Выездные семинары</a>
-                    <span>•</span>
-                    <a href="{% url 'core:page_content' slug='why_us' %}" class="text-decoration-none">Почему стоит учиться у нас?</a>
-                </div>
-                <p>{{ courses_intro }}</p>
+        <div class="sea-head">
+            <h2 class="h3 mb-3">Обучающие программы</h2>
+            <div class="d-flex flex-wrap gap-3 mb-3">
+                <a href="{% url 'core:courses_list' %}" class="text-decoration-none">Программы</a>
+                <span>•</span>
+                <a href="{% url 'core:page_content' slug='timetable' %}" class="text-decoration-none">Расписание курсов и семинаров</a>
+                <span>•</span>
+                <a href="{% url 'core:teachers_list' %}" class="text-decoration-none">Преподаватели</a>
+                <span>•</span>
+                <a href="{% url 'core:page_content' slug='seminars' %}" class="text-decoration-none">Выездные семинары</a>
+                <span>•</span>
+                <a href="{% url 'core:page_content' slug='why_us' %}" class="text-decoration-none">Почему стоит учиться у нас?</a>
             </div>
+            <p>{{ courses_intro }}</p>
         </div>
 
-        <div class="row g-4">
-            {% for course in courses %}
-            <div class="col-md-6">
-                <div class="course-block">
-                    <div class="course-block-info">
-                        <div class="course-block-zone1">
-                            <h5 class="course-block-title">{{ course.title }}</h5>
-                        </div>
-                        <div class="course-block-zone2">
-                            <span class="course-block-hours">{{ course.hours_label }}</span>
-                        </div>
-                        <div class="course-block-zone3">
-                            <p class="course-block-desc">{{ course.short_description|truncatewords:30 }}</p>
-                        </div>
-                        <div class="course-block-zone5">
-                            {% if course.teacher_names %}
-                            <p class="course-block-teacher-name">{{ course.teacher_names }}</p>
-                            {% endif %}
-                            <a href="{% url 'core:course_detail' slug=course.slug %}" class="btn btn-primary btn-sm">Подробнее</a>
-                        </div>
-                    </div>
-                    <div class="course-block-photo">
-                        {% with teacher=course.main_teacher %}
-                        {% if teacher and teacher.photo_transparent %}
-                        <img src="{{ teacher.photo_transparent.url }}" alt="{{ teacher.full_name }}">
-                        {% endif %}
-                        {% endwith %}
-                    </div>
-                </div>
+        <div class="row g-3">
+            {% for card in cards %}
+            <div class="col-md-6 col-xl-3">
+                {% include "core/includes/course_card.html" with show_dates=True %}
             </div>
             {% endfor %}
         </div>
 
-        <div class="row mt-4">
-            <div class="col-md-12 text-center">
-                <a href="{% url 'core:courses_list' %}" class="btn btn-outline-primary me-2">Расписание курсов и семинаров</a>
-                <a href="{% url 'core:page_content' slug='seminars' %}" class="btn btn-outline-primary">Расписание выездных семинаров</a>
-            </div>
+        <div class="sea-more">
+            <a href="{% url 'core:courses_list' %}" class="sea-btn sea-btn--big">
+                Больше курсов <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+            {% if more_label %}<span class="sea-more-note">{{ more_label }} — на странице «Программы»</span>{% endif %}
         </div>
     </div>
 </section>
@@ -135,8 +101,8 @@
                     практик в области раннего развития детей через воду, выработка привычки к здоровому
                     образу жизни с рождения.
                 </p>
-                <a href="http://convent.grudnichkovoe-plavanie.ru/" class="btn btn-primary" target="_blank">
-                    Перейти на сайт конвенции
+                <a href="https://convent.grudnichkovoe-plavanie.ru/" class="sea-btn" target="_blank" rel="noopener">
+                    Перейти на сайт конвенции <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
                 </a>
             </div>
         </div>
@@ -159,7 +125,7 @@
                     Готовых поднимать уровень своего профессионализма, учиться, обмениваться опытом,
                     делиться своими мыслями и наработками.
                 </p>
-                <a href="{% url 'core:page_content' slug='membership' %}" class="btn btn-success">Подать заявку на вступление</a>
+                <a href="{% url 'core:page_content' slug='membership' %}" class="sea-btn">Подать заявку на вступление <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
 
@@ -184,51 +150,85 @@
     </div>
 </section>
 
-<!-- Representatives Section -->
+<!-- Представители: карусель -->
 <section class="py-5 ocean-slice depth-4">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <h2 class="h3 mb-3">Региональные представители Ассоциации</h2>
-                <p class="lead mb-4">Представляем организации, которые рады оказать вам помощь в вашем регионе</p>
-                <a href="{% url 'core:specialists_list' %}" class="btn btn-primary">Региональные представители</a>
-            </div>
+        <div class="sea-head text-center">
+            <h2 class="h3 mb-3">Региональные представители Ассоциации</h2>
+            <p class="lead">Представляем организации, которые рады оказать вам помощь в вашем регионе</p>
         </div>
-    </div>
-</section>
-
-<!-- Partners Section -->
-<section class="py-5 ocean-slice depth-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <h2 class="h3 mb-3">Партнеры Ассоциации</h2>
-                <p class="lead mb-4">
-                    Партнеры Ассоциации — компании, организации и частные лица, разделяющие наши цели,
-                    принципы и задачи. Мы рады рассказывать и продвигать те направления деятельности,
-                    товары и услуги, которые могут быть полезны членам Ассоциации и вообще сообществу,
-                    занимающемуся работой с детьми.
-                </p>
-                <a href="{% url 'core:partners_list' %}" class="btn btn-primary">Подробнее о партнерах</a>
-            </div>
-        </div>
-
-        {% if partners %}
-        <div class="row mt-5 g-4 justify-content-center">
-            {% for partner in partners %}
-            <div class="col-md-4 col-lg-3 text-center">
-                {% if partner.logo %}
-                <img src="{{ partner.logo.url }}" class="img-fluid mb-3" alt="{{ partner.name }}" style="max-height: 150px; object-fit: contain;">
-                {% else %}
-                <div class="bg-secondary text-white py-4 mb-3">{{ partner.name }}</div>
-                {% endif %}
-                {% if partner.website %}
-                <a href="{{ partner.website }}" target="_blank" class="btn btn-sm btn-outline-primary">Сайт</a>
-                {% endif %}
-            </div>
-            {% endfor %}
+        {% if representatives %}
+        <div class="sea-carousel" data-carousel>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--prev" data-carousel-prev aria-label="Назад"><i class="bi bi-chevron-left"></i></button>
+            <ul class="sea-carousel-track" data-carousel-track>
+                {% for rep in representatives %}
+                <li class="sea-carousel-item">
+                    <article class="sea-card">
+                        <div class="sea-card-logo">
+                            {% if rep.logo %}<img src="{{ rep.logo.url }}" alt="" loading="lazy">{% else %}<i class="bi bi-geo-alt"></i>{% endif %}
+                        </div>
+                        <span class="course-card-dir">{{ rep.get_kind_display }}</span>
+                        <h3 class="sea-card-title">{{ rep.name }}</h3>
+                        <p class="sea-card-meta"><i class="bi bi-geo-alt"></i> {{ rep.city }}, {{ rep.country }}</p>
+                        {% if rep.contact_name %}<p class="sea-card-meta"><i class="bi bi-person"></i> {{ rep.contact_name }}</p>{% endif %}
+                        <div class="sea-card-links">
+                            {% if rep.phone %}<a class="course-chip course-chip--link" href="{{ rep.phone|tel_href }}"><i class="bi bi-telephone"></i> {{ rep.phone }}</a>{% endif %}
+                            {% if rep.website %}<a class="course-chip course-chip--link" href="{{ rep.website }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Сайт</a>{% endif %}
+                        </div>
+                    </article>
+                </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--next" data-carousel-next aria-label="Вперёд"><i class="bi bi-chevron-right"></i></button>
         </div>
         {% endif %}
+        <div class="sea-more">
+            <a href="{% url 'core:specialists_list' %}" class="sea-btn">Подробнее о представителях <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </div>
     </div>
 </section>
+
+<!-- Партнёры: карусель -->
+<section class="py-5 ocean-slice depth-5">
+    <div class="container">
+        <div class="sea-head text-center">
+            <h2 class="h3 mb-3">Партнеры Ассоциации</h2>
+            <p class="lead">
+                Компании, организации и частные лица, разделяющие наши цели, принципы и задачи. Мы рады рассказывать
+                о товарах и услугах, полезных членам Ассоциации и всем, кто работает с детьми.
+            </p>
+        </div>
+        {% if partners %}
+        <div class="sea-carousel" data-carousel>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--prev" data-carousel-prev aria-label="Назад"><i class="bi bi-chevron-left"></i></button>
+            <ul class="sea-carousel-track" data-carousel-track>
+                {% for partner in partners %}
+                <li class="sea-carousel-item">
+                    <article class="sea-card">
+                        <div class="sea-card-logo">
+                            {% if partner.logo %}<img src="{{ partner.logo.url }}" alt="" loading="lazy">{% else %}<i class="bi bi-building"></i>{% endif %}
+                        </div>
+                        <h3 class="sea-card-title">{{ partner.name }}</h3>
+                        {% if partner.city %}<p class="sea-card-meta"><i class="bi bi-geo-alt"></i> {{ partner.city }}{% if partner.country %}, {{ partner.country }}{% endif %}</p>{% endif %}
+                        {% if partner.description %}<p class="sea-card-desc">{{ partner.description }}</p>{% endif %}
+                        {% if partner.website %}
+                        <div class="sea-card-links">
+                            <a class="course-chip course-chip--link" href="{{ partner.website }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Сайт</a>
+                        </div>
+                        {% endif %}
+                    </article>
+                </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="sea-carousel-btn sea-carousel-btn--next" data-carousel-next aria-label="Вперёд"><i class="bi bi-chevron-right"></i></button>
+        </div>
+        {% endif %}
+        <div class="sea-more">
+            <a href="{% url 'core:partners_list' %}" class="sea-btn">Подробнее о партнёрах <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/sea-carousel.js' %}"></script>
 {% endblock %}
