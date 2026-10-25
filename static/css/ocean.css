@@ -413,8 +413,14 @@
 .sea-carousel-track {
     display: flex;
     gap: 1rem;
-    margin: 0;
-    padding: 0.5rem 0.25rem 1rem;
+    /* запас со всех сторон — иначе прокручиваемая лента обрезает тени карточек ровным краем;
+       отрицательные отступы возвращают карточки на место */
+    margin: -0.5rem -2rem -1.5rem;
+    padding: 1rem 2rem 2.5rem;
+    scroll-padding-inline: 2rem;
+    /* края ленты растворяются: соседние карточки и тени уходят в воду без резкой границы */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
     list-style: none;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
@@ -438,7 +444,7 @@
 @media (max-width: 767.98px) {
     .sea-carousel { padding: 0; }
     .sea-carousel-item { flex-basis: 82%; }
-    .sea-carousel-btn { display: none; }
+    .sea-carousel .sea-carousel-btn { display: none; } /* на телефоне листают свайпом */
 }
 
 .sea-carousel-btn {
@@ -553,6 +559,78 @@
 .sea-card-links .course-chip:hover {
     border-color: var(--ocean-500, #1f8fa6);
     background: var(--ocean-50, #f2f8fb);
+}
+
+/* На глубине (членство, представители, партнёры) белое слишком контрастно —
+   карточки и кнопки становятся «подводным стеклом»: полупрозрачные, со светлой бирюзовой кромкой */
+.page-home .depth-3 .sea-btn,
+.page-home .depth-4 .sea-btn,
+.page-home .depth-5 .sea-btn,
+.page-home .depth-4 .sea-carousel-btn,
+.page-home .depth-5 .sea-carousel-btn {
+    border: 1px solid rgba(174, 239, 255, 0.55);
+    background: rgba(174, 239, 255, 0.12);
+    color: var(--sea-text);
+    box-shadow: 0 8px 22px rgba(0, 10, 25, 0.35);
+}
+
+.page-home .depth-3 .sea-btn:hover,
+.page-home .depth-4 .sea-btn:hover,
+.page-home .depth-5 .sea-btn:hover,
+.page-home .depth-4 .sea-carousel-btn:hover,
+.page-home .depth-5 .sea-carousel-btn:hover {
+    border-color: var(--sea-link);
+    background: rgba(174, 239, 255, 0.24);
+    color: #fff;
+}
+
+.page-home .depth-4 .sea-card,
+.page-home .depth-5 .sea-card {
+    border: 1px solid rgba(174, 239, 255, 0.22);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
+    color: var(--sea-text);
+    box-shadow: 0 10px 28px rgba(0, 10, 25, 0.4);
+    /* без backdrop-filter: внутри прокручиваемой ленты размытие даёт светлую полосу по её краю */
+}
+
+/* логотипы рисовались под светлый фон — под ними мягкая светло-голубая подложка */
+.page-home .depth-4 .sea-card-logo,
+.page-home .depth-5 .sea-card-logo {
+    background: rgba(232, 246, 250, 0.92);
+}
+
+.page-home .depth-4 .sea-card-title,
+.page-home .depth-5 .sea-card-title {
+    color: #fff;
+}
+
+.page-home .depth-4 .sea-card .course-card-dir {
+    color: var(--sea-link);
+}
+
+.page-home .depth-4 .sea-card-meta,
+.page-home .depth-5 .sea-card-meta,
+.page-home .depth-5 .sea-card-desc {
+    color: rgba(230, 246, 250, 0.75);
+}
+
+.page-home .depth-4 .sea-card-meta .bi,
+.page-home .depth-5 .sea-card-meta .bi {
+    color: var(--sea-link);
+}
+
+.page-home .depth-4 .sea-card-links .course-chip,
+.page-home .depth-5 .sea-card-links .course-chip {
+    border-color: rgba(174, 239, 255, 0.45);
+    background: transparent;
+    color: var(--sea-link);
+}
+
+.page-home .depth-4 .sea-card-links .course-chip:hover,
+.page-home .depth-5 .sea-card-links .course-chip:hover {
+    border-color: var(--sea-link);
+    background: rgba(174, 239, 255, 0.14);
+    color: #fff;
 }
 
 /* Карточки специалистов — «стекло» под водой */
