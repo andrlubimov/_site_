@@ -109,7 +109,13 @@
 
         </div><!-- /.header-overlay -->
 
-        {% block header_decor %}{% endblock %}
+        {% block header_decor %}
+        <div class="shore" aria-hidden="true">
+            <div class="shore-layer shore-wet"></div>
+            <div class="shore-layer shore-foam"></div>
+            <div class="shore-layer shore-water"></div>
+        </div>
+        {% endblock %}
     </header>
 
     <!-- ===== MAIN CONTENT ===== -->

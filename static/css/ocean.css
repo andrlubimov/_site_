@@ -3,21 +3,13 @@
    Подключается только на главной (body.page-home)
    ============================================================ */
 .page-home {
-    /* Срезы глубины: верх → низ каждого блока */
-    --d1-top: #2fb5c2; --d1-bot: #1e98b0;
-    --d2-top: #1a86a6; --d2-bot: #146f92;
-    --d3-top: #11608a; --d3-bot: #0d4c74;
-    --d4-top: #0b3e66; --d4-bot: #083153;
-    --d5-top: #07294a; --d5-bot: #05203b;
+    /* Дно (срезы глубины --d1…--d5 и волны между ними — общие, style.css) */
     --floor-top: #041a31;
     --floor-bot: #0b2a3a;
 
     --sea-text: #e6f6fa;
     --sea-link: #aeefff;
 
-    /* Тайл волны для границ между срезами */
-    --slice-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='40'%3E%3Cpath d='M0 20 C50 6 100 6 150 20 S250 34 300 20 S400 6 450 20 S550 34 600 20 V40 H0 Z'/%3E%3C/svg%3E");
-    --slice-wave-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='52'%3E%3Cpath d='M0 26 C75 6 150 6 225 26 S375 46 450 26 S600 6 675 26 S825 46 900 26 V52 H0 Z'/%3E%3C/svg%3E");
 
     /* Цвет песка на дне — им же закрашивается всё ниже подвала */
     background-color: #4a675f;
@@ -26,40 +18,13 @@
 /* ------------------------------------------------------------
    ШАПКА: песчаный пляж
    ------------------------------------------------------------ */
-.page-home .site-header {
-    position: relative;
-    overflow: hidden;
-    background-color: #ecd29e;
-    background-image:
-        radial-gradient(ellipse 60% 70% at 88% -15%, rgba(255, 248, 220, 0.95), rgba(255, 248, 220, 0) 70%),
-        url('../sand-texture.png'),
-        linear-gradient(180deg, #f6e4b8 0%, #efd5a1 55%, #e3bd82 100%);
-    background-size: auto, 200px 200px, auto;
-    background-repeat: no-repeat, repeat, no-repeat;
-    background-position: 0 0, 0 0, 0 0;
-}
-
 .page-home .header-overlay {
-    position: relative;
-    z-index: 2;
-    background: none;
-    padding-bottom: 120px; /* место под кромку прибоя */
+    padding-bottom: 120px;
 }
 
-.page-home .top-nav-bar {
-    background: rgba(18, 96, 118, 0.82);
-    border-bottom: none;
-    backdrop-filter: blur(4px);
-}
-
-/* Белый логотип → тёмно-бирюзовый, чтобы читался на песке; на главной — крупнее */
+/* на главной под логотипом нет заголовка — отступы больше */
 .page-home .site-logo {
     padding: 3rem 1rem 2.5rem;
-}
-
-.page-home .logo-image {
-    width: min(900px, 92vw);
-    filter: brightness(0) saturate(100%) invert(24%) sepia(62%) saturate(1200%) hue-rotate(160deg) brightness(88%);
 }
 
 /* Ракушки на песке */
@@ -157,52 +122,6 @@
     --tilt: 8deg;
 }
 
-/* Кромка прибоя: мокрый песок → пена → вода */
-.shore {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 140px;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.shore-layer {
-    position: absolute;
-    inset: 0;
-    background-repeat: repeat-x;
-    background-size: 1200px 140px;
-    background-position: 0 bottom;
-}
-
-.shore-wet {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 30 C100 10 200 10 300 30 S500 50 600 30 S800 10 900 30 S1100 50 1200 30 V140 H0 Z' fill='%23b08a52' fill-opacity='0.35'/%3E%3C/svg%3E");
-    background-position: -150px bottom;
-    animation: shore-wash 7s ease-in-out infinite alternate;
-}
-
-.shore-foam {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 44 C100 24 200 24 300 44 S500 64 600 44 S800 24 900 44 S1100 64 1200 44 V140 H0 Z' fill='%23ffffff' fill-opacity='0.92'/%3E%3C/svg%3E");
-    background-position: -60px bottom;
-    animation: shore-wash 5s ease-in-out infinite alternate;
-}
-
-.shore-water {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0.35' stop-color='%2398e4dc'/%3E%3Cstop offset='1' stop-color='%232fb5c2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z' fill='url(%23g)'/%3E%3C/svg%3E");
-    animation: shore-drift 26s linear infinite;
-}
-
-@keyframes shore-wash {
-    from { transform: translateY(0); }
-    to   { transform: translateY(9px); }
-}
-
-@keyframes shore-drift {
-    from { background-position: 0 bottom; }
-    to   { background-position: 1200px bottom; }
-}
-
 /* ------------------------------------------------------------
    ТОЛЩА ОКЕАНА: каждый блок — срез глубже предыдущего (только цвет, без узора)
    ------------------------------------------------------------ */
@@ -212,26 +131,7 @@
     color: var(--sea-text);
 }
 
-.page-home main > section.ocean-slice {
-    position: relative;
-    background: linear-gradient(180deg, var(--top), var(--bot));
-}
-
-.page-home main > section.ocean-slice > .container {
-    position: relative;
-    z-index: 2;
-}
-
-.depth-1 { --top: var(--d1-top); --bot: var(--d1-bot); }
-.depth-2 { --top: var(--d2-top); --bot: var(--d2-bot); --wave-delay: -5s; }
-.depth-3 { --top: var(--d3-top); --bot: var(--d3-bot); --wave-delay: -11s; }
-.depth-4 { --top: var(--d4-top); --bot: var(--d4-bot); --wave-delay: -2s; }
-.depth-5 { --top: var(--d5-top); --bot: var(--d5-bot); --wave-delay: -16s; }
-
-/* Переход между срезами — как кромка прибоя под шапкой: два слоя волн дрейфуют навстречу друг
-   другу, задний (полупрозрачный) ещё и покачивается. Цвет — верх следующего среза. */
-.page-home main > section.ocean-slice::before,
-.page-home main > section.ocean-slice::after,
+/* Волны над подвалом главной (над дном) — как между блоками, style.css */
 .page-home .site-footer::before,
 .page-home .site-footer::after {
     content: '';
@@ -241,8 +141,6 @@
     pointer-events: none;
 }
 
-/* передний слой */
-.page-home main > section.ocean-slice::before,
 .page-home .site-footer::before {
     top: -39px;
     height: 40px;
@@ -254,8 +152,6 @@
     animation-delay: var(--wave-delay, 0s);
 }
 
-/* задний слой */
-.page-home main > section.ocean-slice::after,
 .page-home .site-footer::after {
     top: -51px;
     height: 52px;
@@ -266,42 +162,6 @@
     mask: var(--slice-wave-back) 0 0 / 900px 52px repeat-x;
     animation: sea-drift-back 34s linear infinite, sea-bob 6s ease-in-out infinite alternate;
     animation-delay: var(--wave-delay, 0s), 0s;
-}
-
-/* у первого среза сверху кромка прибоя из шапки — своих волн не нужно */
-.page-home main > section.depth-1::after {
-    content: none;
-}
-
-@keyframes sea-drift {
-    from { -webkit-mask-position: 0 0; mask-position: 0 0; }
-    to   { -webkit-mask-position: 600px 0; mask-position: 600px 0; }
-}
-
-@keyframes sea-drift-back {
-    from { -webkit-mask-position: 0 0; mask-position: 0 0; }
-    to   { -webkit-mask-position: -900px 0; mask-position: -900px 0; }
-}
-
-@keyframes sea-bob {
-    from { transform: translateY(0); }
-    to   { transform: translateY(7px); }
-}
-
-/* Первый срез продолжает воду из шапки — вместо волны лучи света */
-.page-home main > section.depth-1::before {
-    top: 0;
-    bottom: 0;
-    height: auto;
-    animation: none;
-    -webkit-mask: linear-gradient(180deg, transparent 0, #000 160px, transparent 75%);
-    mask: linear-gradient(180deg, transparent 0, #000 160px, transparent 75%);
-    background: repeating-linear-gradient(
-        100deg,
-        rgba(255, 255, 255, 0) 0 70px,
-        rgba(255, 255, 255, 0.07) 70px 110px,
-        rgba(255, 255, 255, 0) 110px 190px
-    );
 }
 
 /* Типографика на воде */
@@ -829,20 +689,16 @@
 
 @media (max-width: 767px) {
     .page-home .header-overlay { padding-bottom: 90px; }
-    .shore { height: 110px; }
     .seabed-rock--l, .kelp--2, .kelp--3 { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .shore-layer,
     .kelp,
     .bubbles span {
         animation: none;
     }
     .bubbles { display: none; }
     .beach-figure img { transition: none; }
-    .page-home main > section.ocean-slice::before,
-    .page-home main > section.ocean-slice::after,
     .page-home .site-footer::before,
     .page-home .site-footer::after { animation: none; }
 }

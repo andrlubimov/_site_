@@ -17,7 +17,7 @@
 
 <!-- 1. Вступление -->
 {% with s=sections.intro %}
-<section class="about-section about-intro bg-white">
+<section class="about-section about-intro">
     <div class="container about-container">
         {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
         <div class="about-lead">{{ s.content|linebreaks }}</div>
@@ -27,7 +27,7 @@
 {% endwith %}
 
 <!-- 2. Цели и задачи + 3. Направления деятельности -->
-<section class="about-section bg-white pt-0">
+<section class="about-section pt-0">
     <div class="container about-container">
         {% with s=sections.goals %}
         <div class="about-block">
@@ -47,7 +47,7 @@
 
 <!-- 4. Образовательная и просветительская деятельность -->
 {% with s=sections.education %}
-<section class="about-section about-education bg-white" style="--edu-bg: url('{% static 'about-edu.jpg' %}');">
+<section class="about-section about-education" style="--edu-bg: url('{% static 'about-edu.jpg' %}');">
     <div class="container about-container">
         {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
         <div class="about-pills">
@@ -83,7 +83,7 @@
 
 <!-- 5. Документы -->
 {% with s=sections.documents %}
-<section class="about-section bg-white">
+<section class="about-section">
     <div class="container about-container">
         {% if s.title %}<h2 class="about-title about-title--left">{{ s.title }}</h2>{% endif %}
         {% if s.content %}<div class="about-text">{{ s.content|linebreaks }}</div>{% endif %}

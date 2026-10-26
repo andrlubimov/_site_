@@ -19,11 +19,7 @@
         <span class="beach-figure-clip"><img src="{% static 'matryoshka.svg' %}" alt=""></span>
     </a>
 </div>
-<div class="shore" aria-hidden="true">
-    <div class="shore-layer shore-wet"></div>
-    <div class="shore-layer shore-foam"></div>
-    <div class="shore-layer shore-water"></div>
-</div>
+{{ block.super }}
 {% endblock %}
 
 {% block footer_wave %}{% endblock %}

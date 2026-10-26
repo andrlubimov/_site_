@@ -29,6 +29,18 @@
 
     --footer-bg-color: var(--ocean-600);
 
+    /* Тело страниц — «толща океана»: блок за блоком глубже (верх → низ блока) */
+    --d1-top: #2fb5c2; --d1-bot: #1e98b0;
+    --d2-top: #1a86a6; --d2-bot: #146f92;
+    --d3-top: #11608a; --d3-bot: #0d4c74;
+    --d4-top: #0b3e66; --d4-bot: #083153;
+    --d5-top: #07294a; --d5-bot: #05203b;
+    --sea-text: #e6f6fa;
+    --sea-link: #aeefff;
+    /* волна на границе блоков: передний и задний слои */
+    --slice-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='40'%3E%3Cpath d='M0 20 C50 6 100 6 150 20 S250 34 300 20 S400 6 450 20 S550 34 600 20 V40 H0 Z'/%3E%3C/svg%3E");
+    --slice-wave-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='52'%3E%3Cpath d='M0 26 C75 6 150 6 225 26 S375 46 450 26 S600 6 675 26 S825 46 900 26 V52 H0 Z'/%3E%3C/svg%3E");
+
     /* Bootstrap: ссылки и фокус в цветах сайта */
     --bs-primary: #0f6f93;
     --bs-primary-rgb: 15, 111, 147;
@@ -48,50 +60,188 @@ main {
     position: relative;
 }
 
-/* Синие секции: текстура в теле, волна только сверху и снизу */
-main > section:not(.bg-light):not(.bg-white) {
+/* ============================================================
+   ТЕЛО СТРАНИЦ — «толща океана», как на главной: каждый блок (main > section) глубже
+   предыдущего, без узора; между блоками дрейфуют волны цвета следующего блока.
+   Личный кабинет — свой светлый фон (cabinet.css), там блоков section нет.
+   ============================================================ */
+main > section {
     position: relative;
-    background-image: url('../pattern.png');
-    background-repeat: repeat;
-    background-position: left top;
+    background: linear-gradient(180deg, var(--top), var(--bot));
 }
 
-main > section:not(.bg-light):not(.bg-white)::before,
-main > section:not(.bg-light):not(.bg-white)::after {
+main > section > .container {
+    position: relative;
+    z-index: 2;
+}
+
+.depth-1,
+body:not(.page-home) main > section:nth-of-type(1) { --top: var(--d1-top); --bot: var(--d1-bot); }
+.depth-2,
+body:not(.page-home) main > section:nth-of-type(2) { --top: var(--d2-top); --bot: var(--d2-bot); --wave-delay: -5s; }
+.depth-3,
+body:not(.page-home) main > section:nth-of-type(3) { --top: var(--d3-top); --bot: var(--d3-bot); --wave-delay: -11s; }
+.depth-4,
+body:not(.page-home) main > section:nth-of-type(4) { --top: var(--d4-top); --bot: var(--d4-bot); --wave-delay: -2s; }
+.depth-5,
+body:not(.page-home) main > section:nth-of-type(n+5) { --top: var(--d5-top); --bot: var(--d5-bot); --wave-delay: -16s; }
+
+/* граница блоков — два слоя волн навстречу друг другу, задний (полупрозрачный) ещё и покачивается */
+main > section::before,
+main > section::after {
     content: '';
     position: absolute;
     left: 0;
     right: 0;
-    height: 23px;
-    background-repeat: repeat-x;
     pointer-events: none;
+}
+
+main > section::before {
+    top: -39px;
+    height: 40px;
     z-index: 1;
+    background: var(--top);
+    -webkit-mask: var(--slice-wave) 0 0 / 600px 40px repeat-x;
+    mask: var(--slice-wave) 0 0 / 600px 40px repeat-x;
+    animation: sea-drift 22s linear infinite;
+    animation-delay: var(--wave-delay, 0s);
 }
 
-main > section:not(.bg-light):not(.bg-white)::before {
-    top: -23px;
-    background-image: url('../wave-top.png');
-    background-position: left bottom;
+main > section::after {
+    top: -51px;
+    height: 52px;
+    z-index: 0;
+    background: var(--top);
+    opacity: 0.45;
+    -webkit-mask: var(--slice-wave-back) 0 0 / 900px 52px repeat-x;
+    mask: var(--slice-wave-back) 0 0 / 900px 52px repeat-x;
+    animation: sea-drift-back 34s linear infinite, sea-bob 6s ease-in-out infinite alternate;
+    animation-delay: var(--wave-delay, 0s), 0s;
 }
 
-main > section:not(.bg-light):not(.bg-white)::after {
-    bottom: -23px;
-    background-image: url('../wave-bottom.png');
-    background-position: left top;
+/* первый блок продолжает воду из шапки — вместо волны лучи света */
+main > section:first-of-type::after {
+    content: none;
+}
+
+main > section:first-of-type::before {
+    top: 0;
+    bottom: 0;
+    height: auto;
+    animation: none;
+    -webkit-mask: linear-gradient(180deg, transparent 0, #000 160px, transparent 75%);
+    mask: linear-gradient(180deg, transparent 0, #000 160px, transparent 75%);
+    background: repeating-linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0) 0 70px,
+        rgba(255, 255, 255, 0.07) 70px 110px,
+        rgba(255, 255, 255, 0) 110px 190px
+    );
+}
+
+@keyframes sea-drift {
+    from { -webkit-mask-position: 0 0; mask-position: 0 0; }
+    to   { -webkit-mask-position: 600px 0; mask-position: 600px 0; }
+}
+
+@keyframes sea-drift-back {
+    from { -webkit-mask-position: 0 0; mask-position: 0 0; }
+    to   { -webkit-mask-position: -900px 0; mask-position: -900px 0; }
+}
+
+@keyframes sea-bob {
+    from { transform: translateY(0); }
+    to   { transform: translateY(7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    main > section::before,
+    main > section::after {
+        animation: none;
+    }
 }
 
 /* ============================================================
    HEADER
    ============================================================ */
+/* Шапка на всех страницах — песчаный пляж с логотипом, внизу кромка прибоя (как на главной;
+   кит и матрёшка — только на главной, ocean.css) */
 .site-header {
-    background-image: url('../backgroundheader.jpg');
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
+    --shore-water: var(--d1-top); /* цвет воды у кромки — им начинается страница под шапкой */
+    position: relative;
+    overflow: hidden;
+    background-color: #ecd29e;
+    background-image:
+        radial-gradient(ellipse 60% 70% at 88% -15%, rgba(255, 248, 220, 0.95), rgba(255, 248, 220, 0) 70%),
+        url('../sand-texture.png'),
+        linear-gradient(180deg, #f6e4b8 0%, #efd5a1 55%, #e3bd82 100%);
+    background-size: auto, 200px 200px, auto;
+    background-repeat: no-repeat, repeat, no-repeat;
+    background-position: 0 0, 0 0, 0 0;
 }
 
 .header-overlay {
-    background: linear-gradient(110deg, rgba(195, 80, 10, 0.58) 0%, rgba(10, 130, 160, 0.58) 100%);
+    position: relative;
+    z-index: 2;
+    padding-bottom: 110px; /* место под кромку прибоя */
+}
+
+/* Кромка прибоя: мокрый песок → пена → вода */
+.shore {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 140px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.shore-layer {
+    position: absolute;
+    inset: 0;
+    background-repeat: repeat-x;
+    background-size: 1200px 140px;
+    background-position: 0 bottom;
+}
+
+.shore-wet {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 30 C100 10 200 10 300 30 S500 50 600 30 S800 10 900 30 S1100 50 1200 30 V140 H0 Z' fill='%23b08a52' fill-opacity='0.35'/%3E%3C/svg%3E");
+    background-position: -150px bottom;
+    animation: shore-wash 7s ease-in-out infinite alternate;
+}
+
+.shore-foam {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 44 C100 24 200 24 300 44 S500 64 600 44 S800 24 900 44 S1100 64 1200 44 V140 H0 Z' fill='%23ffffff' fill-opacity='0.92'/%3E%3C/svg%3E");
+    background-position: -60px bottom;
+    animation: shore-wash 5s ease-in-out infinite alternate;
+}
+
+/* вода: светлая у пены, к низу — цвет страницы (--shore-water); волна — маской */
+.shore-water {
+    background: linear-gradient(180deg, #98e4dc 45%, var(--shore-water) 100%);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z'/%3E%3C/svg%3E") 0 bottom / 1200px 140px repeat-x;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z'/%3E%3C/svg%3E") 0 bottom / 1200px 140px repeat-x;
+    animation: shore-drift 26s linear infinite;
+}
+
+@keyframes shore-wash {
+    from { transform: translateY(0); }
+    to   { transform: translateY(9px); }
+}
+
+@keyframes shore-drift {
+    from { -webkit-mask-position: 0 bottom; mask-position: 0 bottom; }
+    to   { -webkit-mask-position: 1200px bottom; mask-position: 1200px bottom; }
+}
+
+@media (max-width: 767px) {
+    .header-overlay { padding-bottom: 80px; }
+    .shore { height: 110px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shore-layer { animation: none; }
 }
 
 /* --- Top nav bar --- */
@@ -100,8 +250,8 @@ main > section:not(.bg-light):not(.bg-white)::after {
        (на главной у логотипа filter, а у полосы backdrop-filter — оба создают свои слои) */
     position: relative;
     z-index: 20;
-    background: rgba(0, 0, 0, 0.22);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(18, 96, 118, 0.82);
+    backdrop-filter: blur(4px);
     padding: 7px 0;
 }
 
@@ -152,6 +302,8 @@ main > section:not(.bg-light):not(.bg-white)::after {
 /* Выпадающий список: при наведении и при переходе по меню клавишей Tab */
 .top-nav-item {
     position: relative;
+    display: flex; /* без этого пункт с выпадающим списком стоит ниже соседей: строка обёртки выше ссылки */
+    align-items: center;
 }
 
 .top-nav-menu {
@@ -477,9 +629,9 @@ main > section:not(.bg-light):not(.bg-white)::after {
     color: var(--ocean-700);
 }
 
-/* --- Site logo --- */
+/* --- Site logo: тёмно-бирюзовый, чтобы читался на песке --- */
 .site-logo {
-    padding: 1.8rem 0 1.2rem;
+    padding: 2.2rem 1rem 0.6rem;
     text-align: center;
 }
 
@@ -494,8 +646,9 @@ main > section:not(.bg-light):not(.bg-white)::after {
 }
 
 .logo-image {
-    width: min(640px, 95vw);
+    width: min(900px, 92vw);
     height: auto;
+    filter: brightness(0) saturate(100%) invert(24%) sepia(62%) saturate(1200%) hue-rotate(160deg) brightness(88%);
 }
 
 /* --- Header page title + tabs --- */
@@ -507,10 +660,10 @@ main > section:not(.bg-light):not(.bg-white)::after {
 .header-page-title {
     font-size: clamp(1.6rem, 4vw, 2.6rem);
     font-weight: 700;
-    color: #fff;
+    color: var(--ocean-800);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 1px 0 rgba(255, 248, 220, 0.7);
     margin-bottom: 1.4rem;
 }
 
@@ -523,9 +676,9 @@ main > section:not(.bg-light):not(.bg-white)::after {
 
 .header-tab-btn {
     display: inline-block;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--ocean-800);
     text-decoration: none;
-    border: 1px solid rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(15, 111, 147, 0.55);
     border-radius: 25px;
     padding: 0.35rem 1.1rem;
     font-size: 0.72rem;
@@ -533,13 +686,18 @@ main > section:not(.bg-light):not(.bg-white)::after {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     transition: all 0.2s;
-    background: transparent;
+    background: rgba(255, 252, 240, 0.45);
 }
 
-.header-tab-btn:hover,
+.header-tab-btn:hover {
+    border-color: var(--ocean-700);
+    background: rgba(255, 252, 240, 0.85);
+    color: var(--ocean-900);
+}
+
 .header-tab-btn.active {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: #fff;
+    background: var(--ocean-700);
+    border-color: var(--ocean-700);
     color: #fff;
 }
 
@@ -661,9 +819,6 @@ body:has(.footer-wave) main > section:last-child {
     padding-bottom: calc(3rem + 40px) !important;
 }
 
-body:has(.footer-wave) main > section:last-child::after {
-    display: none;
-}
 
 @media (max-width: 575.98px) {
     .footer-wave svg {
@@ -777,7 +932,7 @@ body:has(.footer-wave) main > section:last-child::after {
    ============================================================ */
 .about-section {
     padding: 3rem 0;
-    color: #2a3540;
+    color: var(--sea-text);
 }
 
 .about-container {
@@ -790,7 +945,7 @@ body:has(.footer-wave) main > section:last-child::after {
     text-transform: uppercase;
     letter-spacing: 0.02em;
     text-align: center;
-    color: var(--ink);
+    color: #fff;
     margin-bottom: 1.4rem;
 }
 
@@ -825,13 +980,12 @@ body:has(.footer-wave) main > section:last-child::after {
     margin: 2.2rem auto 0;
 }
 
-/* Блок 4: светлая подложка с фото */
+/* Блок 4: фото проступает сквозь воду */
 .about-education {
-    background-image:
-        linear-gradient(rgba(236, 245, 252, 0.86), rgba(236, 245, 252, 0.86)),
-        var(--edu-bg);
-    background-size: cover;
-    background-position: center;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--top) 88%, transparent),
+                        color-mix(in srgb, var(--bot) 92%, transparent)),
+        var(--edu-bg) center / cover;
 }
 
 .about-pills {
@@ -845,20 +999,21 @@ body:has(.footer-wave) main > section:last-child::after {
 .about-pill {
     display: inline-block;
     padding: 0.32rem 1.1rem;
-    border: 1px solid var(--ocean-500);
+    border: 1px solid rgba(174, 239, 255, 0.55);
     border-radius: 25px;
-    color: var(--ocean-700);
+    color: var(--sea-link);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     text-decoration: none;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(174, 239, 255, 0.1);
     transition: all 0.2s;
 }
 
 .about-pill:hover {
-    background: var(--ocean-700);
+    border-color: var(--sea-link);
+    background: rgba(174, 239, 255, 0.22);
     color: #fff;
 }
 
@@ -915,15 +1070,15 @@ body:has(.footer-wave) main > section:last-child::after {
     left: 0;
     top: -2px;
     font-size: 1.35rem;
-    color: #3a9fd0;
+    color: var(--sea-link);
 }
 
 .about-files a {
-    color: var(--ocean-700);
+    color: var(--sea-link);
 }
 
 .about-files a:hover {
-    color: #0d4f78;
+    color: #fff;
 }
 
 /* ============================================================

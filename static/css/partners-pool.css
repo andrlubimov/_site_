@@ -30,7 +30,7 @@
 
 .partners-hint {
     text-align: center;
-    color: var(--muted, #55636e);
+    color: rgba(230, 246, 250, 0.75);
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
 }
