@@ -351,5 +351,7 @@ class Certificate(models.Model):
 @receiver(post_save, sender='core.CourseSchedule')
 def update_enrollments(sender, instance, **kwargs):
     """Даты или курс в записи расписания поменялись — у купленных по ней курсов тоже"""
+    if kwargs.get('raw'):  # загрузка выгрузки (loaddata) — данные и так согласованы
+        return
     for enrollment in Enrollment.objects.filter(schedule=instance):
         enrollment.save()
