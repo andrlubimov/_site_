@@ -1,0 +1,23 @@
+{% extends "cabinet/layout.html" %}
+
+{% block cabinet_content %}
+{% include "cabinet/includes/head.html" with lead=found_label %}
+
+{% if cards %}
+<div class="row g-3">
+    {% for card in cards %}
+    <div class="col-xl-6">
+        {% include "core/includes/course_card.html" with show_dates=True %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="cabinet-empty">
+    <span class="cabinet-empty-icon" aria-hidden="true"><i class="bi bi-heart"></i></span>
+    <div>
+        <p>Пока ничего не отложено. Отмечайте сердечком курсы, к которым хотите вернуться.</p>
+        <a class="cabinet-empty-link" href="{% url 'cabinet:courses' %}">Курсы ассоциации <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

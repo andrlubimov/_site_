@@ -1,0 +1,37 @@
+{% extends "cabinet/layout.html" %}
+
+{% block cabinet_content %}
+{% include "cabinet/includes/head.html" with lead="Документы о пройденном обучении. Скачать их можете только вы." %}
+
+{% if certificates %}
+<div class="row g-3">
+    {% for certificate in certificates %}
+    <div class="col-xl-6">
+        <article class="certificate-card">
+            <span class="certificate-icon" aria-hidden="true"><i class="bi bi-award"></i></span>
+            <div class="certificate-text">
+                <h2 class="certificate-title">{{ certificate.title }}</h2>
+                {% if certificate.course %}
+                <a class="certificate-course" href="{{ certificate.course.get_absolute_url }}">{{ certificate.course.display_title }}</a>
+                {% endif %}
+                <p class="certificate-meta">
+                    {% if certificate.number %}№ {{ certificate.number }} · {% endif %}выдан {{ certificate.issued_on|date:"j E Y" }}
+                </p>
+            </div>
+            <a class="btn btn-primary btn-sm certificate-download" href="{% url 'cabinet:certificate_file' pk=certificate.pk %}">
+                <i class="bi bi-download" aria-hidden="true"></i> {{ certificate.extension|upper }}
+            </a>
+        </article>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="cabinet-empty">
+    <span class="cabinet-empty-icon" aria-hidden="true"><i class="bi bi-award"></i></span>
+    <div>
+        <p>Здесь появятся сертификаты и удостоверения, когда вы пройдёте курс.</p>
+        <a class="cabinet-empty-link" href="{% url 'cabinet:my_courses' %}">Мои курсы <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

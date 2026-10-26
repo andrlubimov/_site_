@@ -1,0 +1,7 @@
+{# Напоминание на входе и регистрации: после них — запись на выбранную дату курса (views.enroll) #}
+{% if pending %}
+<div class="cabinet-pending">
+    <span class="cabinet-pending-icon" aria-hidden="true"><i class="bi bi-calendar-check"></i></span>
+    <p>После {{ after }} запишем вас на курс <strong>«{{ pending.course.display_title }}»</strong>{% if pending.course.card_id %} ({{ pending.course.variant_name|lower }}){% endif %} — {{ pending.date_label|lower }}.</p>
+</div>
+{% endif %}

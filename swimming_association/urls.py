@@ -5,6 +5,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('cabinet/', include('cabinet.urls')),
+    path('', include('cabinet.public_urls')),  # отложенные курсы — и без входа
     path('', include('core.urls')),
 ]
 

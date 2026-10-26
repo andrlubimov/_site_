@@ -1,0 +1,29 @@
+{# Разделы по направлениям; варианты одного курса — строками внутри карточки. card_col — ширина карточки в ряду #}
+{% for section in sections %}
+<section class="course-section" aria-labelledby="dir-{{ section.code }}">
+    <header class="course-section-head">
+        <span class="course-dir-icon course-dir--{{ section.code }}"><i class="bi {{ section.icon }}"></i></span>
+        <div>
+            <h2 class="course-section-title" id="dir-{{ section.code }}">{{ section.label }}</h2>
+            <small>{{ section.count_label }}</small>
+        </div>
+    </header>
+    <div class="row g-3">
+        {% for card in section.cards %}
+        <div class="{{ card_col|default:'col-md-6' }}">
+            {% include "core/includes/course_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% empty %}
+<div class="course-list-empty">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    {% if filter_form.is_filtered %}
+    <p>Ничего не нашлось. Попробуйте убрать часть фильтров.</p>
+    <a class="btn btn-light btn-sm" href="{{ request.path }}">Сбросить фильтры</a>
+    {% else %}
+    <p>Курсы пока отсутствуют</p>
+    {% endif %}
+</div>
+{% endfor %}

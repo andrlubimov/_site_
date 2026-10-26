@@ -15,6 +15,7 @@ from .models import (
     ContactInfo,
 )
 from .utils import format_rub, plural_ru
+from cabinet.models import Enrollment, Membership
 
 import logging
 
@@ -47,7 +48,6 @@ def index(request):
     all_cards = build_course_cards(courses)  # порядок карточек — по ближайшей дате
     cards = all_cards[:HOME_CARDS_LIMIT]
     more_count = len(all_cards) - len(cards)
-    specialists = Specialist.objects.filter(is_active=True).order_by('order')
     # сначала региональные представители (regional), затем зарубежные (foreign)
     representatives = Representative.objects.filter(is_active=True).order_by('-kind', 'order')
     partners = Partner.objects.filter(is_active=True).order_by('order')
@@ -62,12 +62,26 @@ def index(request):
         'cards': cards,
         'more_label': (f'Ещё {more_count} {plural_ru(more_count, ("программа", "программы", "программ"))}'
                        if more_count else ''),
-        'specialists': specialists,
+        'members': site_members(),
         'representatives': representatives,
         'partners': partners,
         'courses_intro': courses_intro,
     }
     return render(request, 'core/index.html', context)
+
+
+def site_members():
+    """Члены Ассоциации на главной: специалисты из админки и члены Ассоциации из личного кабинета,
+    которые сами включили показ на сайте (у них — фото, имя, город и страна из профиля)"""
+    members = [
+        SimpleNamespace(name=s.name, desc=s.position, place=f'{s.city}, {s.country}',
+                        photo=s.photo.url if s.photo else '')
+        for s in Specialist.objects.filter(is_active=True).order_by('order')
+    ]
+    for membership in Membership.objects.shown_on_site().select_related('user__profile').order_by('start_date'):
+        members.append(SimpleNamespace(name=membership.public_name, desc=membership.since_label,
+                                       place=membership.place, photo=membership.photo_url))
+    return members
 
 
 COURSE_SORTS = [
@@ -80,6 +94,14 @@ COURSE_SORTS = [
 
 def courses_list(request):
     """Список курсов с фильтрами: разделы по направлениям, варианты одного курса — в одной карточке"""
+    context = course_list_context(request)
+    context['page_title'] = 'Обучающие программы'
+    return render(request, 'core/courses_list.html', context)
+
+
+def course_list_context(request):
+    """Карточки курсов с фильтрами и сортировкой — для страницы «Программы» и для «Курсов ассоциации»
+    в личном кабинете"""
     filter_form = CourseFilterForm(request.GET or None)
     courses = list(filter_form.filter(
         Course.objects.filter(is_active=True)
@@ -90,21 +112,17 @@ def courses_list(request):
     if sort not in dict(COURSE_SORTS):
         sort = ''
     cards = build_course_cards(courses)
-    sections = group_cards_by_direction(cards, sort)
-    found_label = cards_found_label(cards)
-    context = {
+    return {
         'courses': courses,
         'cards': cards,
-        'sections': sections,
+        'sections': group_cards_by_direction(cards, sort),
         'cards_count': len(cards),
-        'found_label': found_label,
+        'found_label': cards_found_label(cards),
         'sort': sort,
         'sort_choices': COURSE_SORTS,
         'active_filters': active_filter_chips(filter_form, request),
         'filter_form': filter_form,
-        'page_title': 'Обучающие программы',
     }
-    return render(request, 'core/courses_list.html', context)
 
 
 def cards_found_label(cards):
@@ -131,6 +149,7 @@ def build_course_cards(courses):
         if card is None:
             card = cards[key] = SimpleNamespace(
                 obj=card_obj,
+                key=course.card_key,  # по нему закрашено сердечко отложенной карточки
                 title=card_obj.title if card_obj else course.list_title,
                 order=card_obj.order if card_obj else course.order,
                 variants=[],
@@ -227,10 +246,15 @@ def course_detail(request, slug):
     variants = []
     if course.card_id and course.card.is_active:
         variants = [c for c in course.card.ordered_courses if c.is_active]
+    enrolled = set()  # даты, на которые вошедший уже записан, — у них вместо «Записаться» «Вы записаны»
+    if request.user.is_authenticated:
+        enrolled = set(Enrollment.objects.filter(user=request.user, schedule__course=course)
+                       .values_list('schedule_id', flat=True))
     context = {
         'course': course,
         'variants': variants if len(variants) > 1 else [],
         'schedules': course.upcoming,
+        'enrolled': enrolled,
         'page_title': course.title,
     }
     return render(request, 'core/course_detail.html', context)

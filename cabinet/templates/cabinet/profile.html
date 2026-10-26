@@ -1,0 +1,36 @@
+{% extends "cabinet/layout.html" %}
+
+{% block cabinet_content %}
+{% include "cabinet/includes/head.html" with lead="Данные из регистрации — их можно дополнить или поменять." %}
+
+<section class="cabinet-panel">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="form" value="profile">
+        {% for error in form.non_field_errors %}
+        <div class="cabinet-message cabinet-message--error" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</div>
+        {% endfor %}
+        {% include "cabinet/includes/person_fields.html" %}
+        <div class="cabinet-panel-foot">
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            <span class="form-text">В личном кабинете с {{ joined|date:"j E Y" }}</span>
+        </div>
+    </form>
+</section>
+
+<section class="cabinet-panel" id="password">
+    <h2 class="course-detail-h">Пароль</h2>
+    <form method="post" action="#password">
+        {% csrf_token %}
+        <input type="hidden" name="form" value="password">
+        <div class="row g-3">
+            <div class="col-md-4">{% include "cabinet/includes/field.html" with field=password_form.old_password %}</div>
+            <div class="col-md-4">{% include "cabinet/includes/field.html" with field=password_form.new_password1 %}</div>
+            <div class="col-md-4">{% include "cabinet/includes/field.html" with field=password_form.new_password2 %}</div>
+        </div>
+        <div class="cabinet-panel-foot">
+            <button type="submit" class="btn btn-outline-primary">Сменить пароль</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

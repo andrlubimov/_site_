@@ -22,10 +22,11 @@ from .utils import format_rub
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ['last_name', 'first_name', 'patronymic', 'has_bio', 'courses_count']
+    list_display = ['last_name', 'first_name', 'patronymic', 'has_bio', 'courses_count', 'is_member']
     search_fields = ['first_name', 'last_name', 'patronymic']
     prepopulated_fields = {'slug': ('first_name', 'last_name')}
     readonly_fields = ['courses_overview']
+    autocomplete_fields = ['user']
 
     class Media:
         css = {'all': ['css/admin-course.css']}
@@ -37,10 +38,21 @@ class TeacherAdmin(admin.ModelAdmin):
             'description': 'На странице преподавателя показываются фото, описание и курсы, которые он ведёт. '
                            'Ссылка на неё — у имени и фото преподавателя на странице курса.',
         }),
+        ('Личный кабинет', {
+            'fields': ('user',),
+            'description': 'Преподаватели — члены Ассоциации; членство — в аккаунте. Чтобы преподаватель мог войти '
+                           'в личный кабинет, откройте аккаунт (значок карандаша), укажите email и задайте пароль.',
+        }),
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(courses_total=Count('courses', distinct=True))
+        return (super().get_queryset(request).select_related('user__membership')
+                .annotate(courses_total=Count('courses', distinct=True)))
+
+    @admin.display(boolean=True, description='Член Ассоциации')
+    def is_member(self, obj):
+        membership = getattr(obj.user, 'membership', None) if obj.user_id else None
+        return bool(membership and membership.is_member)
 
     @admin.display(boolean=True, description='Есть описание')
     def has_bio(self, obj):

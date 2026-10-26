@@ -1,9 +1,11 @@
 {% load course_tags %}
 {# Блок фильтров курсов: страницы «Программы» и «Расписание». Отправка — GET на ту же страницу. #}
 {# Частые группы всегда раскрыты, редкие свёрнуты (раскрываются сами, если в них что-то выбрано). #}
-<details class="course-filters-wrap" open>
+{# panel — в личном кабинете: блок над карточками, свёрнут, пока ничего не выбрано #}
+<details class="course-filters-wrap{% if panel %} course-filters-wrap--panel{% endif %}"{% if not panel or filter_form.is_filtered %} open{% endif %}>
     <summary class="course-filters-summary">
         <i class="bi bi-funnel"></i> Фильтры{% if filter_form.is_filtered %} <span class="course-filters-badge">выбраны</span>{% endif %}
+        <i class="bi bi-chevron-down course-filters-chevron" aria-hidden="true"></i>
     </summary>
     <form class="course-filters" id="course-filters-form" method="get" data-autosubmit>
         {% for field in filter_form %}

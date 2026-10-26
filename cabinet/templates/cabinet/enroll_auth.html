@@ -1,0 +1,35 @@
+{% extends "cabinet/base.html" %}
+{% load static course_tags %}
+
+{% block page_title %}Запись на курс{% endblock %}
+
+{% block header_tabs %}{% include "cabinet/includes/auth_tabs.html" %}{% endblock %}
+
+{% block cabinet %}
+{# Нажали «Записаться» без входа: дата запомнена (views.enroll), после входа или регистрации — запись #}
+<div class="cabinet-auth">
+    <img class="cabinet-watermark" src="{% static 'logo-baby.svg' %}" alt="">
+
+    <div class="cabinet-card cabinet-card--enroll">
+        <p class="cabinet-kicker">Запись на курс</p>
+        <h1 class="cabinet-title">{{ course.display_title }}</h1>
+        {% if course.card_id %}<p class="enrollment-variant">{{ course.variant_name }}</p>{% endif %}
+
+        <ul class="enroll-facts">
+            <li><i class="bi bi-calendar-event" aria-hidden="true"></i> {{ schedule.date_label }}{% if schedule.time_label %}, {{ schedule.time_label }}{% endif %}</li>
+            <li><i class="bi {{ course.type_icon }}" aria-hidden="true"></i> {{ course.get_course_type_display }} · {{ course.hours_label }}</li>
+            {% if schedule.price %}<li><i class="bi bi-wallet2" aria-hidden="true"></i> <span class="course-option-price">{{ schedule.price|rub }}</span></li>{% endif %}
+        </ul>
+
+        <p class="cabinet-lead">Чтобы записаться, войдите в личный кабинет или зарегистрируйтесь — сразу после этого
+            запишем вас на эти даты, и курс появится в «Моих курсах».</p>
+
+        <div class="enroll-actions">
+            <a class="btn btn-primary" href="{% url 'cabinet:login' %}?next={{ next|urlencode }}">Войти</a>
+            <a class="btn btn-outline-primary" href="{% url 'cabinet:register' %}?next={{ next|urlencode }}">Зарегистрироваться</a>
+        </div>
+
+        <p class="cabinet-switch"><a href="{{ course.get_absolute_url }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Вернуться к курсу</a></p>
+    </div>
+</div>
+{% endblock %}

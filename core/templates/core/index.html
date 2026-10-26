@@ -135,21 +135,22 @@
             </div>
         </div>
 
-        {% if specialists %}
+        {# члены Ассоциации: специалисты из админки и те, кто включил показ на сайте в личном кабинете #}
+        {% if members %}
         <div class="sea-carousel" data-carousel>
             <button type="button" class="sea-carousel-btn sea-carousel-btn--prev" data-carousel-prev aria-label="Назад"><i class="bi bi-chevron-left"></i></button>
             <ul class="sea-carousel-track" data-carousel-track>
-                {% for specialist in specialists %}
+                {% for member in members %}
                 <li class="sea-carousel-item">
                     <article class="sea-card sea-card--person">
-                        {% if specialist.photo %}
-                        <img class="sea-card-photo" src="{{ specialist.photo.url }}" alt="" loading="lazy">
+                        {% if member.photo %}
+                        <img class="sea-card-photo" src="{{ member.photo }}" alt="" loading="lazy">
                         {% else %}
                         <span class="sea-card-photo sea-card-photo--empty"><i class="bi bi-person"></i></span>
                         {% endif %}
-                        <h3 class="sea-card-title">{{ specialist.name }}</h3>
-                        <p class="sea-card-desc">{{ specialist.position }}</p>
-                        <p class="sea-card-meta"><i class="bi bi-geo-alt"></i> {{ specialist.city }}, {{ specialist.country }}</p>
+                        <h3 class="sea-card-title">{{ member.name }}</h3>
+                        <p class="sea-card-desc">{{ member.desc }}</p>
+                        {% if member.place %}<p class="sea-card-meta"><i class="bi bi-geo-alt"></i> {{ member.place }}</p>{% endif %}
                     </article>
                 </li>
                 {% endfor %}

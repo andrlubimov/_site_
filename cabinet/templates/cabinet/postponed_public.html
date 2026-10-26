@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">Отложенные курсы</h1>
+    <div class="header-tabs">
+        {% include "core/includes/courses_tabs.html" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Отложенные без входа — в сессии этого браузера (cabinet/postponed.py) #}
+<section class="py-5">
+    <div class="container">
+        <div class="postponed-note">
+            <span class="postponed-note-icon" aria-hidden="true"><i class="bi bi-heart-fill"></i></span>
+            <p>
+                {% if cards %}<strong>{{ found_label }}.</strong> {% endif %}Отложенные курсы хранятся только в этом браузере.
+                Зарегистрируйтесь — и они сохранятся в личном кабинете.
+            </p>
+            <div class="postponed-note-actions">
+                <a class="btn btn-primary btn-sm" href="{% url 'cabinet:register' %}">Зарегистрироваться</a>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'cabinet:login' %}">Войти</a>
+            </div>
+        </div>
+
+        {% if cards %}
+        <div class="row g-3">
+            {% for card in cards %}
+            <div class="col-md-6 col-xl-4">
+                {% include "core/includes/course_card.html" with show_dates=True %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="course-list-empty">
+            <i class="bi bi-heart" aria-hidden="true"></i>
+            <p>Пока ничего не отложено. Отмечайте сердечком курсы, к которым хотите вернуться.</p>
+            <a class="btn btn-light btn-sm rounded-pill" href="{% url 'core:courses_list' %}">Все программы</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

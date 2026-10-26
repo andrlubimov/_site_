@@ -19,6 +19,7 @@
     --muted:     #55636e;   /* вторичный текст, подписи */
     --line:      #e6eff4;   /* разделители */
     --success:   #198754;   /* только сообщения об успехе */
+    --heart:     #e5383b;   /* сердечко отложенного курса */
 
     /* направления работы: значок / фон */
     --dir-swimming:      #0f6f93;  --dir-swimming-bg:   #e3f0f6;
@@ -244,6 +245,126 @@ main > section:not(.bg-light):not(.bg-white)::after {
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* «Личный кабинет» — белая таблетка после пунктов меню, перед соцсетями */
+.top-nav-cabinet {
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: 1.4rem;
+    padding: 0.2rem 0.85rem 0.2rem 0.3rem; /* высотой с кнопки соцсетей — полоса меню не растёт */
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ocean-800);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(0, 30, 45, 0.25);
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.top-nav-cabinet:hover,
+.top-nav-cabinet.is-active {
+    background: var(--ocean-100);
+    color: var(--ocean-900);
+}
+
+.top-nav-cabinet:hover {
+    transform: translateY(-1px);
+}
+
+.top-nav-cabinet .bi {
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--ocean-700);
+}
+
+.top-nav-cabinet-photo {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* «Отложенные» — для тех, кто не вошёл, когда что-то отложено: прозрачная таблетка слева от «Личного кабинета» */
+.top-nav-postponed {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: 1.4rem;
+    padding: 0.2rem 0.3rem 0.2rem 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+@media (min-width: 992px) {
+    .top-nav-postponed:not([hidden]) {
+        display: inline-flex;
+    }
+}
+
+.top-nav-postponed:hover {
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.top-nav-postponed .bi {
+    color: #ff8f91;
+}
+
+.top-nav-postponed-count {
+    min-width: 1.45rem;
+    padding: 0.12rem 0.4rem;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ocean-800);
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.top-nav-postponed:not([hidden]) + .top-nav-cabinet {
+    margin-left: 0.5rem;
+}
+
+/* меню, таблетки и соцсети в одну строку не помещаются — сначала без подписи «Отложенные», потом и «Личный кабинет» */
+@media (max-width: 1399.98px) {
+    .top-nav-postponed {
+        padding-left: 0.5rem;
+    }
+
+    .top-nav-postponed-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .top-nav-cabinet {
+        padding: 0.2rem;
+    }
+
+    .top-nav-cabinet-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+
 /* Mobile menu button */
 .mobile-menu-btn {
     position: absolute;
@@ -313,6 +434,47 @@ main > section:not(.bg-light):not(.bg-white)::after {
     border-left-color: #fff;
     color: #fff;
     font-weight: 600;
+}
+
+.mobile-nav-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+
+.mobile-nav-links a.mobile-nav-postponed:not([hidden]) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.mobile-nav-links a.mobile-nav-postponed .bi {
+    color: #ff8f91;
+}
+
+.mobile-nav-links a.mobile-nav-cabinet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 1rem 0.35rem 0.55rem;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ocean-800);
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.mobile-nav-links a.mobile-nav-cabinet .bi {
+    font-size: 1.1rem;
+    color: var(--ocean-700);
 }
 
 /* --- Site logo --- */
@@ -1445,6 +1607,15 @@ body:has(.footer-wave) main > section:last-child::after {
     font-weight: 600;
 }
 
+.course-signup-form {
+    flex: none;
+    margin: 0;
+}
+
+.course-signup-btn.is-enrolled {
+    background: #fff;
+}
+
 .course-dates-empty {
     margin: 0;
     padding: 1rem;
@@ -1578,6 +1749,45 @@ body:has(.footer-wave) main > section:last-child::after {
     border-color: var(--ocean-500);
     background: var(--ocean-50);
     text-decoration: none;
+}
+
+/* ============================================================
+   POSTPONED (/education/postponed/) — отложенные курсы без входа
+   ============================================================ */
+.postponed-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    padding: 0.9rem 1.25rem;
+    border-radius: 20px;
+    background: #fff;
+    color: var(--text);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.postponed-note p {
+    flex: 1 1 320px;
+    margin: 0;
+}
+
+.postponed-note-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fff0f0;
+    color: var(--heart);
+}
+
+.postponed-note-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 /* ============================================================
@@ -2290,6 +2500,20 @@ body:has(.footer-wave) main > section:last-child::after {
     display: none;
 }
 
+.course-filters-chevron {
+    float: right;
+    transition: transform 0.2s;
+}
+
+.course-filters-wrap[open] .course-filters-chevron {
+    transform: rotate(180deg);
+}
+
+.course-filters-wrap--panel .course-filters-chevron {
+    float: none;
+    margin-left: auto;
+}
+
 .course-filters-badge {
     margin-left: 0.35rem;
     padding: 0 0.5rem;
@@ -2508,10 +2732,66 @@ body:has(.footer-wave) main > section:last-child::after {
 }
 
 .course-card-top {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.6rem;
     margin-bottom: 0.65rem;
+}
+
+/* --- Сердечко: отложить курс (cabinet/postponed.py, js/postponed.js) --- */
+.course-card-top:has(.course-heart-form) {
+    padding-right: 2.6rem; /* тип курса — левее сердечка */
+}
+
+.course-heart-form {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+}
+
+.course-heart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--ocean-100);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1;
+    transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+
+.course-heart:hover,
+.course-heart:focus-visible {
+    border-color: #f6c9ca;
+    background: #fff5f5;
+    color: var(--heart);
+}
+
+.course-heart.is-postponed {
+    border-color: #f6c9ca;
+    background: #fff0f0;
+    color: var(--heart);
+}
+
+.course-heart.is-popping .bi {
+    animation: heart-pop 0.35s ease-out;
+}
+
+@keyframes heart-pop {
+    40% { transform: scale(1.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .course-heart.is-popping .bi {
+        animation: none;
+    }
 }
 
 .course-card-dir {

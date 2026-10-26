@@ -1,0 +1,31 @@
+{% extends "cabinet/base.html" %}
+{% load static %}
+
+{% block page_title %}Вход в личный кабинет{% endblock %}
+
+{% block header_tabs %}{% include "cabinet/includes/auth_tabs.html" with active='login' %}{% endblock %}
+
+{% block cabinet %}
+<div class="cabinet-auth">
+    <img class="cabinet-watermark" src="{% static 'logo-baby.svg' %}" alt="">
+
+    <div class="cabinet-card cabinet-card--narrow">
+        <h1 class="cabinet-title">Вход в личный кабинет</h1>
+        <p class="cabinet-lead">Email и пароль — те, что вы указали при регистрации.</p>
+        {% include "cabinet/includes/pending_enrollment.html" with after="входа" %}
+
+        <form method="post">
+            {% csrf_token %}
+            {% for error in form.non_field_errors %}
+            <div class="cabinet-message cabinet-message--error" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</div>
+            {% endfor %}
+            {% include "cabinet/includes/field.html" with field=form.username %}
+            {% include "cabinet/includes/field.html" with field=form.password %}
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="btn btn-primary cabinet-submit">Войти</button>
+        </form>
+
+        <p class="cabinet-switch">Ещё нет аккаунта? <a href="{% url 'cabinet:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Зарегистрируйтесь</a></p>
+    </div>
+</div>
+{% endblock %}

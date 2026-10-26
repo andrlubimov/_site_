@@ -1,0 +1,7 @@
+{# Поле формы: подпись, поле, подсказка, ошибки. Необязательные поля подписаны. #}
+<div class="cabinet-field">
+    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="cabinet-optional">— по желанию</span>{% endif %}</label>
+    {{ field }}
+    {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+</div>

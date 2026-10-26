@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% block page_title %}Личный кабинет{% endblock %} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/cabinet.css' %}">{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <p class="header-page-title">Личный кабинет</p>
+    {% block header_tabs %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block content %}
+{# Светлая «вода» кабинета (ocean-200): волной поднимается из шапки, внизу её накрывает волна подвала #}
+<div class="cabinet-page">
+    <div class="cabinet-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 48" preserveAspectRatio="none">
+            <path class="cabinet-wave-back" d="M0 20 C200 2 380 0 600 18 C820 36 1020 38 1220 20 C1320 11 1390 8 1440 10 L1440 48 L0 48 Z"/>
+            <path class="cabinet-wave-front" d="M0 30 C240 10 460 8 700 26 C940 44 1160 42 1440 22 L1440 48 L0 48 Z"/>
+            <path class="cabinet-wave-foam" d="M0 30 C240 10 460 8 700 26 C940 44 1160 42 1440 22"/>
+        </svg>
+    </div>
+    <div class="container">
+        {% block cabinet %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/cabinet.js' %}"></script>{% endblock %}

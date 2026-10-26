@@ -1,0 +1,46 @@
+{% extends "cabinet/base.html" %}
+{% load static %}
+
+{% block page_title %}Регистрация в личном кабинете{% endblock %}
+
+{% block header_tabs %}{% include "cabinet/includes/auth_tabs.html" with active='register' %}{% endblock %}
+
+{% block cabinet %}
+<div class="cabinet-auth">
+    <img class="cabinet-watermark" src="{% static 'logo-baby.svg' %}" alt="">
+
+    <div class="cabinet-card">
+        <h1 class="cabinet-title">Регистрация</h1>
+        <p class="cabinet-lead">После регистрации откроется личный кабинет: курсы, членство в Ассоциации и сертификаты.</p>
+        {% include "cabinet/includes/pending_enrollment.html" with after="регистрации" %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            {% for error in form.non_field_errors %}
+            <div class="cabinet-message cabinet-message--error" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</div>
+            {% endfor %}
+
+            {% include "cabinet/includes/person_fields.html" %}
+
+            <section class="cabinet-form-block">
+                <h2 class="course-detail-h">Пароль</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">{% include "cabinet/includes/field.html" with field=form.password1 %}</div>
+                    <div class="col-md-6">{% include "cabinet/includes/field.html" with field=form.password2 %}</div>
+                </div>
+            </section>
+
+            <div class="cabinet-consent form-check">
+                {{ form.consent }}
+                <label class="form-check-label" for="{{ form.consent.id_for_label }}">{{ form.consent.label }}</label>
+                {% for error in form.consent.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary cabinet-submit">Зарегистрироваться</button>
+        </form>
+
+        <p class="cabinet-switch">Уже зарегистрированы? <a href="{% url 'cabinet:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Войдите</a></p>
+    </div>
+</div>
+{% endblock %}

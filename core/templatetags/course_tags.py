@@ -12,6 +12,12 @@ def rub(value):
 
 
 @register.filter
+def is_postponed(card_key, postponed_keys):
+    """Отложена ли карточка курса: {{ card.key|is_postponed:postponed_keys }}"""
+    return bool(postponed_keys) and card_key in postponed_keys
+
+
+@register.filter
 def tel_href(phone):
     """«+7 (916) 999-09-90» → «tel:+79169990990»"""
     phone = str(phone or '').strip()

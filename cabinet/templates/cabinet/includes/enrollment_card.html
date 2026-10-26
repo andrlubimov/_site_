@@ -1,0 +1,50 @@
+{% load course_tags %}
+{% comment %}Купленный курс — в стиле карточки курса на «Программах»: даты обучения, статус по ним,
+документ (если уже выдан). enrollment — из views.my_courses: status, note, certificate.{% endcomment %}
+{% with course=enrollment.course %}
+<article class="course-card enrollment-card">
+    <div class="course-card-top">
+        <span class="course-dir-icon course-dir-icon--sm course-dir--{{ course.direction }}"><i class="bi {{ course.direction_icon }}"></i></span>
+        <span class="course-card-dir">{{ course.get_direction_display }}</span>
+        <span class="course-card-types">
+            <span class="course-type course-type--{{ course.course_type }}"><i class="bi {{ course.type_icon }}"></i>{{ course.get_course_type_display }}</span>
+        </span>
+    </div>
+    <h3 class="course-card-title"><a href="{{ course.get_absolute_url }}">{{ course.display_title }}</a></h3>
+    {% if course.card_id %}<p class="enrollment-variant">{{ course.variant_name }}</p>{% endif %}
+    <p class="enrollment-dates">
+        <span><i class="bi bi-calendar-event" aria-hidden="true"></i> {{ enrollment.date_label }}</span>
+        <span class="enrollment-status enrollment-status--{{ enrollment.status }}">{{ enrollment.note }}</span>
+    </p>
+    {% if course.teacher_list %}
+    <ul class="course-card-teachers">
+        {% for teacher in course.teacher_list %}
+        <li>
+            <a href="{% url 'core:teacher_detail' slug=teacher.slug %}" class="course-teacher">
+                <span class="course-teacher-ava">{% if teacher.photo %}<img src="{{ teacher.photo.url }}" alt="" loading="lazy">{% else %}{{ teacher.initials }}{% endif %}</span>
+                <span class="course-teacher-name">{{ teacher.first_name }} <strong>{{ teacher.last_name }}</strong></span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="course-card-options">
+        <a class="course-option" href="{{ course.get_absolute_url }}">
+            <span class="course-option-text">
+                <span class="course-option-name">Страница курса</span>
+                <span class="course-option-meta">{{ course.hours_label }} · программа и преподаватели</span>
+            </span>
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+        {% if enrollment.certificate %}
+        <a class="course-option" href="{% url 'cabinet:certificate_file' pk=enrollment.certificate.pk %}">
+            <span class="course-option-text">
+                <span class="course-option-name">{{ enrollment.certificate.title }}</span>
+                <span class="course-option-meta">Скачать {{ enrollment.certificate.extension|upper }}</span>
+            </span>
+            <i class="bi bi-download" aria-hidden="true"></i>
+        </a>
+        {% endif %}
+    </div>
+</article>
+{% endwith %}

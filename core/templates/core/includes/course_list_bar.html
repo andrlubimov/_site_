@@ -1,0 +1,14 @@
+{# Строка над карточками курсов: сколько найдено, выбранные фильтры и сортировка (форма — course_filters.html) #}
+<div class="course-list-bar">
+    <span class="course-list-found">{{ found_label }}</span>
+    {% for label, url in active_filters %}
+    <a class="course-list-chip" href="{{ url }}" title="Убрать фильтр">{{ label }} <i class="bi bi-x"></i></a>
+    {% endfor %}
+    {% if active_filters|length > 1 %}<a class="course-list-reset" href="{{ request.path }}">Сбросить всё</a>{% endif %}
+    <label class="visually-hidden" for="course-sort">Сортировка</label>
+    <select class="form-select form-select-sm course-list-sort" id="course-sort" name="sort" form="course-filters-form">
+        {% for value, label in sort_choices %}
+        <option value="{{ value }}"{% if value == sort %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+</div>

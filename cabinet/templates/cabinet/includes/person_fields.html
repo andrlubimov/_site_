@@ -1,0 +1,43 @@
+{# Данные о человеке — регистрация и «Мой профиль». avatar_url — текущее фото (в профиле) #}
+<section class="cabinet-form-block">
+    <h2 class="course-detail-h">О себе</h2>
+    {# align-items-end: у отчества подпись длиннее и переносится — поля всё равно на одной линии #}
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">{% include "cabinet/includes/field.html" with field=form.last_name %}</div>
+        <div class="col-md-4">{% include "cabinet/includes/field.html" with field=form.first_name %}</div>
+        <div class="col-md-4">{% include "cabinet/includes/field.html" with field=form.middle_name %}</div>
+    </div>
+    <p class="form-text mt-1">Как в паспорте — так имя будет написано в удостоверениях и сертификатах.</p>
+    <div class="row g-3">
+        <div class="col-md-5">{% include "cabinet/includes/field.html" with field=form.birth_date %}</div>
+        <div class="col-md-7">
+            {# фото — по желанию: кружок-превью рядом с выбором файла #}
+            <div class="avatar-picker">
+                <span class="avatar-picker-preview{% if avatar_url %} has-photo{% endif %}" data-avatar-preview aria-hidden="true"{% if avatar_url %} style="background-image: url('{{ avatar_url }}')"{% endif %}><i class="bi bi-person"></i></span>
+                <div class="avatar-picker-fields">
+                    {% include "cabinet/includes/field.html" with field=form.avatar %}
+                    {% if avatar_url and form.remove_avatar %}
+                    <div class="form-check mt-2">
+                        {{ form.remove_avatar }}
+                        <label class="form-check-label" for="{{ form.remove_avatar.id_for_label }}">{{ form.remove_avatar.label }}</label>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {# mt-0: у ряда с g-3 отступ сверху отрицательный — без этого ряды слипаются #}
+    <div class="row g-3 mt-0">
+        <div class="col-md-5">{% include "cabinet/includes/field.html" with field=form.country %}</div>
+        <div class="col-md-7">{% include "cabinet/includes/field.html" with field=form.city %}</div>
+        <div class="col-12">{% include "cabinet/includes/field.html" with field=form.about %}</div>
+    </div>
+</section>
+
+<section class="cabinet-form-block">
+    <h2 class="course-detail-h">Контакты</h2>
+    <div class="row g-3">
+        <div class="col-md-7">{% include "cabinet/includes/field.html" with field=form.phone %}</div>
+        <div class="col-md-5">{% include "cabinet/includes/field.html" with field=form.email %}</div>
+    </div>
+</section>

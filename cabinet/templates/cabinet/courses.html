@@ -1,0 +1,16 @@
+{% extends "cabinet/layout.html" %}
+{% load static %}
+
+{% block cabinet_content %}
+{% include "cabinet/includes/head.html" with lead="Все программы Ассоциации — как на странице «Программы». Отмечайте сердечком курсы, к которым хотите вернуться: они соберутся в «Отложенных»." %}
+
+{# фильтры — свёрнутым блоком над карточками: слева уже меню кабинета #}
+{% include "core/includes/course_filters.html" with panel=True %}
+{% include "core/includes/course_list_bar.html" %}
+{% include "core/includes/course_sections.html" with card_col="col-xl-6" %}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/course-filters.js' %}"></script>
+{% endblock %}

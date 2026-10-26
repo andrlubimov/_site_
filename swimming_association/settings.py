@@ -22,6 +22,7 @@ INSTALLED_APPS = [
 
     # Local
     'core',
+    'cabinet',
 ]
 
 MIDDLEWARE = [
@@ -49,12 +50,28 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.contacts',
                 'core.context_processors.navigation',
+                'cabinet.context_processors.postponed',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'swimming_association.wsgi.application'
+
+# Личный кабинет: вход по email и паролю (cabinet/)
+LOGIN_URL = 'cabinet:login'
+LOGIN_REDIRECT_URL = 'cabinet:home'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'cabinet.backends.EmailBackend',  # email вместо имени пользователя — у аккаунтов преподавателей
+]
+
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
 
 # Database
 DATABASES = {

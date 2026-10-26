@@ -1,0 +1,912 @@
+/* ============================================================
+   ЛИЧНЫЙ КАБИНЕТ (/cabinet/…): вход, регистрация, разделы кабинета
+   Светлая «вода» ocean-200 с проступающей эмблемой Ассоциации (ocean-500);
+   слева — меню разделов (ocean-600) вложенным списком
+   ============================================================ */
+.cabinet-page {
+    position: relative;
+    padding: 2.5rem 0 calc(3rem + 70px); /* снизу — место под волну подвала */
+    background: var(--ocean-200);
+    color: var(--text);
+}
+
+/* Волна из шапки — как у подвала, только светлая */
+.cabinet-wave {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% - 1px);
+    line-height: 0;
+    pointer-events: none;
+}
+
+.cabinet-wave svg {
+    display: block;
+    width: 100%;
+    height: 48px;
+}
+
+.cabinet-wave-back {
+    fill: var(--ocean-200);
+    opacity: 0.5;
+}
+
+.cabinet-wave-front {
+    fill: var(--ocean-200);
+}
+
+.cabinet-wave-foam {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.55);
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke; /* толщина линии не зависит от растяжения волны */
+}
+
+/* Эмблема Ассоциации (без надписи, ocean-500) едва проступает за содержимым раздела */
+.cabinet-watermark {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    max-width: 100%; /* на телефоне длинный раздел — эмблема не шире экрана */
+    height: min(92%, 560px);
+    object-fit: contain;
+    opacity: 0.35;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ------------------------------------------------------------
+   Разделы: меню слева, раздел справа
+   ------------------------------------------------------------ */
+.cabinet-layout {
+    display: grid;
+    grid-template-columns: 290px minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+.cabinet-main {
+    position: relative;
+    min-height: 560px;
+    padding-top: 0.5rem;
+}
+
+.cabinet-main > :not(.cabinet-watermark) {
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Меню --- */
+.cabinet-side {
+    position: sticky;
+    top: 1.5rem;
+    padding: 1.25rem 1rem 1rem;
+    border-radius: 28px;
+    background: var(--ocean-600);
+    color: #fff;
+    box-shadow: 0 16px 36px rgba(11, 62, 82, 0.22);
+}
+
+.cabinet-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0 0.35rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.cabinet-user-photo {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.28);
+}
+
+.cabinet-user-photo--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.cabinet-user-text {
+    min-width: 0;
+}
+
+.cabinet-user-name {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.cabinet-user-email {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.72);
+    overflow-wrap: anywhere;
+}
+
+.cabinet-nav,
+.cabinet-subnav {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cabinet-nav > li + li {
+    margin-top: 0.2rem;
+}
+
+.cabinet-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.55rem 0.8rem;
+    border: 0;
+    border-radius: 14px;
+    background: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.cabinet-nav-link .bi {
+    flex: 0 0 auto;
+    font-size: 1.1rem;
+    opacity: 0.85;
+}
+
+.cabinet-nav-link:hover,
+.cabinet-nav-link:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+/* раздел, в котором открыт подраздел */
+.cabinet-nav-link.is-open {
+    color: #fff;
+}
+
+.cabinet-nav-link.is-active {
+    background: #fff;
+    color: var(--ocean-800);
+    box-shadow: 0 4px 12px rgba(11, 62, 82, 0.2);
+}
+
+.cabinet-nav-link.is-active .bi {
+    color: var(--ocean-700);
+    opacity: 1;
+}
+
+/* вложенный список: подразделы — с отступом, вдоль тонкой линии-«ветки» */
+.cabinet-subnav {
+    margin: 0.2rem 0 0.4rem 1.45rem;
+    padding-left: 0.6rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.cabinet-subnav li + li {
+    margin-top: 0.1rem;
+}
+
+.cabinet-subnav .cabinet-nav-link {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.cabinet-subnav .cabinet-nav-link .bi {
+    font-size: 0.95rem;
+}
+
+.cabinet-nav-count {
+    margin-left: auto;
+    min-width: 1.5rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.cabinet-nav-link.is-active .cabinet-nav-count {
+    background: var(--ocean-100);
+    color: var(--ocean-800);
+}
+
+.cabinet-logout {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.cabinet-logout .cabinet-nav-link {
+    color: rgba(255, 255, 255, 0.78);
+    font-weight: 500;
+}
+
+/* на телефоне и планшете меню свёрнуто в кнопку с названием открытого раздела */
+.cabinet-nav-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+}
+
+.cabinet-nav-toggle-arrow {
+    margin-left: auto;
+    transition: transform 0.2s;
+}
+
+.cabinet-nav-toggle[aria-expanded="true"] .cabinet-nav-toggle-arrow {
+    transform: rotate(180deg);
+}
+
+/* --- Раздел --- */
+.cabinet-head {
+    margin-bottom: 1.5rem;
+}
+
+.cabinet-kicker {
+    display: inline-block;
+    margin: 0 0 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+a.cabinet-kicker:hover {
+    color: var(--ocean-800);
+    text-decoration: underline;
+}
+
+.cabinet-title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--ink);
+}
+
+.cabinet-lead {
+    margin-bottom: 1.5rem;
+    color: var(--muted);
+}
+
+/* пока раздел пустой — подсказка, что здесь появится */
+.cabinet-empty {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 560px;
+    padding: 1.1rem 1.4rem;
+    border: 1px dashed rgba(15, 111, 147, 0.4);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.cabinet-empty p {
+    margin: 0;
+}
+
+.cabinet-empty-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+    font-weight: 600;
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+.cabinet-empty-link:hover {
+    color: var(--ocean-800);
+    text-decoration: underline;
+}
+
+.cabinet-empty-icon {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--ocean-100);
+    color: var(--ocean-700);
+    font-size: 1.3rem;
+}
+
+.cabinet-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    background: #fff;
+    color: var(--success);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(11, 62, 82, 0.08);
+}
+
+.cabinet-message--error {
+    background: #fdecef;
+    color: #b02a37;
+    box-shadow: none;
+}
+
+/* ------------------------------------------------------------
+   Вход и регистрация: белая карточка с формой
+   ------------------------------------------------------------ */
+.cabinet-auth {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0;
+}
+
+/* эмблема — справа от карточки, частью уходит под неё */
+.cabinet-auth .cabinet-watermark {
+    left: auto;
+    right: 0;
+    transform: translateY(-50%);
+}
+
+.cabinet-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 820px;
+    padding: 2rem 2.5rem 2.25rem;
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(11, 62, 82, 0.14);
+}
+
+.cabinet-card--narrow {
+    max-width: 460px;
+}
+
+.cabinet-card--narrow .cabinet-title {
+    font-size: 1.75rem;
+}
+
+.cabinet-form-block + .cabinet-form-block {
+    margin-top: 1.75rem;
+}
+
+.cabinet-field .form-label {
+    margin-bottom: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.cabinet-optional {
+    font-weight: 400;
+    color: var(--muted);
+}
+
+.cabinet-card .form-control,
+.cabinet-card .form-select,
+.cabinet-panel .form-control,
+.cabinet-panel .form-select {
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+    border-color: #cfdfe7;
+    border-radius: 12px;
+}
+
+.cabinet-card .form-text,
+.cabinet-panel .form-text {
+    color: var(--muted);
+}
+
+.cabinet-field + .cabinet-field {
+    margin-top: 1rem;
+}
+
+/* телефон: страна + номер в одну строку */
+.phone-input .phone-country {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 52%;
+}
+
+/* фото: кружок-превью рядом с выбором файла */
+.avatar-picker {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+}
+
+.avatar-picker-fields {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.avatar-picker-preview {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-top: 1.55rem;
+    border: 1px dashed var(--ocean-500);
+    border-radius: 50%;
+    background: var(--ocean-50) center / cover no-repeat;
+    color: var(--ocean-500);
+    font-size: 1.6rem;
+}
+
+.avatar-picker-preview.has-photo {
+    border-style: solid;
+}
+
+.avatar-picker-preview.has-photo .bi {
+    visibility: hidden;
+}
+
+/* запись на курс без входа: что за курс, и войти или зарегистрироваться */
+.cabinet-card--enroll {
+    max-width: 560px;
+}
+
+.enroll-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0.75rem 0 1.25rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
+    list-style: none;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.enroll-facts .bi {
+    margin-right: 0.35rem;
+    color: var(--ocean-700);
+}
+
+.enroll-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+@media (max-width: 575.98px) {
+    .enroll-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* на входе и регистрации — напоминание, что после них запишем на курс */
+.cabinet-pending {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
+    border: 1px solid var(--ocean-100);
+}
+
+.cabinet-pending p {
+    margin: 0;
+    font-size: 0.92rem;
+}
+
+.cabinet-pending-icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--ocean-100);
+    color: var(--ocean-700);
+}
+
+.cabinet-consent {
+    margin: 1.75rem 0 1.25rem;
+}
+
+.cabinet-submit {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0.7rem 1.4rem;
+    font-weight: 600;
+}
+
+.cabinet-consent + .cabinet-submit {
+    margin-top: 0;
+}
+
+.cabinet-switch {
+    margin: 1.25rem 0 0;
+    text-align: center;
+    color: var(--muted);
+}
+
+.cabinet-switch a {
+    font-weight: 600;
+}
+
+/* ------------------------------------------------------------
+   Разделы кабинета: белые панели на «воде»
+   ------------------------------------------------------------ */
+.cabinet-panel {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.25rem;
+    padding: 1.75rem 2rem 2rem;
+    border-radius: 28px;
+    background: #fff;
+    color: var(--text);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.cabinet-panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin-top: 1.75rem;
+}
+
+/* --- Курсы ассоциации: карточки как на «Программах», только на светлом фоне --- */
+.cabinet-main .course-section-head,
+.cabinet-main .course-section-title,
+.cabinet-main .course-list-empty {
+    color: var(--ink);
+}
+
+.cabinet-main .course-section-title::after {
+    background: var(--ocean-500);
+}
+
+.cabinet-main .course-section-head small {
+    color: var(--muted);
+    opacity: 1;
+}
+
+/* фильтры — свёрнутым блоком над карточками (слева уже меню кабинета) */
+.course-filters-wrap--panel {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1.25rem;
+    border-radius: 20px;
+}
+
+@media (min-width: 992px) {
+    .course-filters-wrap--panel {
+        position: relative; /* не «липнет» к верху, как на «Программах» */
+        top: auto;
+    }
+}
+
+.course-filters-wrap--panel .course-filters-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.course-filters-wrap--panel[open] .course-filters-summary {
+    margin-bottom: 0.75rem;
+}
+
+.course-filters-wrap--panel .course-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 0 1.75rem;
+    align-items: start;
+}
+
+.course-filters-wrap--panel .course-filter-search,
+.course-filters-wrap--panel .course-filters-actions {
+    grid-column: 1 / -1;
+}
+
+.course-filters-wrap--panel .course-filter + .course-filter {
+    border-top: 0;
+}
+
+/* --- Мои курсы: переключатель «предстоящие — идущие — завершённые» --- */
+.cabinet-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.cabinet-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem 0.45rem 1.1rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.cabinet-tab:hover {
+    border-color: var(--ocean-500);
+    background: #fff;
+    color: var(--ink);
+}
+
+.cabinet-tab.is-current {
+    background: var(--ocean-700);
+    color: #fff;
+}
+
+.cabinet-tab-count {
+    min-width: 1.6rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--ocean-100);
+    color: var(--ocean-800);
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+.cabinet-tab.is-current .cabinet-tab-count {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+
+/* купленный курс — карточка курса с датами обучения */
+.enrollment-variant {
+    margin: -0.2rem 0 0.5rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--ocean-700);
+}
+
+.enrollment-dates {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.75rem;
+    margin: 0 0 0.85rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.enrollment-dates .bi {
+    color: var(--ocean-700);
+}
+
+.enrollment-status {
+    padding: 0.15rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.enrollment-status--upcoming  { background: var(--ocean-100); color: var(--ocean-800); }
+.enrollment-status--current   { background: #e3f4ea; color: #146c43; }
+.enrollment-status--completed { background: #eef1f3; color: var(--muted); }
+
+/* --- Моё членство --- */
+.membership-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+    padding: 0.45rem 1rem 0.45rem 0.75rem;
+    border-radius: 999px;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.membership--active .membership-badge    { background: #e3f4ea; color: #146c43; }
+.membership--suspended .membership-badge { background: #fdf3e3; color: #9a4a06; }
+.membership--none .membership-badge      { background: #eef1f3; color: var(--muted); }
+
+.membership-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1.5rem;
+}
+
+.membership-fact {
+    padding: 0.85rem 1.1rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
+}
+
+.membership-fact dt {
+    margin-bottom: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.membership-fact dd {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.membership-note {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.membership-note.is-overdue {
+    color: #b02a37;
+    font-weight: 600;
+}
+
+.membership-visibility {
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+}
+
+.membership-visibility .form-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-left: 0;
+}
+
+.membership-visibility .form-switch .form-check-input {
+    width: 2.75em;
+    height: 1.45em;
+    margin: 0;
+    cursor: pointer;
+}
+
+.membership-visibility .form-check-label {
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+}
+
+/* --- Мои сертификаты --- */
+.certificate-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+    padding: 1.1rem 1.25rem;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.certificate-icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--ocean-100);
+    color: var(--ocean-700);
+    font-size: 1.4rem;
+}
+
+.certificate-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.certificate-title {
+    margin: 0 0 0.2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+}
+
+.certificate-course {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+.certificate-course:hover {
+    text-decoration: underline;
+}
+
+.certificate-meta {
+    margin: 0.25rem 0 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.certificate-download {
+    flex: none;
+}
+
+/* ------------------------------------------------------------
+   Планшет и телефон: меню над разделом
+   ------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+    .cabinet-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+
+    .cabinet-side {
+        position: static;
+        padding: 1rem;
+    }
+
+    .cabinet-side .collapse,
+    .cabinet-side .collapsing {
+        margin-top: 0.75rem;
+    }
+
+    .cabinet-main {
+        min-height: 420px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .cabinet-page {
+        padding-top: 1.75rem;
+    }
+
+    .cabinet-card,
+    .cabinet-panel {
+        padding: 1.5rem 1.25rem 1.75rem;
+        border-radius: 22px;
+    }
+
+    .certificate-card {
+        flex-wrap: wrap;
+    }
+
+    .cabinet-wave svg {
+        height: 32px;
+    }
+}

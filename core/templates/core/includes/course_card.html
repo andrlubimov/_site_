@@ -1,6 +1,7 @@
 {% load course_tags %}
 {% comment %}Карточка курса на странице «Программы» и странице преподавателя: варианты одного курса — строками.
-card — из views.build_course_cards; show_dates — показать ближайшую дату варианта (нужен prefetch upcoming){% endcomment %}
+card — из views.build_course_cards; show_dates — показать ближайшую дату варианта (нужен prefetch upcoming).
+Сердечко в углу откладывает карточку (cabinet/postponed.py, js/postponed.js); postponed_keys — из context processor.{% endcomment %}
 <article class="course-card">
     <div class="course-card-top">
         {% if card.direction_label %}
@@ -10,6 +11,18 @@ card — из views.build_course_cards; show_dates — показать ближ
         <span class="course-card-types">
             {% for code, label, icon in card.types %}<span class="course-type course-type--{{ code }}"><i class="bi {{ icon }}"></i>{{ label }}</span>{% endfor %}
         </span>
+        {% with postponed=card.key|is_postponed:postponed_keys %}
+        <form class="course-heart-form" method="post" action="{% url 'postponed:toggle' %}" data-postpone>
+            {% csrf_token %}
+            <input type="hidden" name="course" value="{{ card.variants.0.pk }}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="course-heart{% if postponed %} is-postponed{% endif %}" data-postpone-key="{{ card.key }}"
+                    aria-pressed="{{ postponed|yesno:'true,false' }}" aria-label="Отложить: {{ card.title }}"
+                    title="{% if postponed %}В отложенных — нажмите, чтобы убрать{% else %}Отложить{% endif %}">
+                <i class="bi {% if postponed %}bi-heart-fill{% else %}bi-heart{% endif %}" aria-hidden="true"></i>
+            </button>
+        </form>
+        {% endwith %}
     </div>
     <h3 class="course-card-title"><a href="{{ card.url }}">{{ card.title }}</a></h3>
     {% if card.description %}<p class="course-card-desc">{{ card.description }}</p>{% endif %}

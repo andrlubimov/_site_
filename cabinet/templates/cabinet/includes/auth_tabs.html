@@ -1,0 +1,5 @@
+{# next — куда вернуться после входа или регистрации (например, к записи на курс) #}
+<div class="header-tabs">
+    <a href="{% url 'cabinet:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="header-tab-btn{% if active == 'login' %} active{% endif %}"{% if active == 'login' %} aria-current="page"{% endif %}>Вход</a>
+    <a href="{% url 'cabinet:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="header-tab-btn{% if active == 'register' %} active{% endif %}"{% if active == 'register' %} aria-current="page"{% endif %}>Регистрация</a>
+</div>

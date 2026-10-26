@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError, models
 from django.urls import reverse
@@ -36,6 +37,11 @@ class Teacher(models.Model):
     bio = models.TextField(
         'Описание', blank=True,
         help_text='Показывается на странице преподавателя. Абзацы разделяйте пустой строкой.',
+    )
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, verbose_name='Аккаунт в личном кабинете', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='teacher',
+        help_text='Преподаватели — члены Ассоциации: членство и вход в личный кабинет — через этот аккаунт.',
     )
 
     class Meta:
@@ -295,6 +301,12 @@ class Course(models.Model):
     def variant_name(self):
         """Строка варианта внутри карточки"""
         return self.variant_label or self.get_course_type_display()
+
+    @property
+    def card_key(self):
+        """Карточка на странице «Программы»: варианты одного курса (CourseCard) — одна карточка.
+        Сердечком откладывается сразу вся карточка (cabinet/postponed.py)."""
+        return f'card-{self.card_id}' if self.card_id else f'course-{self.pk}'
 
     @property
     def direction_icon(self):

@@ -132,8 +132,17 @@
                                     </div>
                                     {% if s.comment %}<div class="course-dates-comment">{{ s.comment|linebreaksbr }}</div>{% endif %}
                                 </div>
-                                {# Запись пока никуда не ведёт — кнопка-заготовка #}
-                                <button type="button" class="btn btn-primary rounded-pill course-signup-btn" data-schedule-id="{{ s.pk }}">Записаться</button>
+                                {# Запись: вошедший записывается сразу, остальным предложим войти или зарегистрироваться (cabinet/views.py: enroll) #}
+                                {% if s.pk in enrolled %}
+                                <a class="btn btn-outline-primary rounded-pill course-signup-btn is-enrolled" href="{% url 'cabinet:my_courses' %}"
+                                   title="Курс — в «Моих курсах» личного кабинета"><i class="bi bi-check2" aria-hidden="true"></i> Вы записаны</a>
+                                {% else %}
+                                <form class="course-signup-form" method="post" action="{% url 'cabinet:enroll' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="schedule" value="{{ s.pk }}">
+                                    <button type="submit" class="btn btn-primary rounded-pill course-signup-btn">Записаться</button>
+                                </form>
+                                {% endif %}
                             </li>
                             {% endfor %}
                         </ul>

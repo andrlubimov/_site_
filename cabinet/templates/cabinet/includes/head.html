@@ -1,0 +1,10 @@
+{# Заголовок раздела кабинета: над ним — родительский раздел (ссылкой) или «Личный кабинет» #}
+<header class="cabinet-head">
+    {% if parent %}
+    <a class="cabinet-kicker" href="{{ parent.url }}">{{ parent.title }}</a>
+    {% else %}
+    <p class="cabinet-kicker">Личный кабинет</p>
+    {% endif %}
+    <h1 class="cabinet-title">{{ title|default:page.title }}</h1>
+    {% if lead %}<p class="cabinet-lead">{{ lead }}</p>{% endif %}
+</header>

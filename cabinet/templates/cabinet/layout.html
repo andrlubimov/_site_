@@ -1,0 +1,77 @@
+{% extends "cabinet/base.html" %}
+{% load static %}
+
+{% block page_title %}{{ page.title }} - Личный кабинет{% endblock %}
+
+{% block cabinet %}
+<div class="cabinet-layout">
+
+    <!-- Меню кабинета: разделы и подразделы вложенным списком -->
+    <aside class="cabinet-side">
+        <div class="cabinet-user">
+            {% if cabinet_user.avatar %}
+            <img class="cabinet-user-photo" src="{{ cabinet_user.avatar }}" alt="">
+            {% else %}
+            <span class="cabinet-user-photo cabinet-user-photo--empty" aria-hidden="true">{{ cabinet_user.initials }}</span>
+            {% endif %}
+            <div class="cabinet-user-text">
+                <p class="cabinet-user-name">{{ cabinet_user.name }}</p>
+                {% if cabinet_user.email %}<p class="cabinet-user-email">{{ cabinet_user.email }}</p>{% endif %}
+            </div>
+        </div>
+
+        <button class="cabinet-nav-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#cabinetNav"
+                aria-expanded="false" aria-controls="cabinetNav">
+            <i class="bi {{ page.icon }}" aria-hidden="true"></i>
+            <span>{{ page.title }}</span>
+            <i class="bi bi-chevron-down cabinet-nav-toggle-arrow" aria-hidden="true"></i>
+        </button>
+
+        <div class="collapse d-lg-block" id="cabinetNav">
+            <nav aria-label="Разделы личного кабинета">
+                <ul class="cabinet-nav">
+                    {% for item in cabinet_menu %}
+                    <li>
+                        <a class="cabinet-nav-link{% if item.active %} is-active{% elif item.open %} is-open{% endif %}" href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+                            <i class="bi {{ item.icon }}" aria-hidden="true"></i><span>{{ item.title }}</span>
+                        </a>
+                        {% if item.children %}
+                        <ul class="cabinet-subnav">
+                            {% for child in item.children %}
+                            <li>
+                                <a class="cabinet-nav-link{% if child.active %} is-active{% endif %}" href="{{ child.url }}"{% if child.active %} aria-current="page"{% endif %}>
+                                    <i class="bi {{ child.icon }}" aria-hidden="true"></i><span>{{ child.title }}</span>
+                                    {% if child.key == 'postponed' %}
+                                    <span class="cabinet-nav-count" data-postponed-count data-postponed-link{% if not postponed_count %} hidden{% endif %}>{{ postponed_count }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            <form class="cabinet-logout" method="post" action="{% url 'cabinet:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="cabinet-nav-link"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Выйти</span></button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Раздел -->
+    <div class="cabinet-main">
+        <img class="cabinet-watermark" src="{% static 'logo-baby.svg' %}" alt="">
+
+        {% for message in messages %}
+        <div class="cabinet-message cabinet-message--{{ message.tags }}" role="status">
+            <i class="bi bi-check-circle" aria-hidden="true"></i> {{ message }}
+        </div>
+        {% endfor %}
+
+        {% block cabinet_content %}{% endblock %}
+    </div>
+
+</div>
+{% endblock %}

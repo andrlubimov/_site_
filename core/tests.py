@@ -409,9 +409,9 @@ class CourseDetailTests(TestCase):
         self.assertContains(response, 'для тех, кто обучался у нас ранее')
         # у документа — «!» с подсказкой про зачёт
         self.assertContains(response, 'data-hint="Документ выдаётся только в случае успешной сдачи зачёта"')
-        # по кнопке «Записаться» на каждую ближайшую дату; пока никуда не ведут
+        # по кнопке «Записаться» на каждую ближайшую дату — записывает (cabinet/views.py: enroll)
         self.assertContains(response, 'course-signup-btn', count=2)
-        self.assertNotContains(response, '<a class="btn btn-primary course-signup-btn')
+        self.assertContains(response, 'action="/cabinet/enroll/"', count=2)
         self.assertContains(response, 'course-program-toggle')
 
     def test_teacher_photo_and_name_link_to_teacher_page(self):

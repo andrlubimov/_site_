@@ -1,0 +1,54 @@
+{% extends "cabinet/layout.html" %}
+
+{% block cabinet_content %}
+{% include "cabinet/includes/head.html" %}
+
+{% if membership and membership.is_member %}
+<section class="cabinet-panel membership membership--{{ membership.status }}">
+    <p class="membership-badge">
+        <i class="bi {% if membership.status == 'active' %}bi-patch-check-fill{% else %}bi-pause-circle-fill{% endif %}" aria-hidden="true"></i>
+        Членство {{ membership.get_status_display|lower }}
+    </p>
+
+    <dl class="membership-facts">
+        <div class="membership-fact">
+            <dt>Член Ассоциации с</dt>
+            <dd>{{ membership.start_date|date:"j E Y" }}</dd>
+        </div>
+        <div class="membership-fact">
+            <dt>Следующий взнос</dt>
+            <dd>
+                {% if membership.next_fee_date %}{{ membership.next_fee_date|date:"j E Y" }}
+                <span class="membership-note{% if membership.fee_overdue %} is-overdue{% endif %}">{{ membership.fee_note }}</span>
+                {% else %}—{% endif %}
+            </dd>
+        </div>
+        <div class="membership-fact">
+            <dt>Взносы</dt>
+            <dd>раз в год</dd>
+        </div>
+    </dl>
+
+    <form class="membership-visibility" method="post">
+        {% csrf_token %}
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="show-on-site" name="show_on_site"
+                   data-autosubmit{% if membership.show_on_site %} checked{% endif %}>
+            <label class="form-check-label" for="show-on-site">Показывать меня на сайте</label>
+        </div>
+        <p class="form-text">
+            Фото, имя, город и страна появятся в разделе «Членство в ассоциации» на главной странице.
+            {% if membership.status != 'active' %}Пока членство приостановлено, на сайте вас не видно.{% endif %}
+        </p>
+        <noscript><button type="submit" class="btn btn-primary btn-sm">Сохранить</button></noscript>
+    </form>
+</section>
+{% else %}
+<section class="cabinet-panel membership membership--none">
+    <p class="membership-badge"><i class="bi bi-person-dash" aria-hidden="true"></i> Вы не являетесь членом Ассоциации</p>
+    <p>Члены Ассоциации учатся со скидкой {{ member_discount }}% на все курсы, обмениваются опытом с коллегами
+       и могут рассказать о себе на сайте.</p>
+    <a class="btn btn-primary" href="{% url 'core:page_content' slug='membership' %}">Как вступить в Ассоциацию</a>
+</section>
+{% endif %}
+{% endblock %}
