@@ -57,12 +57,12 @@ class PageContentViewTests(SimpleTestCase):
     @patch('core.views.PageContent.objects.filter')
     def test_existing_page_content_is_used(self, mock_filter):
         mock_filter.return_value.first.return_value = PageContent(
-            slug='membership',
+            slug='seminars',
             title='Тестовый заголовок',
             content='Тестовый текст',
         )
 
-        response = page_content(self.factory.get('/page/membership/'), 'membership')
+        response = page_content(self.factory.get('/page/seminars/'), 'seminars')
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тестовый заголовок')
@@ -1089,6 +1089,24 @@ class ContactsPageTests(TestCase):
         # телефон для записи на странице курса — тот же
         course = make_course(title='Курс', slug='kurs')
         self.assertContains(self.client.get(course.get_absolute_url()), '+7 (999) 123-45-67')
+
+    def test_address_and_map_point(self):
+        from decimal import Decimal
+
+        from .contact_defaults import MAP_POINT
+        from .models import ContactInfo
+        info = ContactInfo.objects.get()  # исправлена миграцией 0029
+        self.assertEqual(info.address, 'Москва, улица Малыгина, дом 1, строение 2')
+        self.assertEqual(info.postal_address, '129346, Москва, улица Малыгина, дом 1, строение 2')
+        self.assertEqual((info.map_lat, info.map_lng), (Decimal(str(MAP_POINT['map_lat'])), Decimal(str(MAP_POINT['map_lng']))))
+        response = self.client.get('/page/contacts/')
+        point = f"{MAP_POINT['map_lng']},{MAP_POINT['map_lat']}"
+        self.assertContains(response, f'll={point}&amp;z=17&amp;pt={point},pm2rdl')  # метка на здании
+        info.map_lat = info.map_lng = None
+        info.save()
+        response = self.client.get('/page/contacts/')  # без координат — поиск по адресу
+        self.assertContains(response, 'map-widget/v1/?text=')
+        self.assertContains(self.client.get('/page/info/'), 'улица Малыгина, дом 1, строение 2')
 
     def test_falls_back_to_old_site_contacts_without_record(self):
         from .models import ContactInfo

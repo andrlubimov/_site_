@@ -533,7 +533,8 @@ class ContactInfoAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Организация', {'fields': ('organization', 'legal_name', 'inn')}),
         ('Связь', {'fields': ('phone_education', 'phone_cooperation', 'email')}),
-        ('Адрес', {'fields': ('address', 'directions', 'work_hours', 'postal_address', 'map_query')}),
+        ('Адрес', {'fields': ('address', 'directions', 'work_hours', 'postal_address', 'map_query',
+                              ('map_lat', 'map_lng'))}),
         ('Соцсети', {'fields': ('vk_url', 'telegram_url')}),
     )
 

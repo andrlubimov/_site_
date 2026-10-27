@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">{{ page_title }}</h1>
+    <div class="header-tabs">
+        {% include "core/includes/association_tabs.html" with active='membership' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Тексты и взносы — core/membership_page.py (со старого сайта /association/membership) #}
+<section class="py-5">
+    <div class="container">
+        <p class="membership-intro">{{ page.INTRO }}</p>
+
+        <h2 class="membership-h">Преимущества членства в Ассоциации</h2>
+        <div class="row g-3">
+            {% for benefit in page.BENEFITS %}
+            <div class="col-lg-4">
+                <article class="membership-benefit">
+                    <span class="course-dir-icon" aria-hidden="true"><i class="bi {{ benefit.icon }}"></i></span>
+                    <h3 class="membership-benefit-title">{{ benefit.title }}</h3>
+                    <p>{{ benefit.text }}</p>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-5" id="join">
+    <div class="container">
+        <h2 class="membership-h">Условия членства и вступление в Ассоциацию</h2>
+        <div class="row g-3 justify-content-center">
+            {% for plan in page.PLANS %}
+            <div class="col-md-6 col-xl-5">
+                <article class="membership-plan">
+                    <span class="course-dir-icon" aria-hidden="true"><i class="bi {{ plan.icon }}"></i></span>
+                    <h3 class="membership-plan-title">{{ plan.title }}</h3>
+                    <p class="membership-plan-label">Членский взнос*</p>
+                    <p class="membership-plan-fee">{{ plan.fee }} <small>в год</small></p>
+                    <p class="membership-plan-label">Скидки при непрерывном членстве</p>
+                    <ul class="membership-plan-discounts">
+                        {% for discount in page.DISCOUNTS %}<li class="course-chip">{{ discount }}</li>{% endfor %}
+                    </ul>
+                    <a class="btn btn-primary membership-plan-btn" href="{% url plan.apply_url %}">Подать заявку на вступление</a>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="membership-note">* Размеры членских взносов на {{ page.FEES_YEAR }} год</p>
+
+        <div class="membership-docs">
+            <h3 class="course-detail-h">Подробнее об условиях</h3>
+            <ul class="info-docs">
+                {% include "core/includes/doc_row.html" with d=page.REGULATIONS %}
+                {% include "core/includes/doc_row.html" with d=page.CHARTER %}
+            </ul>
+            {% if user.is_authenticated %}
+            <p class="membership-cabinet"><i class="bi bi-person-circle" aria-hidden="true"></i>
+                Статус членства и дата следующего взноса — в <a href="{% url 'cabinet:membership' %}">личном кабинете</a>.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

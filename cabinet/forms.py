@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Profile
+from .models import MembershipApplication, Profile
 from .phone import (
     CODES_BY_NAME, DEFAULT_REGION, country_choices, country_name_choices, example_local, example_number, parse_phone,
     split_phone, to_e164,
@@ -125,6 +125,8 @@ class PhoneField(forms.MultiValueField):
         if not data_list:
             return ''
         region, number = data_list
+        if not number:  # телефон не обязателен — номер не указан
+            return ''
         parsed = parse_phone(number, region)
         if parsed is None:
             raise ValidationError(self.error_messages['invalid_phone'], code='invalid',
@@ -294,3 +296,104 @@ class LoginForm(StyledFormMixin, AuthenticationForm):
 
     def clean_username(self):
         return self.cleaned_data['username'].lower()
+
+
+class MembershipApplicationForm(StyledFormMixin, forms.ModelForm):
+    """Анкета на вступление в Ассоциацию. layout — группы полей и их ширина в ряду (из 12), как на старом сайте."""
+    layout = []
+    country = forms.ChoiceField(label='Страна', choices=country_name_choices(),
+                                widget=CountryNameSelect(attrs={'data-country-select': ''}))
+    consent = forms.BooleanField(
+        label='Согласие на обработку персональных данных',
+        error_messages={'required': 'Без согласия на обработку данных заявку не отправить.'},
+    )
+    # ловушка для спам-ботов: поле скрыто, человек его не заполняет
+    nickname = forms.CharField(required=False, widget=forms.TextInput(attrs={'tabindex': '-1', 'autocomplete': 'off'}))
+
+    class Meta:
+        model = MembershipApplication
+        fields = []
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance.kind = self.kind
+        if user is not None and user.is_authenticated:
+            self.instance.user = user
+            if not self.is_bound:  # вошедшему — данные из личного кабинета
+                profile = getattr(user, 'profile', None)
+                self.initial.update(last_name=user.last_name, first_name=user.first_name, email=user.email)
+                if profile:
+                    self.initial.update(middle_name=profile.middle_name, phone=profile.phone, city=profile.city,
+                                        country=profile.country, birth_year=profile.birth_date.year)
+
+    def clean_nickname(self):
+        if self.cleaned_data['nickname']:
+            raise ValidationError('Не удалось отправить заявку.')
+        return ''
+
+    @property
+    def groups(self):
+        """[(заголовок, [(поле, ширина)])] — для шаблона"""
+        return [(title, [(self[name], width) for name, width in fields]) for title, fields in self.layout]
+
+
+class PersonApplicationForm(MembershipApplicationForm):
+    kind = MembershipApplication.KIND_PERSON
+    title = 'Физические лица'
+    birth_year = forms.IntegerField(label='Год рождения', min_value=1900)
+    phone = PhoneField(label='Телефон', required=False)
+    layout = [
+        ('Представьтесь', [('last_name', 4), ('first_name', 4), ('middle_name', 4), ('birth_year', 4)]),
+        ('Контактная информация', [('email', 6), ('phone', 6)]),
+        ('Образование', [('education', 12), ('extra_education', 12), ('degree', 12)]),
+        ('Профессиональная деятельность', [('work_places', 12), ('positions', 12), ('country', 5), ('city', 7)]),
+        ('Рекомендация', [('recommendation', 12)]),
+    ]
+
+    class Meta:
+        model = MembershipApplication
+        fields = ['last_name', 'first_name', 'middle_name', 'birth_year', 'email', 'phone', 'education',
+                  'extra_education', 'degree', 'work_places', 'positions', 'country', 'city', 'recommendation']
+        labels = {
+            'education': 'Когда и какие средние специальные и/или высшие учебные заведения вы окончили',
+            'extra_education': 'Дополнительное образование: курсы, повышение квалификации, переквалификация',
+            'degree': 'Учёная степень, научное или иное звание',
+            'work_places': 'Места работы за последние 5 лет',
+            'positions': 'Должности с указанием выполняемой работы за последние 5 лет',
+            'recommendation': 'Член Ассоциации, который готов дать вам рекомендацию',
+        }
+        widgets = {name: forms.Textarea(attrs={'rows': 3}) for name in
+                   ('education', 'extra_education', 'work_places', 'positions', 'recommendation')}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ('education', 'work_places', 'positions', 'recommendation'):
+            self.fields[name].required = True
+        self.fields['birth_year'].max_value = timezone.localdate().year
+        self.fields['birth_year'].widget.attrs['max'] = timezone.localdate().year
+
+
+class OrganizationApplicationForm(MembershipApplicationForm):
+    kind = MembershipApplication.KIND_ORGANIZATION
+    title = 'Юридические лица'
+    phone = PhoneField(label='Телефон')
+    layout = [
+        ('Ваша организация', [('organization', 12), ('activity', 12), ('country', 4), ('city', 5),
+                              ('employees', 3)]),
+        ('Руководитель организации', [('last_name', 4), ('first_name', 4), ('middle_name', 4),
+                                      ('head_position', 12)]),
+        ('Контактная информация', [('address', 12), ('email', 6), ('phone', 6), ('website', 12)]),
+    ]
+
+    class Meta:
+        model = MembershipApplication
+        fields = ['organization', 'activity', 'country', 'city', 'employees', 'last_name', 'first_name',
+                  'middle_name', 'head_position', 'address', 'email', 'phone', 'website']
+        labels = {'organization': 'Наименование организации', 'employees': 'Количество сотрудников'}
+        widgets = {'activity': forms.Textarea(attrs={'rows': 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ('organization', 'activity', 'employees', 'head_position', 'address'):
+            self.fields[name].required = True
+

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/cabinet.css' %}">{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <p class="header-page-title">Вступление в Ассоциацию</p>
+    <div class="header-tabs">
+        {% include "core/includes/association_tabs.html" with active='membership' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Анкета — как на старом сайте (/association/privatemembership, /corporativemembership); заявки — в админке #}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-9">
+                <article class="cabinet-panel membership-form">
+                    <p class="course-detail-kind">{{ form.title }}</p>
+                    <h1 class="cabinet-title">{{ page_title }}</h1>
+                    <nav class="course-variant-switch membership-kinds" aria-label="Кто вступает">
+                        {% for key, title in kinds %}
+                        <a class="course-variant{% if key == kind %} is-current{% endif %}" href="{% url 'membership:apply_'|add:key %}"{% if key == kind %} aria-current="page"{% endif %}>{{ title }}</a>
+                        {% endfor %}
+                    </nav>
+                    <p class="cabinet-lead">Поля, отмеченные «по желанию», можно не заполнять — остальные обязательны.
+                        {% if not user.is_authenticated %}Если вы уже зарегистрированы, <a href="{% url 'cabinet:login' %}?next={{ request.path|urlencode }}">войдите</a> — часть анкеты заполнится сама.{% endif %}</p>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% for error in form.non_field_errors %}
+                        <div class="cabinet-message cabinet-message--error" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</div>
+                        {% endfor %}
+                        {% for title, row in form.groups %}
+                        <section class="cabinet-form-block">
+                            <h2 class="course-detail-h">{{ title }}</h2>
+                            <div class="row g-3">
+                                {% for field, width in row %}
+                                <div class="col-md-{{ width }}">{% include "cabinet/includes/field.html" %}</div>
+                                {% endfor %}
+                            </div>
+                        </section>
+                        {% endfor %}
+
+                        <div class="membership-trap" aria-hidden="true">
+                            <label for="{{ form.nickname.id_for_label }}">Не заполняйте это поле</label>{{ form.nickname }}
+                        </div>
+
+                        <div class="cabinet-consent form-check">
+                            {{ form.consent }}
+                            <label class="form-check-label" for="{{ form.consent.id_for_label }}">{{ form.consent.label }}</label>
+                            {% for error in form.consent.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <p class="membership-legal">
+                            В соответствии с требованиями ст. 9 Федерального закона Российской Федерации от 27 июля 2006 г.
+                            № 152-ФЗ «О персональных данных», подтверждаю своё согласие на обработку Международной Ассоциацией
+                            поддержки и развития раннего и грудничкового плавания (далее — Ассоциация) моих персональных данных
+                            в соответствии с Анкетой члена Ассоциации, в целях проверки на соответствие требованиям, предъявляемым
+                            Ассоциацией, при условии, что их обработка осуществляется уполномоченным Ассоциацией лицом, принявшим
+                            обязательства о сохранении конфиденциальности указанных сведений. Предоставляю Ассоциации право
+                            осуществлять все действия (операции) с моими персональными данными, включая сбор, систематизацию,
+                            накопление, хранение, обновление, изменение, использование, обезличивание, блокирование, уничтожение.
+                            Ассоциация вправе обрабатывать мои персональные данные посредством внесения их в электронную базу
+                            данных, включения в Единый реестр Ассоциации (списки, реестры) и другие отчётные формы. В случае выхода
+                            из Ассоциации я оставляю за собой право отозвать своё согласие посредством составления соответствующего
+                            письменного документа, который может быть направлен мной в адрес Ассоциации по почте заказным письмом
+                            с уведомлением о вручении либо вручён лично под расписку надлежаще уполномоченному представителю
+                            Ассоциации. В случае получения моего письменного заявления об отзыве настоящего согласия на обработку
+                            персональных данных Ассоциация обязана прекратить их обработку и исключить персональные данные из базы
+                            данных, в том числе электронной, за исключением сведений о фамилии, имени, отчестве, дате рождения.
+                        </p>
+                        <p class="membership-agree">
+                            Подача заявки означает ваше согласие с
+                            <a href="{% static 'documents/polozhenye-o-chlenstve.pdf' %}" target="_blank" rel="noopener">Положением о членстве</a> и
+                            <a href="{% static 'documents/ustav-mejzdunarodnoy-assoziazii-podderjzki-i-razvitiya-rannego-i-grudnichkovogo-plavaniya.pdf' %}" target="_blank" rel="noopener">Уставом</a>
+                            Международной ассоциации поддержки и развития раннего и грудничкового плавания.
+                        </p>
+                        <button type="submit" class="btn btn-primary cabinet-submit">Отправить заявку</button>
+                    </form>
+
+                    <p class="cabinet-switch">Есть вопросы по анкете? <a href="{% url 'core:page_content' slug='contacts' %}">Свяжитесь с Ассоциацией</a></p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/cabinet.js' %}"></script>{% endblock %}

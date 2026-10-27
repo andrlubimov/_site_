@@ -24,4 +24,10 @@ urlpatterns = [
     path('page/<slug:slug>/', views.page_content, name='page_content'),
     # «Сведения об образовательной организации» на старом сайте — /information/
     path('information/', RedirectView.as_view(url='/page/info/', permanent=True)),
+    # «Членство» и анкеты на старом сайте
+    path('association/membership', RedirectView.as_view(url='/page/membership/', permanent=True)),
+    path('association/privatemembership', RedirectView.as_view(pattern_name='membership:apply_person',
+                                                               permanent=True)),
+    path('association/corporativemembership', RedirectView.as_view(pattern_name='membership:apply_organization',
+                                                                   permanent=True)),
 ]

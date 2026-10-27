@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('cabinet/', include('cabinet.urls')),
     path('', include('cabinet.public_urls')),  # отложенные курсы — и без входа
+    path('', include('cabinet.membership_urls')),  # заявка на вступление в Ассоциацию
     path('', include('core.urls')),
 ]
 

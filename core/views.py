@@ -7,7 +7,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils.text import Truncator
-from . import info_page
+from . import info_page, membership_page
 from .about_defaults import ABOUT_SECTIONS
 from .filters import CourseFilterForm
 from .models import (
@@ -333,8 +333,8 @@ ASSOCIATION_HQ = {
     'name': 'Ассоциация раннего и грудничкового плавания',
     'city': 'Москва',
     'country': 'Россия',
-    'lat': 55.753215,
-    'lng': 37.622504,
+    'lat': 55.876348,  # улица Малыгина, 1 с2 — как метка на карте в «Контактах» (contact_defaults.MAP_POINT)
+    'lng': 37.701378,
     'kind': 'hq',
 }
 
@@ -485,6 +485,8 @@ def contacts(request):
         'page_title': 'Контакты',
         'info': info,
         'map_query': info.map_query or info.address,
+        # метка Ассоциации на карте: «долгота,широта» — так их ждут Яндекс Карты
+        'map_point': f'{info.map_lng},{info.map_lat}' if info.map_lat and info.map_lng else '',
     }
     return render(request, 'core/contacts.html', context)
 
@@ -502,10 +504,22 @@ def education_info(request):
     return render(request, 'core/education_info.html', context)
 
 
+def membership(request):
+    """«Членство в Ассоциации»: преимущества, взносы, анкеты на вступление — core/membership_page.py"""
+    context = {
+        'content': SimpleNamespace(slug='membership'),
+        'page_title': 'Членство в Ассоциации',
+        'page': membership_page,
+    }
+    return render(request, 'core/membership.html', context)
+
+
 def page_content(request, slug):
     """Страница с контентом"""
     if slug == 'about':
         return about(request)
+    if slug == 'membership':
+        return membership(request)
     if slug == 'contacts':
         return contacts(request)
     if slug == 'info':

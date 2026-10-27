@@ -299,6 +299,63 @@ class Enrollment(models.Model):
         return 'Завершён'
 
 
+class MembershipApplication(models.Model):
+    """Заявка на вступление в Ассоциацию — анкета со страницы «Членство» (как на старом сайте:
+    отдельно для физических и юридических лиц). Рассматривает администратор."""
+    KIND_PERSON = 'person'
+    KIND_ORGANIZATION = 'organization'
+    KIND_CHOICES = [(KIND_PERSON, 'Физическое лицо'), (KIND_ORGANIZATION, 'Юридическое лицо')]
+    STATUS_NEW = 'new'
+    STATUS_ACCEPTED = 'accepted'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = [(STATUS_NEW, 'Новая'), (STATUS_ACCEPTED, 'Принята'), (STATUS_REJECTED, 'Отклонена')]
+
+    kind = models.CharField('Кто вступает', max_length=20, choices=KIND_CHOICES)
+    status = models.CharField('Статус', max_length=20, choices=STATUS_CHOICES, default=STATUS_NEW)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Аккаунт в личном кабинете', null=True,
+                             blank=True, on_delete=models.SET_NULL, related_name='membership_applications',
+                             help_text='Если заявку подали, войдя в личный кабинет.')
+    created_at = models.DateTimeField('Подана', auto_now_add=True)
+    admin_comment = models.TextField('Комментарий администратора', blank=True)
+
+    # физическое лицо — о себе; юридическое — руководитель
+    last_name = models.CharField('Фамилия', max_length=150)
+    first_name = models.CharField('Имя', max_length=150)
+    middle_name = models.CharField('Отчество', max_length=150)
+    birth_year = models.PositiveSmallIntegerField('Год рождения', null=True, blank=True)
+    email = models.EmailField('Email')
+    phone = models.CharField('Телефон', max_length=20, blank=True)
+    country = models.CharField('Страна', max_length=100)
+    city = models.CharField('Город', max_length=100)
+    # физическое лицо
+    education = models.TextField('Образование', blank=True)
+    extra_education = models.TextField('Дополнительное образование', blank=True)
+    degree = models.CharField('Учёная степень, звание', max_length=255, blank=True)
+    work_places = models.TextField('Места работы за последние 5 лет', blank=True)
+    positions = models.TextField('Должности и работа за последние 5 лет', blank=True)
+    recommendation = models.TextField('Рекомендация члена Ассоциации', blank=True)
+    # юридическое лицо
+    organization = models.CharField('Организация', max_length=255, blank=True)
+    activity = models.TextField('Основные направления деятельности', blank=True)
+    employees = models.PositiveIntegerField('Сотрудников', null=True, blank=True)
+    head_position = models.CharField('Должность руководителя', max_length=255, blank=True)
+    address = models.CharField('Адрес', max_length=255, blank=True)
+    website = models.CharField('Сайт или страница в соцсетях', max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = 'Заявка на вступление'
+        verbose_name_plural = 'Заявки на вступление в Ассоциацию'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        name = f'{self.last_name} {self.first_name}'.strip()
+        return f'{self.organization} ({name})' if self.kind == self.KIND_ORGANIZATION else name
+
+    @property
+    def phone_display(self):
+        return format_phone(self.phone) if self.phone else ''
+
+
 def certificate_path(instance, filename):
     """Документ — под случайным именем: по адресу файл не подобрать"""
     return f'certificates/{uuid4().hex}{os.path.splitext(filename)[1].lower()}'

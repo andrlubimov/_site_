@@ -2,9 +2,10 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from .forms import keep_country
-from .models import Certificate, Enrollment, Membership, Profile, add_years
+from .models import Certificate, Enrollment, Membership, MembershipApplication, Profile, add_years
 from .phone import country_name_choices
 
 
@@ -133,3 +134,50 @@ class CertificateAdmin(admin.ModelAdmin):
     list_select_related = ['user', 'course']
     autocomplete_fields = ['user', 'course']
     date_hierarchy = 'issued_on'
+
+
+@admin.register(MembershipApplication)
+class MembershipApplicationAdmin(admin.ModelAdmin):
+    """Заявки на вступление со страницы «Членство». Принятая заявка от аккаунта личного кабинета —
+    действие «Принять и оформить членство»; без аккаунта членство оформляется вручную."""
+    list_display = ['created_at', 'kind', '__str__', 'email', 'phone_display', 'city', 'status']
+    list_filter = ['status', 'kind']
+    search_fields = ['last_name', 'first_name', 'organization', 'email', 'city']
+    list_editable = ['status']
+    readonly_fields = ['created_at', 'user']
+    actions = ['accept']
+
+    PERSON_FIELDS = ['birth_year', 'education', 'extra_education', 'degree', 'work_places', 'positions',
+                     'recommendation']
+    ORGANIZATION_FIELDS = ['organization', 'activity', 'employees', 'head_position', 'address', 'website']
+
+    def get_fieldsets(self, request, obj=None):
+        about = self.ORGANIZATION_FIELDS if obj and obj.kind == MembershipApplication.KIND_ORGANIZATION \
+            else self.PERSON_FIELDS
+        return [
+            (None, {'fields': ['kind', 'status', 'admin_comment', 'created_at', 'user']}),
+            ('Контакты', {'fields': ['last_name', 'first_name', 'middle_name', 'email', 'phone', 'country', 'city']}),
+            ('Анкета', {'fields': about if obj else self.PERSON_FIELDS + self.ORGANIZATION_FIELDS}),
+        ]
+
+    @admin.display(description='Телефон')
+    def phone_display(self, obj):
+        return obj.phone_display or '—'
+
+    @admin.action(description='Принять и оформить членство (с сегодняшнего дня)')
+    def accept(self, request, queryset):
+        made = 0
+        for application in queryset:
+            application.status = MembershipApplication.STATUS_ACCEPTED
+            application.save(update_fields=['status'])
+            if application.user_id:
+                membership, created = Membership.objects.get_or_create(
+                    user_id=application.user_id, defaults={'start_date': timezone.localdate()})
+                if not created and not membership.is_member:
+                    membership.status, membership.start_date, membership.next_fee_date = (
+                        Membership.STATUS_ACTIVE, timezone.localdate(), None)
+                    membership.save()
+                made += 1
+        self.message_user(request, f'Принято заявок: {queryset.count()}; членство оформлено: {made} '
+                                   '(у заявок без аккаунта — вручную).', messages.SUCCESS)
+

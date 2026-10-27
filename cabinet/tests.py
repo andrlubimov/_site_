@@ -14,7 +14,9 @@ from PIL import Image
 from core.models import Course, CourseCard, CourseSchedule, Specialist
 from core.tests import make_course
 
-from .models import Certificate, Enrollment, Membership, PostponedCourse, Profile, add_years
+from .models import (
+    Certificate, Enrollment, Membership, MembershipApplication, PostponedCourse, Profile, add_years,
+)
 from .postponed import SESSION_KEY
 from .phone import COUNTRY_NAMES, POPULAR_REGIONS, country_choices, format_phone, parse_phone, split_phone, to_e164
 
@@ -884,4 +886,96 @@ class TeacherMembersTests(MediaTestCase):
         self.client.post('/admin/cabinet/membership/', {'action': 'show_on_site', '_selected_action': [membership.pk]})
         membership.refresh_from_db()
         self.assertTrue(membership.show_on_site)
+
+
+class MembershipPageTests(TestCase):
+    """«Членство в Ассоциации» со старого сайта и анкеты на вступление"""
+
+    PERSON = {
+        'last_name': 'Иванова', 'first_name': 'Мария', 'middle_name': 'Сергеевна', 'birth_year': '1990',
+        'email': 'maria@example.com', 'phone_country': 'RU', 'phone_number': '',
+        'education': 'РГУФК, 2012', 'extra_education': '', 'degree': '',
+        'work_places': 'Бассейн «Дельфин»', 'positions': 'Инструктор', 'country': 'Россия', 'city': 'Москва',
+        'recommendation': 'Елена Нури', 'consent': 'on', 'nickname': '',
+    }
+    ORGANIZATION = {
+        'organization': 'Аквaклуб «Капелька»', 'activity': 'Грудничковое плавание', 'country': 'Казахстан',
+        'city': 'Алматы', 'employees': '12', 'last_name': 'Петрова', 'first_name': 'Анна', 'middle_name': 'Ивановна',
+        'head_position': 'Директор', 'address': 'ул. Абая, 1', 'email': 'club@example.com',
+        'phone_country': 'KZ', 'phone_number': '701 234 5678', 'website': '', 'consent': 'on', 'nickname': '',
+    }
+
+    def test_page_content(self):
+        response = self.client.get('/page/membership/')
+        self.assertContains(response, '<h1 class="header-page-title">Членство в Ассоциации</h1>', html=True)
+        for text in ('В члены Ассоциации принимаются физические и юридические лица',
+                     'Преимущества членства в Ассоциации', 'юридическую помощь', '3 500 ₽', '35 000 ₽',
+                     '10% — 10 лет', 'Размеры членских взносов на 2026 год', 'documents/polozhenye-o-chlenstve.pdf'):
+            self.assertContains(response, text)
+        self.assertContains(response, 'href="/membership/apply/person/"')
+        self.assertContains(response, 'href="/membership/apply/organization/"')
+
+    def test_regulations_file_exists(self):
+        from django.contrib.staticfiles import finders
+        self.assertTrue(finders.find('documents/polozhenye-o-chlenstve.pdf'))
+
+    def test_old_site_addresses(self):
+        self.assertRedirects(self.client.get('/association/membership'), '/page/membership/', status_code=301)
+        self.assertRedirects(self.client.get('/association/privatemembership'), '/membership/apply/person/',
+                             status_code=301)
+        self.assertRedirects(self.client.get('/association/corporativemembership'),
+                             '/membership/apply/organization/', status_code=301)
+
+    def test_person_application(self):
+        page = self.client.get('/membership/apply/person/')
+        self.assertContains(page, 'Физические лица')
+        self.assertContains(page, '152-ФЗ')
+        response = self.client.post('/membership/apply/person/', self.PERSON)
+        self.assertRedirects(response, '/membership/apply/done/')
+        application = MembershipApplication.objects.get()
+        self.assertEqual((application.kind, application.status, application.last_name, application.city,
+                          application.phone, application.user),
+                         ('person', 'new', 'Иванова', 'Москва', '', None))
+        self.assertContains(self.client.get('/membership/apply/done/'), 'Заявка отправлена')
+
+    def test_person_required_fields_and_consent(self):
+        data = dict(self.PERSON, education='', recommendation='')
+        del data['consent']
+        response = self.client.post('/membership/apply/person/', data)
+        errors = response.context['form'].errors
+        self.assertEqual(set(errors), {'education', 'recommendation', 'consent'})
+        self.assertFalse(MembershipApplication.objects.exists())
+
+    def test_organization_application(self):
+        response = self.client.post('/membership/apply/organization/', self.ORGANIZATION)
+        self.assertRedirects(response, '/membership/apply/done/')
+        application = MembershipApplication.objects.get()
+        self.assertEqual((application.kind, application.organization, application.phone, application.employees),
+                         ('organization', 'Аквaклуб «Капелька»', '+77012345678', 12))
+        data = dict(self.ORGANIZATION, phone_number='')
+        self.assertTrue(self.client.post('/membership/apply/organization/', data).context['form'].errors['phone'])
+
+    def test_spam_trap(self):
+        response = self.client.post('/membership/apply/person/', dict(self.PERSON, nickname='bot'))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(MembershipApplication.objects.exists())
+
+    def test_logged_in_user_gets_prefilled_form_and_membership_on_accept(self):
+        user = make_member()
+        Profile.objects.filter(user=user).update(city='Смоленск', country='Россия', middle_name='Сергеевна')
+        self.client.force_login(user)
+        page = self.client.get('/membership/apply/person/')
+        for value in ('value="Иванова"', 'value="Смоленск"', 'value="1990"', 'value="maria@example.com"'):
+            self.assertContains(page, value)
+        self.client.post('/membership/apply/person/', self.PERSON)
+        application = MembershipApplication.objects.get()
+        self.assertEqual(application.user, user)
+        self.client.force_login(User.objects.create_superuser('admin', 'admin@example.com', PASSWORD))
+        self.assertEqual(self.client.get(f'/admin/cabinet/membershipapplication/{application.pk}/change/').status_code,
+                         200)
+        self.client.post('/admin/cabinet/membershipapplication/',
+                         {'action': 'accept', '_selected_action': [application.pk]})
+        application.refresh_from_db()
+        self.assertEqual(application.status, 'accepted')
+        self.assertEqual(user.membership.start_date, timezone.localdate())
 

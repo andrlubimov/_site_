@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
 
-from .contact_defaults import CONTACT_DEFAULTS
+from .contact_defaults import CONTACT_DEFAULTS, MAP_POINT
 from .utils import format_date_range, format_day_list, plural_ru, sentence_case, slugify_ru
 
 
@@ -708,7 +708,14 @@ class ContactInfo(models.Model):
     vk_url = models.URLField('ВКонтакте', blank=True)
     telegram_url = models.URLField('Telegram', blank=True)
     map_query = models.CharField('Адрес для карты', max_length=255, blank=True,
-                                 help_text='Что искать на Яндекс Картах. Если пусто — карта по адресу выше.')
+                                 help_text='Что искать на Яндекс Картах, если не указаны координаты метки ниже. '
+                                           'Если пусто — карта по адресу выше.')
+    map_lat = models.DecimalField(
+        'Метка на карте: широта', max_digits=9, decimal_places=6, null=True, blank=True,
+        help_text='Координаты здания — на карте ставится метка Ассоциации. Узнать их: Яндекс Карты → '
+                  'правый клик по зданию → «Что здесь?» (первое число — широта, второе — долгота).',
+    )
+    map_lng = models.DecimalField('Метка на карте: долгота', max_digits=9, decimal_places=6, null=True, blank=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)
 
     class Meta:
@@ -725,4 +732,4 @@ class ContactInfo(models.Model):
             info = cls.objects.first()
         except DatabaseError:
             info = None
-        return info or SimpleNamespace(**CONTACT_DEFAULTS)
+        return info or SimpleNamespace(**CONTACT_DEFAULTS, **MAP_POINT)

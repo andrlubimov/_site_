@@ -1907,6 +1907,169 @@ body:has(.footer-wave) main > section:last-child {
 }
 
 /* ============================================================
+   MEMBERSHIP (/page/membership/) — «Членство в Ассоциации» и анкеты на вступление
+   ============================================================ */
+.membership-intro {
+    max-width: 860px;
+    margin: 0 auto 2.5rem;
+    font-size: clamp(1.1rem, 2vw, 1.3rem);
+    line-height: 1.55;
+    text-align: center;
+    color: #fff;
+}
+
+.membership-h {
+    margin-bottom: 1.5rem;
+    font-size: clamp(1.3rem, 2.6vw, 1.75rem);
+    font-weight: 700;
+    text-align: center;
+    color: #fff;
+}
+
+.membership-benefit,
+.membership-plan {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem 1.6rem;
+    border-radius: 22px;
+    background: #fff;
+    color: var(--text);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.membership-benefit p {
+    margin: 0;
+    font-size: 0.93rem;
+    line-height: 1.55;
+    color: var(--muted);
+}
+
+.membership-benefit-title,
+.membership-plan-title {
+    margin: 0.85rem 0 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.membership-plan {
+    align-items: flex-start;
+    padding: 1.75rem 2rem 2rem;
+}
+
+.membership-plan-label {
+    margin: 0.5rem 0 0.25rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.membership-plan-fee {
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--ocean-800);
+}
+
+.membership-plan-fee small {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.membership-plan-discounts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    list-style: none;
+}
+
+.membership-plan-btn {
+    width: 100%;
+    margin-top: auto;
+    font-weight: 600;
+}
+
+.membership-note {
+    margin: 1rem 0 2rem;
+    text-align: center;
+    font-size: 0.88rem;
+    color: rgba(230, 246, 250, 0.8);
+}
+
+.membership-docs {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 1.5rem 1.75rem;
+    border-radius: 22px;
+    background: #fff;
+    color: var(--text);
+}
+
+.membership-cabinet {
+    margin: 1rem 0 0;
+    font-size: 0.92rem;
+    color: var(--muted);
+}
+
+.membership-cabinet .bi {
+    color: var(--ocean-700);
+}
+
+/* анкета */
+.membership-form {
+    margin-bottom: 0;
+}
+
+.membership-kinds {
+    margin: 0.25rem 0 1rem;
+}
+
+.membership-trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.membership-legal {
+    margin: 0 0 1rem;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    text-align: justify;
+    color: var(--muted);
+}
+
+.membership-agree {
+    font-size: 0.9rem;
+}
+
+.membership-done {
+    text-align: center;
+}
+
+.membership-done .course-dir-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+}
+
+.membership-done-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+/* ============================================================
    POSTPONED (/education/postponed/) — отложенные курсы без входа
    ============================================================ */
 .postponed-note {

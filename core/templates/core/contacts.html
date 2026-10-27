@@ -74,8 +74,14 @@
                             {% if info.directions %}<p><i class="bi bi-bus-front"></i> {{ info.directions }}</p>{% endif %}
                         </div>
                         <div class="contacts-map">
+                            {# есть координаты — красная метка точно на здании; нет — поиск по адресу #}
+                            {% if map_point %}
+                            <iframe src="https://yandex.ru/map-widget/v1/?ll={{ map_point }}&amp;z=17&amp;pt={{ map_point }},pm2rdl"
+                                    title="Карта: {{ info.address }}" loading="lazy" allowfullscreen></iframe>
+                            {% else %}
                             <iframe src="https://yandex.ru/map-widget/v1/?text={{ map_query|urlencode }}&amp;z=16"
                                     title="Карта: {{ info.address }}" loading="lazy" allowfullscreen></iframe>
+                            {% endif %}
                         </div>
                     </section>
                 </article>

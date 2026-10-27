@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <p class="header-page-title">Вступление в Ассоциацию</p>
+    <div class="header-tabs">
+        {% include "core/includes/association_tabs.html" with active='membership' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <article class="course-detail membership-done">
+                    <span class="course-dir-icon" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
+                    <h1 class="course-detail-title">Заявка отправлена</h1>
+                    <p>Спасибо! Ассоциация рассмотрит вашу заявку на вступление и свяжется с вами по указанным email
+                        или телефону.</p>
+                    <div class="membership-done-links">
+                        <a class="btn btn-primary" href="{% url 'core:page_content' slug='membership' %}">О членстве</a>
+                        <a class="btn btn-outline-primary" href="{% url 'core:courses_list' %}">Курсы Ассоциации</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

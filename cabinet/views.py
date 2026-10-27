@@ -16,7 +16,9 @@ from django.views.decorators.http import require_POST
 from core.models import Course
 from core.views import cards_found_label, course_list_context, upcoming_schedules
 
-from .forms import LoginForm, PasswordForm, ProfileForm, RegistrationForm
+from .forms import (
+    LoginForm, OrganizationApplicationForm, PasswordForm, PersonApplicationForm, ProfileForm, RegistrationForm,
+)
 from .models import Certificate, Enrollment
 from .postponed import postponed_cards, postponed_keys, toggle
 
@@ -340,3 +342,26 @@ def postponed_toggle(request):
                                            require_https=request.is_secure()):
         next_url = reverse('postponed:list')
     return redirect(next_url)
+
+
+# --- Заявка на вступление в Ассоциацию (страница «Членство»; адреса — membership_urls.py)
+
+APPLICATION_FORMS = {'person': PersonApplicationForm, 'organization': OrganizationApplicationForm}
+
+
+def membership_apply(request, kind):
+    """Анкета на вступление: физические или юридические лица. Можно и без входа в личный кабинет."""
+    form_class = APPLICATION_FORMS[kind]
+    form = form_class(request.POST or None, user=request.user)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('membership:done')
+    return render(request, 'cabinet/membership_apply.html', {
+        'form': form, 'kind': kind, 'kinds': [(key, cls.title) for key, cls in APPLICATION_FORMS.items()],
+        'page_title': 'Заявка на вступление в Ассоциацию',
+    })
+
+
+def membership_apply_done(request):
+    return render(request, 'cabinet/membership_apply_done.html', {'page_title': 'Заявка отправлена'})
+
