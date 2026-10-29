@@ -51,20 +51,16 @@
 <!-- Курсы: несколько карточек, как на странице «Программы» -->
 <section class="py-5 ocean-slice depth-1">
     <div class="container">
-        <div class="sea-head">
+        <div class="sea-head text-center">
             <h2 class="h3 mb-3">Обучающие программы</h2>
-            <div class="d-flex flex-wrap gap-3 mb-3">
-                <a href="{% url 'core:courses_list' %}" class="text-decoration-none">Программы</a>
-                <span>•</span>
-                <a href="{% url 'core:page_content' slug='timetable' %}" class="text-decoration-none">Расписание курсов и семинаров</a>
-                <span>•</span>
-                <a href="{% url 'core:teachers_list' %}" class="text-decoration-none">Преподаватели</a>
-                <span>•</span>
-                <a href="{% url 'core:page_content' slug='seminars' %}" class="text-decoration-none">Выездные семинары</a>
-                <span>•</span>
-                <a href="{% url 'core:page_content' slug='why_us' %}" class="text-decoration-none">Почему стоит учиться у нас?</a>
-            </div>
-            <p>{{ courses_intro }}</p>
+            <nav class="sea-links" aria-label="Раздел «Курсы»">
+                <a class="sea-link" href="{% url 'core:courses_list' %}">Программы</a>
+                <a class="sea-link" href="{% url 'core:page_content' slug='timetable' %}">Расписание курсов и семинаров</a>
+                <a class="sea-link" href="{% url 'core:teachers_list' %}">Преподаватели</a>
+                <a class="sea-link" href="{% url 'core:page_content' slug='seminars' %}">Выездные семинары</a>
+                <a class="sea-link" href="{% url 'core:page_content' slug='why_us' %}">Почему стоит учиться у нас?</a>
+            </nav>
+            <p class="lead">{{ courses_intro }}</p>
         </div>
 
         {% if cards %}
@@ -116,12 +112,11 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12 text-center mb-4">
-                <h2 class="h3">Членство в ассоциации</h2>
-                <div class="d-flex justify-content-center gap-3 mb-3">
-                    <a href="{% url 'core:page_content' slug='membership' %}" class="text-decoration-none">Преимущества для членов Ассоциации</a>
-                    <span>•</span>
-                    <a href="{% url 'core:page_content' slug='membership_rules' %}" class="text-decoration-none">Правила и условия</a>
-                </div>
+                <h2 class="h3 mb-3">Членство в ассоциации</h2>
+                <nav class="sea-links" aria-label="Членство">
+                    <a class="sea-link" href="{% url 'core:page_content' slug='membership' %}#benefits">Преимущества для членов Ассоциации</a>
+                    <a class="sea-link" href="{% url 'core:page_content' slug='membership' %}#join">Правила и условия</a>
+                </nav>
                 <p class="lead">
                     Мы рады видеть в членах ассоциации людей увлеченных, творческих и любящих детей.
                     Готовых поднимать уровень своего профессионализма, учиться, обмениваться опытом,

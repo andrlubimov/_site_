@@ -13,95 +13,95 @@
 {% endblock %}
 
 {% block content %}
-{# Тексты блоков редактируются в админке: «Страница «Об Ассоциации»» #}
+{% comment %}Тексты блоков — в админке: «Страница «Об Ассоциации»»; документы и ссылки — core/about_page.py.
+Как «Сведения об образовательной организации»: слева оглавление, справа белые блоки.{% endcomment %}
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
 
-<!-- 1. Вступление -->
-{% with s=sections.intro %}
-<section class="about-section about-intro">
-    <div class="container about-container">
-        {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
-        <div class="about-lead">{{ s.content|linebreaks }}</div>
-        <img src="{% static 'divider.png' %}" alt="" class="about-wave">
-    </div>
-</section>
-{% endwith %}
+            <!-- Оглавление -->
+            <aside class="col-lg-3">
+                <nav class="course-aside info-toc" aria-label="Разделы страницы">
+                    <p class="info-toc-title">Разделы</p>
+                    <ol>
+                        {% for anchor, title in toc %}
+                        <li><a href="#{{ anchor }}">{{ title }}</a></li>
+                        {% endfor %}
+                    </ol>
+                </nav>
+            </aside>
 
-<!-- 2. Цели и задачи + 3. Направления деятельности -->
-<section class="about-section pt-0">
-    <div class="container about-container">
-        {% with s=sections.goals %}
-        <div class="about-block">
-            {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
-            <div class="about-text">{{ s.content|linebreaks }}</div>
-        </div>
-        {% endwith %}
+            <div class="col-lg-9 info-sections">
 
-        {% with s=sections.directions %}
-        <div class="about-block">
-            {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
-            <div class="about-text">{{ s.content|linebreaks }}</div>
-        </div>
-        {% endwith %}
-    </div>
-</section>
+                <!-- 1. Вступление -->
+                {% with s=sections.intro %}
+                <section class="course-detail info-section about-intro" id="about">
+                    <h2 class="course-detail-h">{{ s.title|default:"Об Ассоциации" }}</h2>
+                    {{ s.content|linebreaks }}
+                </section>
+                {% endwith %}
 
-<!-- 4. Образовательная и просветительская деятельность -->
-{% with s=sections.education %}
-<section class="about-section about-education" style="--edu-bg: url('{% static 'about-edu.jpg' %}');">
-    <div class="container about-container">
-        {% if s.title %}<h2 class="about-title">{{ s.title }}</h2>{% endif %}
-        <div class="about-pills">
-            <a href="{% url 'core:courses_list' %}" class="about-pill">Программы</a>
-            <a href="{% url 'core:page_content' slug='timetable' %}" class="about-pill">Расписание курсов и семинаров</a>
-            <a href="{% url 'core:page_content' slug='seminars' %}" class="about-pill">Выездные семинары</a>
-        </div>
-        <div class="about-text text-center">{{ s.content|linebreaks }}</div>
+                <!-- 2. Цели и задачи: пункты «1. …» — нумерованным списком -->
+                {% with s=sections.goals %}
+                <section class="course-detail info-section" id="goals">
+                    <h2 class="course-detail-h">{{ s.title }}</h2>
+                    {% if goals %}
+                    <ol class="about-goals">
+                        {% for goal in goals %}<li>{{ goal|linebreaksbr }}</li>{% endfor %}
+                    </ol>
+                    {% else %}
+                    {{ s.content|linebreaks }}
+                    {% endif %}
+                </section>
+                {% endwith %}
 
-        <div class="about-docs">
-            <div class="about-thumbs">
-                <a href="{% static 'documents/lizenziya-na-osushzestvlenie-obrazovatelnoy-deyatelnosti.pdf' %}" target="_blank" rel="noopener">
-                    <img src="{% static 'documents/license-1.thumb.jpg' %}" alt="Лицензия на осуществление образовательной деятельности">
-                </a>
-                <a href="{% static 'documents/lizenziya-na-osushzestvlenie-obrazovatelnoy-deyatelnosti-prilozhenye.pdf' %}" target="_blank" rel="noopener">
-                    <img src="{% static 'documents/license-1-addition.thumb.jpg' %}" alt="Приложение к лицензии">
-                </a>
+                <!-- 3. Направления деятельности -->
+                {% with s=sections.directions %}
+                <section class="course-detail info-section" id="directions">
+                    <h2 class="course-detail-h">{{ s.title }}</h2>
+                    {{ s.content|linebreaks }}
+                </section>
+                {% endwith %}
+
+                <!-- 4. Образовательная и просветительская деятельность -->
+                {% with s=sections.education %}
+                <section class="course-detail info-section" id="education">
+                    <h2 class="course-detail-h">{{ s.title }}</h2>
+                    <ul class="about-links">
+                        {% for title, url in education_links %}
+                        <li><a class="course-chip" href="{{ url }}">{{ title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    {{ s.content|linebreaks }}
+                    <ul class="info-licenses">
+                        {% for item in page.EDUCATION_THUMBS %}
+                        <li><a href="{% static item.path %}" target="_blank" rel="noopener"><img src="{% static item.thumb %}" alt="" loading="lazy"><span>{{ item.title }}</span></a></li>
+                        {% endfor %}
+                    </ul>
+                    <ul class="info-docs">
+                        {% for d in page.EDUCATION_DOCS %}{% include "core/includes/doc_row.html" %}{% endfor %}
+                    </ul>
+                </section>
+                {% endwith %}
+
+                <!-- 5. Документы -->
+                {% with s=sections.documents %}
+                <section class="course-detail info-section" id="documents">
+                    <h2 class="course-detail-h">{{ s.title }}</h2>
+                    {% if s.content %}{{ s.content|linebreaks }}{% endif %}
+                    <ul class="info-licenses">
+                        {% for item in page.REGISTRATION_THUMBS %}
+                        <li><a href="{% static item.path %}" target="_blank" rel="noopener"><img src="{% static item.thumb %}" alt="" loading="lazy"><span>{{ item.title }}</span></a></li>
+                        {% endfor %}
+                    </ul>
+                    <ul class="info-docs">
+                        {% include "core/includes/doc_row.html" with d=page.CHARTER %}
+                    </ul>
+                </section>
+                {% endwith %}
+
             </div>
-            <ul class="about-files">
-                <li><a href="{% static 'documents/polojzenie-ob-okazanii-platnih-obrazovatelnih-uslug-v-mejzdunarodnoy-assoziazii-podderjzki-i-razvitiya-rannego-i-grudnichkovogo-plavaniya.pdf' %}" target="_blank" rel="noopener">Положение об оказании платных образовательных услуг в Международной ассоциации поддержки и развития раннего и грудничкового плавания</a></li>
-                <li><a href="{% static 'documents/dogovor-ob-okazanii-platnih-obrazovatelnih-uslug.pdf' %}" target="_blank" rel="noopener">Договор об оказании платных образовательных услуг (физические лица)</a></li>
-                <li><a href="{% static 'documents/dogovor-ob-okazanii-platnih-obrazovatelnih-uslug-urliza.pdf' %}" target="_blank" rel="noopener">Договор об оказании платных образовательных услуг (юридические лица)</a></li>
-                <li><a href="{% static 'documents/pravila-priema-slushateley-na-obuchenie-po-programmam-dopolnitelnogo-professionalnogo-obrazovaniya.pdf' %}" target="_blank" rel="noopener">Правила приема слушателей на обучение по программам дополнительного профессионального образования</a></li>
-            </ul>
-        </div>
-
-        <div class="text-center">
-            <a href="{% url 'core:page_content' slug='info' %}" class="about-pill">Сведения об образовательной организации</a>
         </div>
     </div>
 </section>
-{% endwith %}
-
-<!-- 5. Документы -->
-{% with s=sections.documents %}
-<section class="about-section">
-    <div class="container about-container">
-        {% if s.title %}<h2 class="about-title about-title--left">{{ s.title }}</h2>{% endif %}
-        {% if s.content %}<div class="about-text">{{ s.content|linebreaks }}</div>{% endif %}
-        <div class="about-thumbs">
-            <a href="{% static 'documents/svidetelstvo-o-registraziy-organyzaziy.pdf' %}" target="_blank" rel="noopener">
-                <img src="{% static 'documents/svidetelstvo-1.thumb.jpg' %}" alt="Свидетельство о регистрации организации">
-            </a>
-            <a href="{% static 'documents/svidetelstvo-o-gosregistraziy-yridicheskogo-litza.pdf' %}" target="_blank" rel="noopener">
-                <img src="{% static 'documents/svidetelstvo-2.thumb.jpg' %}" alt="Свидетельство о государственной регистрации юридического лица">
-            </a>
-            <a href="{% static 'documents/svidetelstvo-o-postanovke-na-uchet-assoziaziya.pdf' %}" target="_blank" rel="noopener">
-                <img src="{% static 'documents/svidetelstvo-3.thumb.jpg' %}" alt="Свидетельство о постановке на учет">
-            </a>
-        </div>
-        <ul class="about-files">
-            <li><a href="{% static 'documents/ustav-mejzdunarodnoy-assoziazii-podderjzki-i-razvitiya-rannego-i-grudnichkovogo-plavaniya.pdf' %}" target="_blank" rel="noopener">Устав Международной ассоциации поддержки и развития раннего и грудничкового плавания</a></li>
-        </ul>
-    </div>
-</section>
-{% endwith %}
 {% endblock %}

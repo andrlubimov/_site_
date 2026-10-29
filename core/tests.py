@@ -105,6 +105,25 @@ class AboutPageTests(TestCase):
         self.assertContains(response, 'Направления деятельности')
 
 
+class WhyUsPageTests(TestCase):
+    """«Почему стоит учиться у нас» со старого сайта /education/reason"""
+
+    def test_page_shows_seven_reasons_with_links(self):
+        response = self.client.get('/page/why_us/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '7 причин учиться именно у нас')
+        self.assertContains(response, 'class="why-reason"', count=7)
+        for text in ['Большой стаж преподавательской работы', 'Лицензированный продукт', 'Кадры решают всё',
+                     'Выездные семинары и курсы']:
+            self.assertContains(response, text)
+        for url in ['/page/info/', '/education/teachers/', '/partners/', '/education/courses/', '/page/seminars/']:
+            self.assertContains(response, f'href="{url}"')
+
+    def test_tab_in_courses_section(self):
+        response = self.client.get('/education/courses/')
+        self.assertContains(response, 'href="/page/why_us/" class="header-tab-btn"')
+
+
 class TeacherModelTests(TestCase):
     def test_str_returns_last_first_name(self):
         teacher = Teacher(first_name='Иван', last_name='Петров', patronymic='Сергеевич')
@@ -575,13 +594,15 @@ class TimetableCalendarTests(TestCase):
         self.assertEqual(props['price'], '9\u00a0000\u00a0₽')
         self.assertEqual(props['hours'], '24 учебных часа')
 
-    def test_distance_courses_listed_separately(self):
+    def test_distance_courses_not_in_timetable(self):
         distance = make_course(title='Дистанционный курс', slug='dist', course_type=Course.TYPE_DISTANCE)
         CourseSchedule.objects.create(course=distance, format='group', access_days=14)
         response = self.client.get('/page/timetable/')
-        self.assertEqual(response.context['calendar_events'], [])
-        self.assertContains(response, 'Дистанционное обучение')
-        self.assertContains(response, 'Доступ 14 дней')
+        self.assertEqual(response.context['calendar_events'], [])  # дат нет — в расписании нет
+        self.assertNotContains(response, 'Дистанционный курс')
+        self.assertNotContains(response, 'Доступ 14 дней')
+        self.assertNotContains(response, 'value="distance"')  # и в фильтре «Формат» — тоже
+        self.assertContains(self.client.get('/education/courses/'), 'value="distance"')  # на «Программах» — есть
 
     def test_inactive_course_hidden(self):
         CourseSchedule.objects.create(course=self.course, format='group', start_date=date(2026, 5, 5),
@@ -842,7 +863,7 @@ class CourseFilterTests(TestCase):
         self.assertContains(response, 'href="/education/teachers/anna-shvydko/"')
         self.assertContains(response, 'name="type"')
 
-    def test_timetable_filters_calendar_and_distance_list(self):
+    def test_timetable_filters_calendar(self):
         CourseSchedule.objects.create(course=self.online, format='group', start_date=date(2026, 11, 3),
                                       end_date=date(2026, 11, 3))
         CourseSchedule.objects.create(course=self.pool, format='group', start_date=date(2026, 11, 10),
@@ -850,10 +871,8 @@ class CourseFilterTests(TestCase):
         CourseSchedule.objects.create(course=self.distance, format='group', access_days=30)
         response = self.client.get('/page/timetable/?type=online')
         self.assertEqual([e['title'] for e in response.context['calendar_events']], ['Онлайн-курс'])
-        self.assertEqual(response.context['distance_schedules'], [])
         response = self.client.get('/page/timetable/')
-        self.assertEqual(len(response.context['calendar_events']), 2)
-        self.assertEqual(len(response.context['distance_schedules']), 1)
+        self.assertEqual(len(response.context['calendar_events']), 2)  # дистанционного нет
         self.assertContains(response, 'course-filters')
 
 

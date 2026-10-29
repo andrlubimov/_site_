@@ -48,33 +48,13 @@
                     {% endif %}
                 </div>
                 {{ calendar_events|json_script:"course-calendar-events" }}
-
-                {% if distance_schedules %}
-                <div class="timetable-distance bg-white p-3 p-md-4 rounded shadow-sm mt-4">
-                    <h2 class="timetable-distance-title">Дистанционное обучение</h2>
-                    <p class="text-muted">Дистанционные курсы проходят без фиксированных дат — для каждого указан срок доступа к материалам.</p>
-                    <ul class="timetable-distance-list">
-                        {% for s in distance_schedules %}
-                        <li>
-                            <a href="{% url 'core:course_detail' slug=s.course.slug %}">{{ s.course.title }}</a>
-                            <span class="timetable-distance-meta">
-                                {% if s.date_label %}<span>{{ s.date_label }}</span>{% endif %}
-                                <span>{{ s.course.hours_label }}</span>
-                                {% if s.price %}<span class="course-detail-price">{{ s.price|rub }}</span>{% endif %}
-                            </span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-                {% endif %}
-
-
+                {% else %}
                 <div class="mt-4">
                     <a href="{% url 'core:index' %}" class="btn btn-outline-primary">
                         <i class="bi bi-arrow-left"></i> Вернуться на главную
                     </a>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>

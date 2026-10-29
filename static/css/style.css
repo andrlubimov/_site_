@@ -928,157 +928,74 @@ body:has(.footer-wave) main > section:last-child {
 }
 
 /* ============================================================
-   ABOUT PAGE (/page/about/)
+   ABOUT PAGE (/page/about/) — как «Сведения об организации»: слева оглавление (.info-toc),
+   справа белые блоки (.course-detail.info-section); документы — строками (.info-docs)
    ============================================================ */
-.about-section {
-    padding: 3rem 0;
-    color: var(--sea-text);
-}
-
-.about-container {
-    max-width: 920px;
-}
-
-.about-title {
-    font-size: clamp(1.35rem, 2.6vw, 1.8rem);
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    text-align: center;
-    color: #fff;
-    margin-bottom: 1.4rem;
-}
-
-.about-title--left {
-    text-align: left;
-}
-
-.about-block + .about-block {
-    margin-top: 3rem;
-}
-
-.about-lead {
-    font-size: 1.12rem;
-    line-height: 1.55;
-    text-align: center;
-}
-
-.about-text {
-    font-size: 0.95rem;
-    line-height: 1.6;
-}
-
-.about-text:not(.text-center) p {
-    text-align: justify;
-    hyphens: auto;
-}
-
-.about-wave {
-    display: block;
-    width: min(240px, 60%);
-    height: auto;
-    margin: 2.2rem auto 0;
-}
-
-/* Блок 4: фото проступает сквозь воду */
-.about-education {
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--top) 88%, transparent),
-                        color-mix(in srgb, var(--bot) 92%, transparent)),
-        var(--edu-bg) center / cover;
-}
-
-.about-pills {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.6rem;
-    margin-bottom: 1.6rem;
-}
-
-.about-pill {
-    display: inline-block;
-    padding: 0.32rem 1.1rem;
-    border: 1px solid rgba(174, 239, 255, 0.55);
-    border-radius: 25px;
-    color: var(--sea-link);
-    font-size: 0.72rem;
+.about-intro p:first-of-type {
+    font-size: 1.15rem;
     font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    text-decoration: none;
-    background: rgba(174, 239, 255, 0.1);
-    transition: all 0.2s;
+    line-height: 1.5;
+    color: var(--ink);
 }
 
-.about-pill:hover {
-    border-color: var(--sea-link);
-    background: rgba(174, 239, 255, 0.22);
-    color: #fff;
-}
-
-.about-docs {
+/* цели и задачи — пункты с номером в кружке */
+.about-goals {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 1.5rem 2.5rem;
-    margin: 2rem 0;
-}
-
-.about-thumbs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
-}
-
-.about-thumbs img {
-    display: block;
-    height: 180px;
-    width: auto;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.about-thumbs a:hover img {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
-}
-
-.about-files {
-    list-style: none;
+    flex-direction: column;
+    gap: 0.6rem;
     margin: 0;
     padding: 0;
-    flex: 1 1 320px;
+    list-style: none;
+    counter-reset: goal;
 }
 
-.about-files li {
+.about-goals li {
     position: relative;
-    padding-left: 2rem;
-    font-size: 0.92rem;
-    line-height: 1.4;
+    padding: 0.75rem 1rem 0.75rem 3.4rem;
+    border-radius: 16px;
+    background: var(--ocean-50);
+    line-height: 1.55;
+    counter-increment: goal;
 }
 
-.about-files li + li {
-    margin-top: 1rem;
-}
-
-.about-files li::before {
-    content: '\F38B'; /* bi-file-earmark-text */
-    font-family: 'bootstrap-icons';
+.about-goals li::before {
+    content: counter(goal);
     position: absolute;
-    left: 0;
-    top: -2px;
-    font-size: 1.35rem;
-    color: var(--sea-link);
-}
-
-.about-files a {
-    color: var(--sea-link);
-}
-
-.about-files a:hover {
+    left: 0.9rem;
+    top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--ocean-700);
     color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* ссылки раздела «Образовательная деятельность» — таблетками */
+.about-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+}
+
+.about-links .course-chip {
+    margin: 0;
+    padding: 0.3rem 0.85rem;
+    color: var(--ocean-800);
+    text-decoration: none;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.about-links .course-chip:hover {
+    border-color: var(--ocean-500);
+    background: var(--ocean-50);
 }
 
 /* ============================================================
@@ -1904,6 +1821,124 @@ body:has(.footer-wave) main > section:last-child {
     border-color: var(--ocean-500);
     background: var(--ocean-50);
     text-decoration: none;
+}
+
+/* ============================================================
+   КНОПКИ НА ВОДЕ — белые таблетки под блоком: «Больше курсов», «Все программы» и т. п.
+   (на главной в глубоких блоках перекрашены — ocean.css)
+   ============================================================ */
+.sea-more {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem 1.25rem;
+    margin-top: 2rem;
+}
+
+.sea-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 1.6rem;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ocean-800, #0b5675);
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 8px 22px rgba(0, 25, 45, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.sea-btn:hover {
+    transform: translateY(-2px);
+    background: #f2fbfd;
+    color: var(--ocean-900, #0b3e52);
+    box-shadow: 0 12px 28px rgba(0, 25, 45, 0.38);
+}
+
+.sea-btn .bi {
+    transition: transform 0.2s;
+}
+
+.sea-btn:hover .bi {
+    transform: translateX(4px);
+}
+
+.sea-btn--big {
+    padding: 0.95rem 2.4rem;
+    font-size: 1.15rem;
+}
+
+/* ============================================================
+   WHY US (/page/why_us/) — «Почему стоит учиться у нас»: 7 причин
+   ============================================================ */
+.why-reasons {
+    padding: 0;
+    list-style: none;
+}
+
+.why-reason {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: 100%;
+    padding: 1.5rem 1.6rem;
+    border-radius: 22px;
+    background: #fff;
+    color: var(--text);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* номер причины — крупно и бледно в углу карточки */
+.why-reason-num {
+    position: absolute;
+    top: 0.6rem;
+    right: 1.25rem;
+    font-size: 3.25rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--ocean-100);
+}
+
+.why-reason-title {
+    margin: 0.85rem 0 0.5rem;
+    padding-right: 2.5rem; /* не наезжать на номер */
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.why-reason p {
+    margin: 0;
+    font-size: 0.93rem;
+    line-height: 1.55;
+    color: var(--muted);
+}
+
+.why-reason-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+.why-reason-link:hover {
+    color: var(--ocean-900);
+}
+
+.why-reason-link .bi {
+    transition: transform 0.2s;
+}
+
+.why-reason-link:hover .bi {
+    transform: translateX(4px);
 }
 
 /* ============================================================
@@ -2743,39 +2778,6 @@ body:has(.footer-wave) main > section:last-child {
     color: var(--ocean-700);
 }
 
-/* --- Расписание: дистанционные курсы --- */
-.timetable-distance {
-    color: var(--text);
-}
-
-.timetable-distance-title {
-    font-size: 1.35rem;
-    margin-bottom: 0.25rem;
-}
-
-.timetable-distance-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.timetable-distance-list li {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.25rem 1rem;
-    padding: 0.6rem 0;
-    border-top: 1px solid var(--line);
-}
-
-.timetable-distance-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 1rem;
-    font-size: 0.9rem;
-    color: #55636e;
-}
-
 /* ============================================================
    COURSE FILTERS + COURSES LIST (/education/courses/, /page/timetable/)
    ============================================================ */
@@ -3375,6 +3377,87 @@ body:has(.footer-wave) main > section:last-child {
 
 .course-section-head small {
     opacity: 0.85;
+}
+
+/* «Программы»: карточки сгруппированы по направлениям — и океан глубже от направления к направлению.
+   Полоса раздела растянута на всю ширину окна (border-image с выносом), лишнее обрезает секция
+   страницы; overflow: clip, а не hidden — иначе перестанет «прилипать» блок фильтров */
+main > section.course-depths {
+    overflow: clip;
+}
+
+.course-depths .course-section {
+    position: relative;
+    margin-bottom: 0;
+    padding: 2.5rem 0 3.5rem; /* снизу — место под волну следующего направления */
+    border-image: linear-gradient(180deg, var(--top), var(--bot)) fill 0 / 0 / 0 100vw;
+}
+
+/* первое направление — та же вода, что под шапкой: проступают лучи, к низу темнеет */
+.course-depths .course-section:first-of-type {
+    padding-top: 0;
+    border-image-source: linear-gradient(180deg, transparent, var(--d1-bot));
+}
+
+.course-depths .course-section:last-of-type {
+    padding-bottom: 0;
+    border-image-outset: 0 100vw 12rem; /* до самого футера */
+}
+
+.course-depths .course-section:nth-of-type(2) { --top: var(--d2-top); --bot: var(--d2-bot); --wave-delay: -5s; }
+.course-depths .course-section:nth-of-type(3) { --top: var(--d3-top); --bot: var(--d3-bot); --wave-delay: -11s; }
+.course-depths .course-section:nth-of-type(4) { --top: var(--d4-top); --bot: var(--d4-bot); --wave-delay: -2s; }
+.course-depths .course-section:nth-of-type(n+5) { --top: var(--d5-top); --bot: var(--d5-bot); --wave-delay: -16s; }
+
+/* граница направлений — те же два слоя волн, что между блоками страниц */
+.course-depths .course-section:not(:first-of-type)::before,
+.course-depths .course-section:not(:first-of-type)::after {
+    content: '';
+    position: absolute;
+    left: -100vw;
+    right: -100vw;
+    background: var(--top);
+    pointer-events: none;
+}
+
+.course-depths .course-section:not(:first-of-type)::before {
+    top: -39px;
+    height: 40px;
+    z-index: 1;
+    -webkit-mask: var(--slice-wave) 0 0 / 600px 40px repeat-x;
+    mask: var(--slice-wave) 0 0 / 600px 40px repeat-x;
+    animation: sea-drift 22s linear infinite;
+    animation-delay: var(--wave-delay, 0s);
+}
+
+.course-depths .course-section:not(:first-of-type)::after {
+    top: -51px;
+    height: 52px;
+    z-index: 0;
+    opacity: 0.45;
+    -webkit-mask: var(--slice-wave-back) 0 0 / 900px 52px repeat-x;
+    mask: var(--slice-wave-back) 0 0 / 900px 52px repeat-x;
+    animation: sea-drift-back 34s linear infinite, sea-bob 6s ease-in-out infinite alternate;
+    animation-delay: var(--wave-delay, 0s), 0s;
+}
+
+/* фильтры плывут поверх волн */
+.course-depths .course-filters-wrap {
+    position: relative;
+    z-index: 2;
+}
+
+@media (min-width: 992px) {
+    .course-depths .course-filters-wrap {
+        position: sticky;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .course-depths .course-section::before,
+    .course-depths .course-section::after {
+        animation: none;
+    }
 }
 
 .course-dir--other { background: var(--dir-management-bg); color: var(--dir-management); }

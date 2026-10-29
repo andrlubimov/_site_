@@ -7,7 +7,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils.text import Truncator
-from . import info_page, membership_page
+from . import about_page, info_page, membership_page, why_us_page
 from .about_defaults import ABOUT_SECTIONS
 from .filters import CourseFilterForm
 from .models import (
@@ -401,7 +401,7 @@ CALENDAR_COLORS = ['#0f6f93', '#0b3e52', '#be3455', '#b45309', '#4a5560', '#0b56
 
 def get_calendar_events(courses=None):
     """События календаря на странице «Расписание»: записи расписания с датами.
-    Дистанционные курсы дат не имеют и выводятся отдельным списком (get_distance_schedules).
+    Дистанционные курсы дат не имеют — в расписании их нет.
     courses — queryset курсов после фильтров (None — все активные)."""
     try:
         schedules = CourseSchedule.objects.filter(course__is_active=True).exclude(start_date=None)
@@ -445,17 +445,6 @@ def get_calendar_events(courses=None):
     return events
 
 
-def get_distance_schedules(courses=None):
-    """Дистанционные курсы для страницы «Расписание»: без дат, со сроком доступа"""
-    try:
-        schedules = CourseSchedule.objects.filter(course__is_active=True, start_date=None)
-        if courses is not None:
-            schedules = schedules.filter(course__in=courses)
-        return list(schedules.select_related('course').order_by('course__title', 'access_days'))
-    except OperationalError:
-        return []
-
-
 def get_about_sections():
     """Блоки страницы «Об Ассоциации» по ключу; отсутствующие берутся из about_defaults."""
     sections = {item['key']: SimpleNamespace(**item) for item in ABOUT_SECTIONS}
@@ -469,10 +458,17 @@ def get_about_sections():
 
 def about(request):
     """Страница «Об Ассоциации» из редактируемых блоков"""
+    sections = get_about_sections()
     context = {
         'content': SimpleNamespace(slug='about'),
         'page_title': 'Ассоциация грудничкового плавания',
-        'sections': get_about_sections(),
+        'sections': sections,
+        'page': about_page,
+        # оглавление: якорь и заголовок блока (у вступления заголовка нет)
+        'toc': [(anchor, sections[key].title or 'Об Ассоциации') for anchor, key in about_page.ANCHORS],
+        'goals': about_page.numbered_items(sections['goals'].content),
+        'education_links': [(title, reverse(name, kwargs={'slug': slug} if slug else None))
+                            for title, name, slug in about_page.EDUCATION_LINKS],
     }
     return render(request, 'core/about.html', context)
 
@@ -514,12 +510,24 @@ def membership(request):
     return render(request, 'core/membership.html', context)
 
 
+def why_us(request):
+    """«Почему стоит учиться у нас»: 7 причин — core/why_us_page.py"""
+    context = {
+        'content': SimpleNamespace(slug='why_us'),
+        'page_title': 'Почему стоит учиться у нас',
+        'page': why_us_page,
+    }
+    return render(request, 'core/why_us.html', context)
+
+
 def page_content(request, slug):
     """Страница с контентом"""
     if slug == 'about':
         return about(request)
     if slug == 'membership':
         return membership(request)
+    if slug == 'why_us':
+        return why_us(request)
     if slug == 'contacts':
         return contacts(request)
     if slug == 'info':
@@ -538,9 +546,8 @@ def page_content(request, slug):
         'page_title': content.title or slug,
     }
     if slug == 'timetable':
-        filter_form = CourseFilterForm(request.GET or None)
+        filter_form = CourseFilterForm(request.GET or None, dated_only=True)
         courses = filter_form.filter(Course.objects.filter(is_active=True)) if filter_form.is_filtered else None
         context['filter_form'] = filter_form
         context['calendar_events'] = get_calendar_events(courses)
-        context['distance_schedules'] = get_distance_schedules(courses)
     return render(request, 'core/page_content.html', context)

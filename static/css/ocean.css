@@ -211,52 +211,40 @@
     margin-bottom: 1.75rem;
 }
 
+/* Ссылки раздела под заголовком блока — полупрозрачные таблетки, как вкладки в шапке страниц */
+.sea-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.sea-link {
+    display: inline-block;
+    padding: 0.35rem 1.05rem;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.sea-link:hover,
+.sea-link:focus-visible {
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.24);
+    color: #fff;
+}
+
 .sea-head.text-center .lead {
     max-width: 760px;
     margin: 0 auto;
-}
-
-.sea-more {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem 1.25rem;
-    margin-top: 2rem;
-}
-
-.sea-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.7rem 1.6rem;
-    border-radius: 999px;
-    background: #fff;
-    color: var(--ocean-800, #0b5675);
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: 0 8px 22px rgba(0, 25, 45, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-}
-
-.sea-btn:hover {
-    transform: translateY(-2px);
-    background: #f2fbfd;
-    color: var(--ocean-900, #0b3e52);
-    box-shadow: 0 12px 28px rgba(0, 25, 45, 0.38);
-}
-
-.sea-btn .bi {
-    transition: transform 0.2s;
-}
-
-.sea-btn:hover .bi {
-    transform: translateX(4px);
-}
-
-.sea-btn--big {
-    padding: 0.95rem 2.4rem;
-    font-size: 1.15rem;
 }
 
 .sea-more-note {

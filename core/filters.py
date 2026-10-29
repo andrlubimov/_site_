@@ -57,8 +57,10 @@ class CourseFilterForm(forms.Form):
     skill = forms.MultipleChoiceField(label='Уровень учащегося', choices=SKILL_FILTER_CHOICES, required=False,
                                       widget=forms.CheckboxSelectMultiple)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, dated_only=False, **kwargs):
         super().__init__(*args, **kwargs)
+        if dated_only:  # «Расписание»: у дистанционных курсов дат нет — и выбирать их там незачем
+            self.fields['type'].choices = [c for c in Course.TYPE_CHOICES if c[0] != Course.TYPE_DISTANCE]
         # в списке — только преподаватели, у которых есть курсы на сайте
         self.fields['teacher'].queryset = (Teacher.objects.filter(courses__is_active=True)
                                            .distinct().order_by('last_name', 'first_name'))

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <h1 class="header-page-title">{{ page_title }}</h1>
+    <div class="header-tabs">
+        {% include "core/includes/courses_tabs.html" with active='why_us' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Тексты — core/why_us_page.py (со старого сайта /education/reason) #}
+<section class="py-5">
+    <div class="container">
+        <h2 class="membership-h">{{ page.TITLE }}</h2>
+        <p class="membership-intro">{{ page.INTRO }}</p>
+
+        <ol class="row g-3 justify-content-center why-reasons">
+            {% for reason in page.REASONS %}
+            <li class="col-md-6 col-xl-4">
+                <article class="why-reason">
+                    <span class="why-reason-num" aria-hidden="true">{{ forloop.counter }}</span>
+                    <span class="course-dir-icon" aria-hidden="true"><i class="bi {{ reason.icon }}"></i></span>
+                    <h3 class="why-reason-title">{{ reason.title }}</h3>
+                    <p>{{ reason.text }}</p>
+                    {% if reason.url_name %}
+                    <a class="why-reason-link" href="{% if reason.slug %}{% url reason.url_name slug=reason.slug %}{% else %}{% url reason.url_name %}{% endif %}">
+                        {{ reason.link_label }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </a>
+                    {% endif %}
+                </article>
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="membership-h">Выберите свою программу</h2>
+        <p class="membership-intro">Курсы, семинары и мастер-классы для специалистов, которые работают с детьми, — очно, дистанционно и онлайн.</p>
+        <div class="sea-more">
+            <a href="{% url 'core:courses_list' %}" class="sea-btn sea-btn--big">Все программы <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            <a href="{% url 'core:page_content' slug='timetable' %}" class="sea-btn">Расписание курсов <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </div>
+    </div>
+</section>
+{% endblock %}
