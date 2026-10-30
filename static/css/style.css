@@ -174,6 +174,7 @@ main > section:first-of-type::before {
 .site-header {
     --shore-water: var(--d1-top); /* цвет воды у кромки — им начинается страница под шапкой */
     --shore-cut: 40px; /* сколько воды внизу кромки прячется за краем шапки — меньше пустой воды над текстом */
+    --shore-light: 34px; /* верх гребня воды в кромке: отсюда вода темнеет до цвета страницы у края шапки */
     position: relative;
     overflow: hidden;
     background-color: #ecd29e;
@@ -225,7 +226,7 @@ main > section:first-of-type::before {
 
 /* вода: светлая у пены, к низу — цвет страницы (--shore-water); волна — маской */
 .shore-water {
-    background: linear-gradient(180deg, #98e4dc 45%, var(--shore-water) calc(100% - var(--shore-cut)));
+    background: linear-gradient(180deg, #98e4dc var(--shore-light), var(--shore-water) calc(100% - var(--shore-cut)));
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z'/%3E%3C/svg%3E") 0 bottom / 1200px 140px repeat-x;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z'/%3E%3C/svg%3E") 0 bottom / 1200px 140px repeat-x;
     animation: shore-drift 26s linear infinite;
@@ -242,7 +243,7 @@ main > section:first-of-type::before {
 }
 
 @media (max-width: 767px) {
-    .site-header { --shore-cut: 50px; }
+    .site-header { --shore-cut: 50px; --shore-light: 4px; } /* кромка ниже и обрезана сверху на 30px */
     .header-overlay { padding-bottom: 45px; }
     .shore { height: 110px; }
 }
