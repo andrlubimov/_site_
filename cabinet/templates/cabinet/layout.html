@@ -39,7 +39,7 @@
                         <ul class="cabinet-subnav">
                             {% for child in item.children %}
                             <li>
-                                <a class="cabinet-nav-link{% if child.active %} is-active{% endif %}" href="{{ child.url }}"{% if child.active %} aria-current="page"{% endif %}>
+                                <a class="cabinet-nav-link{% if child.active %} is-active{% endif %}" data-cabinet-key="{{ child.key }}" href="{{ child.url }}"{% if child.active %} aria-current="page"{% endif %}>
                                     <i class="bi {{ child.icon }}" aria-hidden="true"></i><span>{{ child.title }}</span>
                                     {% if child.key == 'postponed' %}
                                     <span class="cabinet-nav-count" data-postponed-count data-postponed-link{% if not postponed_count %} hidden{% endif %}>{{ postponed_count }}</span>
@@ -74,4 +74,5 @@
     </div>
 
 </div>
+
 {% endblock %}

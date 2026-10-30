@@ -1062,6 +1062,85 @@ body:has(.footer-wave) main > section:last-child {
 }
 
 /* ============================================================
+   Нижняя панель разделов личного кабинета — у вошедшего на всех страницах,
+   только на телефоне и планшете, прилипает к низу экрана
+   ============================================================ */
+.cabinet-tabbar {
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+    .cabinet-tabbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1030;
+        display: flex;
+        padding: 0.35rem 0.25rem calc(0.35rem + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 -4px 18px rgba(0, 40, 60, 0.1);
+    }
+
+    /* панель не закрывает низ страницы (подвал) */
+    body:has(.cabinet-tabbar) {
+        padding-bottom: calc(3.75rem + env(safe-area-inset-bottom));
+    }
+
+    .cabinet-tabbar-link {
+        flex: 1 1 auto; /* длинной подписи («Сертификаты») — чуть больше места */
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        padding: 0.2rem 0.1rem;
+        color: var(--muted);
+        font-size: 0.68rem;
+        font-weight: 600;
+        line-height: 1.2;
+        text-align: center;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .cabinet-tabbar-link span {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .cabinet-tabbar-link .bi {
+        font-size: 1.35rem;
+        line-height: 1;
+    }
+
+    .cabinet-tabbar-link.is-active {
+        color: var(--ocean-700);
+    }
+
+    @media (max-width: 359.98px) {
+        .cabinet-tabbar-link {
+            font-size: 0.62rem;
+        }
+    }
+
+    /* у открытого раздела — подложка под значком */
+    .cabinet-tabbar-link.is-active .bi {
+        padding: 0.15rem 0.9rem;
+        border-radius: 999px;
+        background: var(--ocean-100);
+    }
+
+    .cabinet-tabbar-link:not(.is-active) .bi {
+        padding: 0.15rem 0;
+    }
+}
+
+/* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 991px) {
@@ -1634,6 +1713,11 @@ body:has(.footer-wave) main > section:last-child {
 }
 
 .course-program-toggle[hidden] {
+    display: none;
+}
+
+/* Ближайшие даты: видны две, остальные свёрнуты (см. course-detail.js) */
+.course-dates-list.is-collapsed > .course-dates-row:nth-child(n+3) {
     display: none;
 }
 
@@ -3182,6 +3266,77 @@ body:has(.footer-wave) main > section:last-child {
 @media (prefers-reduced-motion: reduce) {
     .course-heart.is-popping .bi {
         animation: none;
+    }
+}
+
+/* Отложенный курс летит сердечком к «Моим курсам» / «Отложенным» (js/postponed.js) */
+.postpone-flyer {
+    position: fixed;
+    z-index: 2000; /* над нижней панелью и меню */
+    display: grid;
+    place-items: center;
+    width: 2em;
+    height: 2em;
+    margin: -1em 0 0 -1em; /* left/top — середина сердечка */
+    color: var(--heart);
+    pointer-events: none;
+}
+
+.postpone-flyer .bi {
+    display: block;
+    line-height: 1;
+    filter: drop-shadow(0 3px 6px rgba(229, 56, 59, 0.35));
+}
+
+/* куда прилетело сердечко — на миг розовое и «подпрыгивает» */
+@keyframes postpone-hit {
+    35% { transform: scale(1.18); }
+}
+
+.top-nav-postponed,
+.mobile-menu-btn,
+.cabinet-tabbar-link,
+.cabinet-tabbar-link .bi {
+    transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.top-nav-postponed.is-postpone-hit {
+    border-color: #ff8f91;
+    background: rgba(255, 143, 145, 0.35);
+    animation: postpone-hit 0.45s ease-out;
+}
+
+.top-nav-cabinet.is-postpone-hit {
+    background: #ffe1e6;
+    color: var(--heart);
+    box-shadow: 0 0 0 3px rgba(255, 143, 145, 0.55);
+    animation: postpone-hit 0.45s ease-out;
+}
+
+.top-nav-cabinet.is-postpone-hit .bi {
+    color: var(--heart);
+}
+
+.mobile-menu-btn.is-postpone-hit {
+    background: var(--heart);
+    animation: postpone-hit 0.45s ease-out;
+}
+
+.cabinet-tabbar-link.is-postpone-hit {
+    color: var(--heart);
+}
+
+.cabinet-tabbar-link.is-postpone-hit .bi {
+    border-radius: 999px;
+    background: #ffdbe2;
+    box-shadow: 0 0 0 0.3rem #ffdbe2;
+    animation: postpone-hit 0.45s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .is-postpone-hit,
+    .is-postpone-hit .bi {
+        animation: none !important;
     }
 }
 

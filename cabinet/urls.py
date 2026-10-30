@@ -1,5 +1,6 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
@@ -12,11 +13,12 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='core:index'), name='logout'),
     # разделы кабинета (названия и порядок в меню — views.SECTIONS)
     path('courses/', views.courses, name='courses'),
-    path('courses/postponed/', views.postponed, name='postponed'),
+    path('courses/postponed/', RedirectView.as_view(pattern_name='cabinet:postponed', permanent=True)),
     path('my-courses/', views.my_courses, name='my_courses'),
     path('my-courses/upcoming/', views.my_courses, {'status': 'upcoming'}, name='upcoming'),
     path('my-courses/current/', views.my_courses, {'status': 'current'}, name='current'),
     path('my-courses/completed/', views.my_courses, {'status': 'completed'}, name='completed'),
+    path('my-courses/postponed/', views.postponed, name='postponed'),
     path('membership/', views.membership, name='membership'),
     path('certificates/', views.certificates, name='certificates'),
     path('certificates/<int:pk>/file/', views.certificate_file, name='certificate_file'),

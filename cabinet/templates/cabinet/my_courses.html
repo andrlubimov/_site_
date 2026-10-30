@@ -3,17 +3,45 @@
 {% block page_title %}Мои курсы: {{ page.title|lower }} - Личный кабинет{% endblock %}
 
 {% block cabinet_content %}
-{% include "cabinet/includes/head.html" with title="Мои курсы" parent=None lead="Курсы, на которые вы записались, — по датам обучения." %}
+{% include "cabinet/includes/head.html" with title="Мои курсы" parent=None lead="Курсы, на которые вы записались, — по датам обучения, и отложенные на потом." %}
 
-<nav class="cabinet-tabs" aria-label="Мои курсы по датам обучения">
-    {% for tab in tabs %}
-    <a class="cabinet-tab{% if tab.active %} is-current{% endif %}" href="{{ tab.url }}"{% if tab.active %} aria-current="page"{% endif %}>
-        {{ tab.title }} <span class="cabinet-tab-count">{{ tab.count }}</span>
+{# «Отложенные» — отдельной розовой кнопкой строкой выше; три группы по датам — всегда в один ряд #}
+<nav class="cabinet-tabs" aria-label="Мои курсы: по датам обучения и отложенные">
+    {% for tab in tabs %}{% if tab.key == 'postponed' %}
+    <a class="cabinet-tab cabinet-tab--postponed{% if tab.active %} is-current{% endif %}" href="{{ tab.url }}"{% if tab.active %} aria-current="page"{% endif %}>
+        {{ tab.title }}
+        <span class="cabinet-tab-heart"><i class="bi bi-heart-fill" aria-hidden="true"></i><span data-postponed-count>{{ tab.count }}</span></span>
     </a>
-    {% endfor %}
+    {% endif %}{% endfor %}
+    <div class="cabinet-tabs-row">
+        {% for tab in tabs %}{% if tab.key != 'postponed' %}
+        <a class="cabinet-tab{% if tab.active %} is-current{% endif %}" href="{{ tab.url }}"{% if tab.active %} aria-current="page"{% endif %}>
+            {{ tab.title }} <span class="cabinet-tab-count">{{ tab.count }}</span>
+        </a>
+        {% endif %}{% endfor %}
+    </div>
 </nav>
 
-{% if enrollments %}
+{% if status == 'postponed' %}
+{# отложенные — карточки курсов с сердечком, как в «Курсах ассоциации» #}
+{% if cards %}
+<div class="row g-3">
+    {% for card in cards %}
+    <div class="col-xl-6">
+        {% include "core/includes/course_card.html" with show_dates=True %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="cabinet-empty">
+    <span class="cabinet-empty-icon" aria-hidden="true"><i class="bi bi-heart"></i></span>
+    <div>
+        <p>Пока ничего не отложено. Отмечайте сердечком курсы, к которым хотите вернуться.</p>
+        <a class="cabinet-empty-link" href="{% url 'cabinet:courses' %}">Курсы ассоциации <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</div>
+{% endif %}
+{% elif enrollments %}
 <div class="row g-3">
     {% for enrollment in enrollments %}
     <div class="col-xl-6">

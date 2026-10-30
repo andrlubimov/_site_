@@ -164,6 +164,21 @@ body:has(.cabinet-page) .site-header {
     opacity: 1;
 }
 
+/* сюда прилетело сердечко отложенного курса (js/postponed.js) — на миг розовый */
+.cabinet-side .cabinet-nav-link {
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.cabinet-side .cabinet-nav-link.is-postpone-hit {
+    background: #ffdbe2;
+    color: var(--heart);
+}
+
+.cabinet-side .cabinet-nav-link.is-postpone-hit .bi {
+    color: var(--heart);
+    opacity: 1;
+}
+
 /* вложенный список: подразделы — с отступом, вдоль тонкой линии-«ветки» */
 .cabinet-subnav {
     margin: 0.2rem 0 0.4rem 1.45rem;
@@ -615,12 +630,20 @@ a.cabinet-kicker:hover {
     border-top: 0;
 }
 
-/* --- Мои курсы: переключатель «предстоящие — идущие — завершённые» --- */
+/* --- Мои курсы: «Отложенные» строкой выше, под ней переключатель «предстоящие — идущие — завершённые» --- */
 .cabinet-tabs {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
     margin-bottom: 1.25rem;
+}
+
+/* три группы по датам — всегда в один ряд, на узком экране делят ширину поровну */
+.cabinet-tabs-row {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 100%;
 }
 
 .cabinet-tab {
@@ -661,6 +684,89 @@ a.cabinet-kicker:hover {
 .cabinet-tab.is-current .cabinet-tab-count {
     background: rgba(255, 255, 255, 0.22);
     color: #fff;
+}
+
+/* «Отложенные» — розоватая, счётчик — в сердечке */
+.cabinet-tab--postponed {
+    padding-right: 0.45rem;
+    border-color: #f6c9d2;
+    background: var(--dir-hydrorehab-bg);
+    color: var(--dir-hydrorehab);
+}
+
+.cabinet-tab--postponed:hover {
+    border-color: var(--heart);
+    background: #fff;
+    color: var(--dir-hydrorehab);
+}
+
+/* выбрана — синяя, как остальные кнопки; сердечко остаётся красным */
+.cabinet-tab--postponed.is-current {
+    border-color: var(--ocean-700);
+    background: var(--ocean-700);
+    color: #fff;
+}
+
+.cabinet-tab-heart {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 1.8rem;
+    color: var(--heart);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.cabinet-tab-heart .bi {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 1.85rem;
+    line-height: 1;
+}
+
+.cabinet-tab-heart span {
+    position: relative;
+    margin-top: -0.1rem; /* в середину сердечка — оно ниже центра из-за выемки сверху */
+    color: #fff;
+}
+
+@media (max-width: 575.98px) {
+    .cabinet-tabs-row {
+        width: 100%;
+        gap: 0.35rem;
+    }
+
+    .cabinet-tabs-row .cabinet-tab {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        gap: 0.3rem;
+        padding: 0.45rem 0.4rem 0.45rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .cabinet-tabs-row .cabinet-tab-count {
+        min-width: 1.3rem;
+        padding: 0.05rem 0.3rem;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 374.98px) {
+    .cabinet-tabs-row .cabinet-tab {
+        gap: 0.2rem;
+        padding: 0.4rem 0.25rem 0.4rem 0.4rem;
+        font-size: 0.7rem;
+    }
+
+    .cabinet-tabs-row .cabinet-tab-count {
+        min-width: 1.1rem;
+        padding: 0.05rem 0.2rem;
+        font-size: 0.64rem;
+    }
 }
 
 /* купленный курс — карточка курса с датами обучения */

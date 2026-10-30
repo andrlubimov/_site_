@@ -233,6 +233,9 @@ def upcoming_schedules():
             .prefetch_related('in_person_days'))
 
 
+COURSE_DATES_SHOWN = 2  # на странице курса видны ближайшие даты, остальные — под кнопкой «Развернуть»
+
+
 def course_detail(request, slug):
     """Детальная страница курса: /education/courses/<slug>/"""
     course = get_object_or_404(
@@ -250,10 +253,12 @@ def course_detail(request, slug):
     if request.user.is_authenticated:
         enrolled = set(Enrollment.objects.filter(user=request.user, schedule__course=course)
                        .values_list('schedule_id', flat=True))
+    more = len(course.upcoming) - COURSE_DATES_SHOWN
     context = {
         'course': course,
         'variants': variants if len(variants) > 1 else [],
         'schedules': course.upcoming,
+        'dates_more_label': f'ещё {more} {plural_ru(more, ("дата", "даты", "дат"))}' if more > 0 else '',
         'enrolled': enrolled,
         'page_title': course.title,
     }

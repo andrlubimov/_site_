@@ -118,7 +118,7 @@
                     <section class="course-detail-block course-dates" id="dates">
                         <h2 class="course-detail-h">Ближайшие даты проведения</h2>
                         {% if schedules %}
-                        <ul class="course-dates-list">
+                        <ul class="course-dates-list" id="course-dates">
                             {% for s in schedules %}
                             <li class="course-dates-row">
                                 <div class="course-dates-info">
@@ -146,6 +146,15 @@
                             </li>
                             {% endfor %}
                         </ul>
+                        {% if dates_more_label %}
+                        {# видны первые две даты, остальные раскрывает кнопка (course-detail.js); без JS — все #}
+                        <button type="button" class="course-program-toggle course-dates-toggle" aria-controls="course-dates"
+                                aria-expanded="false" data-more="{{ dates_more_label }}" hidden>
+                            <i class="bi bi-arrow-down"></i>
+                            <span>Развернуть</span>
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+                        {% endif %}
                         {% else %}
                         <p class="course-dates-empty">Даты ближайших потоков пока не объявлены.</p>
                         {% endif %}

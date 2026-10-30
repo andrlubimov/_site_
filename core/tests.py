@@ -443,6 +443,20 @@ class CourseDetailTests(TestCase):
     def test_no_dates_message(self):
         self.assertContains(self.client.get('/education/courses/kurs/'), 'Даты ближайших потоков пока не объявлены')
 
+    def test_dates_beyond_two_are_collapsible(self):
+        def add_dates(days):
+            for d in days:
+                CourseSchedule.objects.create(course=self.course, format='group',
+                                              start_date=date.today() + timedelta(days=d),
+                                              end_date=date.today() + timedelta(days=d + 1))
+        add_dates([3, 10])
+        self.assertNotContains(self.client.get('/education/courses/kurs/'), 'course-dates-toggle')
+        add_dates([20, 30, 40])
+        response = self.client.get('/education/courses/kurs/')
+        # все даты в разметке (без JS видны целиком), кнопка подписана числом скрытых
+        self.assertContains(response, 'class="course-dates-row"', count=5)
+        self.assertContains(response, 'data-more="ещё 3 даты"')
+
     def test_required_course_link(self):
         base = make_course(title='Базовый курс', slug='base')
         self.course.required_course = base

@@ -210,10 +210,10 @@ class LoginTests(TestCase):
 class CabinetPagesTests(TestCase):
     PAGES = [
         ('/cabinet/courses/', 'Курсы ассоциации'),
-        ('/cabinet/courses/postponed/', 'Отложенные курсы'),
         ('/cabinet/my-courses/upcoming/', 'Мои курсы'),
         ('/cabinet/my-courses/current/', 'Мои курсы'),
         ('/cabinet/my-courses/completed/', 'Мои курсы'),
+        ('/cabinet/my-courses/postponed/', 'Мои курсы'),
         ('/cabinet/membership/', 'Моё членство'),
         ('/cabinet/certificates/', 'Мои сертификаты'),
         ('/cabinet/profile/', 'Мой профиль'),
@@ -233,17 +233,33 @@ class CabinetPagesTests(TestCase):
         self.assertRedirects(self.client.get('/cabinet/'), '/cabinet/courses/')
 
     def test_menu_is_nested_list_without_numbers(self):
-        response = self.client.get('/cabinet/courses/postponed/')
+        response = self.client.get('/cabinet/my-courses/postponed/')
         menu = response.context['cabinet_menu']
         self.assertEqual([item.title for item in menu],
                          ['Курсы ассоциации', 'Мои курсы', 'Моё членство', 'Мои сертификаты', 'Мой профиль'])
-        self.assertEqual([child.title for child in menu[0].children], ['Отложенные курсы'])
-        self.assertEqual([child.title for child in menu[1].children], ['Предстоящие', 'Идущие', 'Завершённые'])
-        self.assertTrue(menu[0].open)  # раздел «Курсы ассоциации» раскрыт: открыт его подраздел
-        self.assertContains(response, 'class="cabinet-subnav"', count=2)
-        self.assertContains(response, '<a class="cabinet-kicker" href="/cabinet/courses/">Курсы ассоциации</a>',
-                            html=True)
+        self.assertEqual(menu[0].children, [])
+        self.assertEqual([child.title for child in menu[1].children],
+                         ['Предстоящие', 'Идущие', 'Завершённые', 'Отложенные'])
+        self.assertTrue(menu[1].open)  # раздел «Мои курсы» раскрыт: открыт его подраздел
+        self.assertContains(response, 'class="cabinet-subnav"', count=1)
         self.assertContains(response, 'logo-baby.svg')
+
+    def test_bottom_tabbar_lists_sections_and_marks_open_one(self):
+        response = self.client.get('/cabinet/my-courses/postponed/')
+        self.assertContains(response, 'class="cabinet-tabbar-link"', count=4)
+        for label in ['Курсы', 'Мои курсы', 'Членство', 'Сертификаты', 'Профиль']:
+            self.assertContains(response, f'<span>{label}</span>', html=True)
+        # открыт подраздел «Отложенные» — подсвечена вкладка «Мои курсы», но это не её страница
+        self.assertContains(response, '<a class="cabinet-tabbar-link is-active" data-tab="my_courses" href="/cabinet/my-courses/">')
+
+    def test_bottom_tabbar_on_all_site_pages_for_logged_in(self):
+        for url in ['/', '/education/courses/', '/page/contacts/']:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertContains(response, 'class="cabinet-tabbar"')
+                self.assertContains(response, 'class="cabinet-tabbar-link"', count=5)  # вне кабинета не подсвечен ни один
+        self.client.logout()
+        self.assertNotContains(self.client.get('/'), 'cabinet-tabbar')
 
     def test_pages_need_login(self):
         self.client.logout()
@@ -371,10 +387,16 @@ class PostponedTests(TestCase):
         self.assertEqual(list(user.postponed_courses.values_list('course_id', flat=True)), [self.seminar.pk])
         response = self.client.get('/education/courses/')
         self.assertNotContains(response, 'top-nav-postponed')  # кнопка «Отложенные» — только без входа
-        response = self.client.get('/cabinet/courses/postponed/')
+        response = self.client.get('/cabinet/my-courses/postponed/')
         self.assertEqual([card.title for card in response.context['cards']], ['Грудничковое плавание. Базовый модуль'])
         self.assertContains(response, 'class="cabinet-nav-count" data-postponed-count data-postponed-link>1</span>')
-        self.assertRedirects(self.client.get('/education/postponed/'), '/cabinet/courses/postponed/')
+        self.assertRedirects(self.client.get('/education/postponed/'), '/cabinet/my-courses/postponed/')
+        # старый адрес раздела ведёт на новый
+        self.assertRedirects(self.client.get('/cabinet/courses/postponed/'), '/cabinet/my-courses/postponed/',
+                             status_code=301)
+        # «таблетка» «Отложенные» на «Моих курсах» — с числом отложенных
+        tabs = self.client.get('/cabinet/my-courses/upcoming/').context['tabs']
+        self.assertEqual((tabs[-1].title, tabs[-1].count), ('Отложенные', 1))
 
     def test_postponed_before_login_moves_to_cabinet(self):
         user = make_member()
@@ -438,7 +460,7 @@ class MyCoursesTests(MediaTestCase):
         self.enroll(-10, -8)
         response = self.client.get('/cabinet/my-courses/upcoming/')
         self.assertEqual([(tab.title, tab.count) for tab in response.context['tabs']],
-                         [('Предстоящие', 1), ('Идущие', 2), ('Завершённые', 1)])
+                         [('Предстоящие', 1), ('Идущие', 2), ('Завершённые', 1), ('Отложенные', 0)])
         self.assertContains(response, 'Начнётся через 5 дней')
         self.assertContains(response, 'class="course-card enrollment-card"', count=1)
         self.assertContains(self.client.get('/cabinet/my-courses/current/'), 'Идёт, последний день')

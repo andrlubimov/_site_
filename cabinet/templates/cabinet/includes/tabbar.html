@@ -1,0 +1,10 @@
+{% comment %}Разделы кабинета — панель, прилипшая к низу экрана, как в приложениях: у вошедшего на всех страницах,
+видна на телефоне и планшете (cabinet.context_processors.tabbar){% endcomment %}
+<nav class="cabinet-tabbar" aria-label="Разделы личного кабинета">
+    {% for item in cabinet_tabbar %}
+    <a class="cabinet-tabbar-link{% if item.active or item.open %} is-active{% endif %}" data-tab="{{ item.key }}" href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.short }}</span>
+    </a>
+    {% endfor %}
+</nav>

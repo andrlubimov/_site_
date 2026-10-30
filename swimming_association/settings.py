@@ -51,6 +51,7 @@ TEMPLATES = [
                 'core.context_processors.contacts',
                 'core.context_processors.navigation',
                 'cabinet.context_processors.postponed',
+                'cabinet.context_processors.tabbar',
             ],
         },
     },

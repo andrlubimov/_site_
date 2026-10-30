@@ -23,36 +23,36 @@ from .models import Certificate, Enrollment
 from .postponed import postponed_cards, postponed_keys, toggle
 
 
-def section(key, title, icon, children=()):
-    return SimpleNamespace(key=key, title=title, icon=icon, children=list(children))
+def section(key, title, icon, children=(), short=''):
+    return SimpleNamespace(key=key, title=title, icon=icon, children=list(children), short=short or title)
 
 
-# Разделы личного кабинета — меню слева, вложенным списком. Адреса — в urls.py (имя адреса = key).
+# Разделы личного кабинета — меню слева, вложенным списком; на телефоне разделы ещё и в нижней панели
+# (short — подпись в ней). Адреса — в urls.py (имя адреса = key).
 SECTIONS = [
-    section('courses', 'Курсы ассоциации', 'bi-journal-bookmark', [
-        section('postponed', 'Отложенные курсы', 'bi-heart'),
-    ]),
+    section('courses', 'Курсы ассоциации', 'bi-journal-bookmark', short='Курсы'),
     section('my_courses', 'Мои курсы', 'bi-mortarboard', [
         section(Enrollment.UPCOMING, 'Предстоящие', 'bi-calendar-event'),
         section(Enrollment.CURRENT, 'Идущие', 'bi-play-circle'),
         section(Enrollment.COMPLETED, 'Завершённые', 'bi-check2-circle'),
+        section('postponed', 'Отложенные', 'bi-heart'),
     ]),
-    section('membership', 'Моё членство', 'bi-people'),
-    section('certificates', 'Мои сертификаты', 'bi-award'),
-    section('profile', 'Мой профиль', 'bi-person-circle'),
+    section('membership', 'Моё членство', 'bi-people', short='Членство'),
+    section('certificates', 'Мои сертификаты', 'bi-award', short='Сертификаты'),
+    section('profile', 'Мой профиль', 'bi-person-circle', short='Профиль'),
 ]
 
 ENROLL_SESSION_KEY = 'pending_enrollment'  # дата курса, выбранная до входа: запись — сразу после входа
 
 PAGES = {page.key: page for parent in SECTIONS for page in [parent, *parent.children]}
 PARENTS = {child.key: parent for parent in SECTIONS for child in parent.children}
-MY_COURSES_TABS = [Enrollment.UPCOMING, Enrollment.CURRENT, Enrollment.COMPLETED]
+MY_COURSES_TABS = [Enrollment.UPCOMING, Enrollment.CURRENT, Enrollment.COMPLETED]  # по датам обучения
 
 
 def cabinet_menu(current):
     """Меню кабинета: раздел подсвечен, если открыт он сам; раздел с открытым подразделом — «раскрыт»"""
     def item(page):
-        return SimpleNamespace(key=page.key, title=page.title, icon=page.icon,
+        return SimpleNamespace(key=page.key, title=page.title, short=page.short, icon=page.icon,
                                url=reverse(f'cabinet:{page.key}'), active=page.key == current)
     menu = []
     for page in SECTIONS:
@@ -105,20 +105,8 @@ def courses(request):
     return render(request, 'cabinet/courses.html', context)
 
 
-@login_required
-def postponed(request):
-    """Отложенные курсы — карточки, отмеченные сердечком"""
-    cards = postponed_cards(request)
-    context = {'cards': cards, 'found_label': cards_found_label(cards) if cards else ''}
-    context.update(cabinet_context(request, 'postponed'))
-    return render(request, 'cabinet/postponed.html', context)
-
-
-@login_required
-def my_courses(request, status=None):
-    """Купленные курсы: предстоящие, идущие и завершённые — по датам обучения. Без выбора — предстоящие."""
-    if status is None:
-        return redirect('cabinet:upcoming')
+def enrollment_groups(request):
+    """Курсы, на которые человек записан, по датам обучения: предстоящие, идущие, завершённые"""
     today = timezone.localdate()
     groups = {key: [] for key in MY_COURSES_TABS}
     certificates = {c.course_id: c for c in request.user.certificates.exclude(course=None)}
@@ -130,13 +118,42 @@ def my_courses(request, status=None):
         enrollment.certificate = certificates.get(enrollment.course_id)
         groups[enrollment.status].append(enrollment)
     groups[Enrollment.COMPLETED].reverse()  # недавно завершённые — первыми
+    return groups
+
+
+def my_courses_tabs(groups, postponed_count, current):
+    """«Таблетки» на странице «Мои курсы»: три группы по датам обучения и отложенные"""
+    counts = {key: len(groups[key]) for key in MY_COURSES_TABS}
+    counts['postponed'] = postponed_count
+    return [SimpleNamespace(key=key, title=PAGES[key].title, url=reverse(f'cabinet:{key}'),
+                            count=count, active=key == current) for key, count in counts.items()]
+
+
+@login_required
+def my_courses(request, status=None):
+    """Купленные курсы: предстоящие, идущие и завершённые — по датам обучения. Без выбора — предстоящие."""
+    if status is None:
+        return redirect('cabinet:upcoming')
+    groups = enrollment_groups(request)
     context = {
-        'tabs': [SimpleNamespace(key=key, title=PAGES[key].title, url=reverse(f'cabinet:{key}'),
-                                 count=len(groups[key]), active=key == status) for key in MY_COURSES_TABS],
+        'tabs': my_courses_tabs(groups, len(postponed_keys(request)), status),
         'enrollments': groups[status],
         'status': status,
     }
     context.update(cabinet_context(request, status))
+    return render(request, 'cabinet/my_courses.html', context)
+
+
+@login_required
+def postponed(request):
+    """Мои курсы → Отложенные: карточки курсов, отмеченных сердечком"""
+    cards = postponed_cards(request)
+    context = {
+        'tabs': my_courses_tabs(enrollment_groups(request), len(cards), 'postponed'),
+        'cards': cards,
+        'status': 'postponed',
+    }
+    context.update(cabinet_context(request, 'postponed'))
     return render(request, 'cabinet/my_courses.html', context)
 
 
