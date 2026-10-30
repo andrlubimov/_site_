@@ -19,7 +19,12 @@
    ШАПКА: песчаный пляж
    ------------------------------------------------------------ */
 .page-home .header-overlay {
-    padding-bottom: 120px;
+    padding-bottom: 80px;
+}
+
+/* первый блок начинается сразу у кромки прибоя — полоса воды внизу шапки уже даёт отступ */
+.page-home main > section:first-of-type {
+    padding-top: 0.25rem !important;
 }
 
 /* на главной под логотипом нет заголовка — отступы больше */
@@ -676,7 +681,8 @@
 }
 
 @media (max-width: 767px) {
-    .page-home .header-overlay { padding-bottom: 90px; }
+    .page-home .header-overlay { padding-bottom: 40px; }
+    .page-home .site-logo { padding: 1.25rem 1rem 1.25rem; }
     .seabed-rock--l, .kelp--2, .kelp--3 { display: none; }
 }
 

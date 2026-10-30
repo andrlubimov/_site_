@@ -119,6 +119,11 @@ main > section::after {
     animation-delay: var(--wave-delay, 0s), 0s;
 }
 
+/* первый блок продолжает воду из шапки: отступ сверху меньше — над ним уже полоса воды кромки */
+main > section:first-of-type {
+    padding-top: 1.5rem !important;
+}
+
 /* первый блок продолжает воду из шапки — вместо волны лучи света */
 main > section:first-of-type::after {
     content: none;
@@ -168,6 +173,7 @@ main > section:first-of-type::before {
    кит и матрёшка — только на главной, ocean.css) */
 .site-header {
     --shore-water: var(--d1-top); /* цвет воды у кромки — им начинается страница под шапкой */
+    --shore-cut: 40px; /* сколько воды внизу кромки прячется за краем шапки — меньше пустой воды над текстом */
     position: relative;
     overflow: hidden;
     background-color: #ecd29e;
@@ -183,7 +189,7 @@ main > section:first-of-type::before {
 .header-overlay {
     position: relative;
     z-index: 2;
-    padding-bottom: 110px; /* место под кромку прибоя */
+    padding-bottom: 70px; /* место под кромку прибоя */
 }
 
 /* Кромка прибоя: мокрый песок → пена → вода */
@@ -191,7 +197,7 @@ main > section:first-of-type::before {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: calc(-1 * var(--shore-cut));
     height: 140px;
     z-index: 1;
     pointer-events: none;
@@ -219,7 +225,7 @@ main > section:first-of-type::before {
 
 /* вода: светлая у пены, к низу — цвет страницы (--shore-water); волна — маской */
 .shore-water {
-    background: linear-gradient(180deg, #98e4dc 45%, var(--shore-water) 100%);
+    background: linear-gradient(180deg, #98e4dc 45%, var(--shore-water) calc(100% - var(--shore-cut)));
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z'/%3E%3C/svg%3E") 0 bottom / 1200px 140px repeat-x;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='140'%3E%3Cpath d='M0 54 C100 34 200 34 300 54 S500 74 600 54 S800 34 900 54 S1100 74 1200 54 V140 H0 Z'/%3E%3C/svg%3E") 0 bottom / 1200px 140px repeat-x;
     animation: shore-drift 26s linear infinite;
@@ -236,7 +242,8 @@ main > section:first-of-type::before {
 }
 
 @media (max-width: 767px) {
-    .header-overlay { padding-bottom: 80px; }
+    .site-header { --shore-cut: 50px; }
+    .header-overlay { padding-bottom: 45px; }
     .shore { height: 110px; }
 }
 
@@ -517,18 +524,62 @@ main > section:first-of-type::before {
     }
 }
 
+/* Телефон и планшет: от полосы меню остаётся одна кнопка поверх шапки (справа сверху),
+   меню раскрывается панелью над пляжем, не сдвигая его */
+@media (max-width: 991.98px) {
+    .top-nav-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 0.6rem 0;
+        background: none;
+        backdrop-filter: none;
+        pointer-events: none; /* полоса лежит на логотипе — нажатия проходят к нему, ловят только кнопка и меню */
+    }
+
+    .mobile-menu-btn,
+    #mobileNav {
+        pointer-events: auto;
+    }
+
+    .top-nav-inner {
+        justify-content: flex-end;
+    }
+
+    .top-nav-links,
+    .top-nav-postponed {
+        display: none !important; /* те же пункты и «Отложенные» — в раскрывающемся меню */
+    }
+
+    /* шапка обрезает всё по своему краю (overflow: hidden) — панель меню фиксированная, чтобы не обрезалась */
+    #mobileNav {
+        position: fixed;
+        top: 3.4rem;
+        left: 0.75rem;
+        right: 0.75rem;
+        max-height: calc(100vh - 4.2rem);
+        overflow-y: auto;
+    }
+
+    /* шапка со своими слоями (меню, логотип) — над страницей, иначе панель меню уходит под блоки */
+    .site-header {
+        z-index: 10;
+    }
+}
+
 /* Mobile menu button */
 .mobile-menu-btn {
-    position: absolute;
-    right: 0;
-    background: none;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 4px;
-    padding: 4px 7px;
-    cursor: pointer;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    padding: 11px 10px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(18, 96, 118, 0.85);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 14px rgba(0, 40, 60, 0.25);
+    cursor: pointer;
 }
 
 .mobile-menu-btn span {
@@ -537,13 +588,24 @@ main > section:first-of-type::before {
     height: 2px;
     background: white;
     border-radius: 2px;
+    transition: transform 0.2s, opacity 0.2s;
 }
+
+/* открытое меню — кнопка становится крестиком */
+.mobile-menu-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.mobile-menu-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.mobile-menu-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
 .mobile-nav-links {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding-left: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 18px;
+    background: rgba(18, 96, 118, 0.95);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 10px 30px rgba(0, 40, 60, 0.3);
 }
 
 .mobile-nav-links a {
@@ -1014,6 +1076,14 @@ body:has(.footer-wave) main > section:last-child {
 
     .header-page-title {
         font-size: 1.5rem;
+    }
+
+    .site-logo {
+        padding-top: 1.25rem; /* кнопка меню — в пустом правом верхнем углу логотипа */
+    }
+
+    .header-page-content {
+        padding: 1rem 1rem 1.25rem;
     }
 }
 

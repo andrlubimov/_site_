@@ -63,13 +63,14 @@
                             {% if contacts.telegram_url %}<a href="{{ contacts.telegram_url }}" class="top-social-icon" target="_blank" rel="noopener" title="Telegram"><i class="bi bi-telegram"></i></a>{% endif %}
                             {% if contacts.vk_url %}<a href="{{ contacts.vk_url }}" class="top-social-icon" target="_blank" rel="noopener" title="ВКонтакте" style="font-size:0.7rem;font-weight:700;">ВК</a>{% endif %}
                         </div>
-                        <button class="mobile-menu-btn d-lg-none" data-bs-toggle="collapse" data-bs-target="#mobileNav">
+                        <button class="mobile-menu-btn d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNav"
+                                aria-controls="mobileNav" aria-expanded="false" aria-label="Меню">
                             <span></span><span></span><span></span>
                         </button>
                     </div>
                     <!-- Mobile nav -->
                     <div class="collapse" id="mobileNav">
-                        <nav class="mobile-nav-links py-2" aria-label="Меню">
+                        <nav class="mobile-nav-links" aria-label="Меню">
                             {% for item in site_menu %}
                             {% if item.children %}
                             <div class="mobile-nav-group">
