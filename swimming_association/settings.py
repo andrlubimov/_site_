@@ -134,6 +134,24 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Ошибки — в stderr: на сервере gunicorn работает под systemd, и они видны в journalctl -u swimming_association
+# (500 — с трассировкой). Без этого при DEBUG=False Django их никуда не пишет
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'plain': {'format': '{levelname} {name}: {message}', 'style': '{'},
+    },
+    'handlers': {
+        'stderr': {'class': 'logging.StreamHandler', 'formatter': 'plain'},
+    },
+    'root': {'handlers': ['stderr'], 'level': 'WARNING'},
+    'loggers': {
+        # 404 и прочие предупреждения Django на рабочем сервере — шум от ботов: там только ошибки
+        'django': {'handlers': ['stderr'], 'level': 'INFO' if DEBUG else 'ERROR', 'propagate': False},
+    },
+}
+
 # AdminLTE settings
 ADMINLTE_SETTINGS = {
     'sidebar': 'sidebar-mini',

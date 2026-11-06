@@ -26,6 +26,7 @@ set +o allexport
 DEPLOY_DIR="${DEPLOY_DIR:-/var/www/swimming_association}"
 VENV_DIR="${VENV_DIR:-${DEPLOY_DIR}/.venv}"
 SYSTEMD_SERVICE="${SYSTEMD_SERVICE:-swimming_association}"
+SERVICE_USER="${SERVICE_USER:-swimming_association}"
 NGINX_SERVICE="${NGINX_SERVICE:-nginx}"
 
 [[ -d "${DEPLOY_DIR}/.git" ]] || die "Git repository not found at ${DEPLOY_DIR}."
@@ -39,6 +40,12 @@ log "Installing Python dependencies ..."
 
 log "Applying Django migrations ..."
 (cd "${DEPLOY_DIR}" && "${VENV_DIR}/bin/python" manage.py migrate --noinput)
+
+# Migrations run as root and may write files to media (convention seed data) —
+# hand it back to the service user, otherwise uploads in the admin fail with 500
+if [[ -d "${DEPLOY_DIR}/media" ]]; then
+    chown -R "${SERVICE_USER}:${SERVICE_USER}" "${DEPLOY_DIR}/media"
+fi
 
 log "Collecting static files ..."
 (cd "${DEPLOY_DIR}" && "${VENV_DIR}/bin/python" manage.py collectstatic --noinput)
