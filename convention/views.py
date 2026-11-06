@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 from django.conf import settings
 from django.db.models import Exists, OuterRef
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -166,6 +166,12 @@ def contacts(request):
         committee=[o for o in organizers if o.group == 'committee'],
         coordinators=[o for o in organizers if o.group == 'coordinator'],
     )
+
+
+def robots_txt(request):
+    """На временном домене (convention.middleware) поисковикам закрыто всё"""
+    rules = 'Disallow: /' if getattr(request, 'convention_preview', False) else 'Allow: /'
+    return HttpResponse(f'User-agent: *\n{rules}\n', content_type='text/plain')
 
 
 def registration(request):

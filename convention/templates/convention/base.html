@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if request.convention_preview %}<meta name="robots" content="noindex, nofollow">{% endif %}
     <title>{% block title %}Конвенция специалистов грудничкового плавания{% endblock %}</title>
     <meta name="description" content="Конвенция направлена на развитие потенциала профессионалов, работающих с детьми, помогает в решении сложных вопросов, возникающих при такой работе и служит ориентиром для тех, кто только начинает делать первые шаги">
     <meta property="og:type" content="website">

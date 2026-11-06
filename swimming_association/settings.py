@@ -10,10 +10,14 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Сайт конвенции — на своём домене, с тем же сервером и базой (convention.middleware).
-# Локально открывается на http://convent.localhost:8000/
-CONVENTION_HOSTS = [host.strip() for host in os.environ.get(
-    'CONVENTION_HOSTS', 'convent.grudnichkovoe-plavanie.ru,convent.localhost').split(',') if host.strip()]
+# CONVENTION_DOMAIN (его же берёт deploy.sh для nginx) — домены через запятую: до открытия — временный
+# (convent.ska17.online), потом — настоящий. Локально открывается на http://convent.localhost:8000/
+CONVENTION_HOSTS = [host.strip() for host in (
+    os.environ.get('CONVENTION_HOSTS') or os.environ.get('CONVENTION_DOMAIN')
+    or 'convent.grudnichkovoe-plavanie.ru,convent.localhost').split(',') if host.strip()]
 ALLOWED_HOSTS += [host for host in CONVENTION_HOSTS if host not in ALLOWED_HOSTS]
+# Настоящий домен: только здесь сайт конвенции открыт поисковикам, на остальных — noindex
+CONVENTION_PUBLIC_HOST = os.environ.get('CONVENTION_PUBLIC_HOST', 'convent.grudnichkovoe-plavanie.ru')
 # Основной сайт — для ссылок с сайта конвенции
 MAIN_SITE_URL = os.environ.get('MAIN_SITE_URL', 'https://www.grudnichkovoe-plavanie.ru/')
 

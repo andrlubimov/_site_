@@ -1,7 +1,7 @@
 from datetime import date, time
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from .models import Convention, EventType, Organizer, Partner, ProgramEvent, Speaker
 from .utils import date_span, ordinal_ru
@@ -77,6 +77,27 @@ class HostRoutingTests(TestCase):
 
     def test_unknown_host_rejected(self):
         self.assertEqual(self.client.get('/', HTTP_HOST='evil.example').status_code, 400)
+
+
+PREVIEW = 'convent.ska17.online'
+
+
+@override_settings(CONVENTION_HOSTS=[HOST, PREVIEW], ALLOWED_HOSTS=[HOST, PREVIEW, 'testserver'])
+class PreviewDomainTests(TestCase):
+    """До открытия сайт наполняют на временном домене — он не должен попасть в поиск"""
+
+    def test_preview_domain_not_indexed(self):
+        response = self.client.get('/', HTTP_HOST=PREVIEW)
+        self.assertContains(response, 'четырнадцатая ежегодная конвенция')
+        self.assertEqual(response['X-Robots-Tag'], 'noindex, nofollow')
+        self.assertContains(response, '<meta name="robots" content="noindex, nofollow">')
+        self.assertEqual(self.client.get('/robots.txt', HTTP_HOST=PREVIEW).content, b'User-agent: *\nDisallow: /\n')
+
+    def test_public_domain_indexed(self):
+        response = self.client.get('/', HTTP_HOST=HOST)
+        self.assertFalse(response.has_header('X-Robots-Tag'))
+        self.assertNotContains(response, 'name="robots"')
+        self.assertEqual(self.client.get('/robots.txt', HTTP_HOST=HOST).content, b'User-agent: *\nAllow: /\n')
 
 
 class PagesTests(TestCase):

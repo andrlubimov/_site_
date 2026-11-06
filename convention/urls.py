@@ -18,4 +18,5 @@ urlpatterns = [
     re_path(r'^history/(?P<number>[0-9]+)/day-(?P<day>[0-9]+)/?$', views.program, name='archive_day'),
     re_path(r'^kontakty/?$', views.contacts, name='contacts'),
     re_path(r'^anketa/?$', views.registration, name='registration'),
+    path('robots.txt', views.robots_txt),
 ]
