@@ -1,0 +1,1 @@
+{% if partner.logo %}{% if partner.website %}<a href="{{ partner.website }}" target="_blank" rel="noopener">{% endif %}<img class="partner-fp-logo{% if big %} partner-fp-logo--big{% endif %}" src="{{ partner.logo.url }}" alt="{{ partner.name }}" title="{{ partner.name }}">{% if partner.website %}</a>{% endif %}{% endif %}

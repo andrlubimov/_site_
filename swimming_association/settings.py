@@ -9,6 +9,14 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Сайт конвенции — на своём домене, с тем же сервером и базой (convention.middleware).
+# Локально открывается на http://convent.localhost:8000/
+CONVENTION_HOSTS = [host.strip() for host in os.environ.get(
+    'CONVENTION_HOSTS', 'convent.grudnichkovoe-plavanie.ru,convent.localhost').split(',') if host.strip()]
+ALLOWED_HOSTS += [host for host in CONVENTION_HOSTS if host not in ALLOWED_HOSTS]
+# Основной сайт — для ссылок с сайта конвенции
+MAIN_SITE_URL = os.environ.get('MAIN_SITE_URL', 'https://www.grudnichkovoe-plavanie.ru/')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,10 +31,12 @@ INSTALLED_APPS = [
     # Local
     'core',
     'cabinet',
+    'convention',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'convention.middleware.ConventionSiteMiddleware',  # до CommonMiddleware: та проверяет адреса по urlconf
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

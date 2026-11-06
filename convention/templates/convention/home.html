@@ -1,0 +1,132 @@
+{% extends "convention/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="bundle bg-blue">
+    <div class="content">
+        <p class="lead white center mt-05">Конвенция направлена на развитие потенциала профессионалов, работающих с детьми, помогает в решении сложных вопросов, возникающих при такой работе и служит ориентиром для тех, кто только начинает делать первые шаги!</p>
+        <p class="center mt-3 mb-1">
+            <a href="{{ main_site_url }}"><img class="agp-block" src="{% static 'convention/img/agp-block.svg' %}" alt="Конвенция проводится Международной ассоциацией поддержки и развития раннего и грудничкового плавания"></a>
+        </p>
+    </div>
+</section>
+
+<section class="bundle bg-cream pb-3 pt-3">
+    <div class="content">
+        <p class="lead lead-small orange center"><b>Традиционно, основная тема Конвенции посвящена обмену опытом и представлению лучших практик в области раннего развития детей через воду, в целях привития принципов здорового образа жизни с рождения.</b></p>
+        <p class="lead lead-small orange center"><b>Мы работаем на здоровье будущего поколения!</b></p>
+        <p class="center mt-2 mb-2"><img src="{% static 'convention/img/wave-divider.svg' %}" alt=""></p>
+        {% if current %}
+        <p class="lead lead-small orange center">Конвенция пройдет в {{ current.year }} году уже {{ current.times }} раз, и мы рады снова встретиться со всеми вновь.<br> Мы счастливы, что результаты нашей совместной деятельности, вдохновляют нас всех на новые достижения.</p>
+        {% endif %}
+        <p class="lead lead-small orange center">На протяжении всех этих лет мы делимся опытом, открываем свои секреты и наработки и готовы делать это еще и ещё! <br>За прошедший с последней конференции год все накопили много разнообразных новинок, реализовали какие-то нововведения и получили определенную отдачу. А наши детки стали ещё более здоровыми, радостными и готовыми на новые открытия.</p>
+        <p class="center mt-2 mb-2"><img src="{% static 'convention/img/wave-divider.svg' %}" alt=""></p>
+        <p class="lead lead-small orange center"><b>Приходите, приезжайте, прилетайте рассказать о себе, посмотреть как работают другие <br>и узнать обо всем новом, что произошло за год!</b></p>
+    </div>
+</section>
+
+<section class="bundle">
+    {% if current.highlight_lines %}
+    <div class="content mt-2">
+        <p class="lead lead-large blue center"><b>{% for line in current.highlight_lines %}{{ line }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</b></p>
+    </div>
+    {% endif %}
+    {% if featured %}
+    <div class="flex-container content">
+        {% for item in featured %}
+        {% include "convention/includes/person_card.html" with photo=item.speaker.photo name=item.speaker.name text=item.text %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="content content-rounded bg-ltblue mt-3 note-box">
+        <p class="lead lead-small blue"><b>Как выступить на Конвенции?</b></p>
+        <p class="justify">Ваш личный профессиональный опыт, ваши находки и открытия, хитрости и технологии — это именно то, ради чего мы встречаемся ежегодно. Поделитесь своими наработками, это действительно важно! <a href="{% url 'convention:registration' %}">Зарегистрируйтесь</a> в качестве участника Конвенции, описав заявку на выступление. Все заявки рассматриваются Оргкомитетом и, если ваша тема интересна, заявка обязательно будет одобрена!</p>
+        <p class="mt-2">
+            <a href="{% url 'convention:registration' %}" class="button button-green button-small button-nomargin">Стать участником</a>
+        </p>
+    </div>
+    {% if price_cards %}
+    <div class="content">
+        <h2 class="orange center"><b>Участие в конвенции</b></h2>
+        <p class="lead lead-small ltgrey center">Для участия в Конвенции необходима предварительная регистрация. Вы можете выбрать интересующие вас дни работы Конвенции. Участие в мероприятиях Конвенции платное.</p>
+        <div class="flex-container content mt-3 mb-2">
+            {% for group, prices in price_cards %}
+            <div class="center condition-card">
+                <p class="lead orange mb-05">{{ group }}</p>
+                <p class="center big">{% for price in prices %}<b>{{ price.label }}</b> — {{ price.amount }} {{ price.unit }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</p>
+                <p class="center small">Предусмотрена система скидок. <br>Стоимость указана при оплате в день события без учета скидок.</p>
+                <p class="center"><a href="{% url 'convention:participation' %}">Подробнее</a></p>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="center dkgrey">В стоимость включено посещение всех мероприятий в выбранные вами дни.</p>
+        <p class="center mt-2">
+            <a href="{% url 'convention:participation' %}" class="button">Условия участия</a>
+        </p>
+    </div>
+    {% endif %}
+</section>
+
+{% if current %}
+<section class="bundle bg-yellow">
+    <div class="content-narrow location">
+        <img src="{% static 'convention/img/location-big.png' %}" class="location-img" alt="">
+        <div>
+            <p class="dkgrey big">
+                <b>Конвенция проводится {{ current.dates_span }}<br>{{ current.place }}</b>
+            </p>
+            {% if current.venue %}
+            <p class="dkgrey small location-details">
+                {{ current.venue.address }}
+                {% if current.venue.map_url or current.venue.transfer_url %}<br>{% endif %}
+                {% if current.venue.map_url %}<a href="{{ current.venue.map_url }}" target="_blank" rel="noopener">Схема проезда</a>{% endif %}
+                {% if current.venue.map_url and current.venue.transfer_url %} • {% endif %}
+                {% if current.venue.transfer_url %}<a href="{{ current.venue.transfer_url }}" target="_blank" rel="noopener">{{ current.venue.transfer_text|default:"Трансфер" }}</a>{% endif %}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if winners %}
+<section class="bundle pt-1">
+    <div class="content">
+        <h2 class="center blue"><b>Фотоконкурс</b></h2>
+        <p class="lead lead-small ltgrey center mb-1">
+            В рамках конвенции традиционно проводится конкурс фоторабот «Рыбка в воде».
+            <br>Победитель, занявший 1-е место, получает приз и бесплатное участие в Конвенции следующего года.
+        </p>
+    </div>
+    <div class="flex-container photo-winners">
+        {% for winner in winners %}
+        <figure class="center photo-winner">
+            <img class="photo-fp" src="{{ winner.photo.url }}" alt="Фотография: {{ winner.author }}" loading="lazy">
+            <figcaption><b>{{ winner.author }}</b><br>{{ winner.place }} место, {{ winner.convention.year }} год</figcaption>
+        </figure>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if sponsors or partners %}
+<section class="bundle bg-ltgreen mt-3">
+    <div class="content">
+        <h2 class="center blue">Партнеры конвенции</h2>
+        {% if sponsors %}
+        <p class="lead lead-small ltgrey center mb-05">Генеральный спонсор</p>
+        <p class="center mt-0 mb-2 partner-logos">
+            {% for link in sponsors %}{% include "convention/includes/partner_logo.html" with partner=link.partner big=True %}{% endfor %}
+        </p>
+        {% endif %}
+        {% if partners %}
+        <p class="center mt-2 mb-3 partner-logos">
+            {% for link in partners %}{% include "convention/includes/partner_logo.html" with partner=link.partner %}{% endfor %}
+        </p>
+        {% endif %}
+        <p class="center"><a href="{% url 'convention:partners' %}" class="button">Подробнее о партнерах</a></p>
+        <p class="lead lead-small center"><a href="{% url 'convention:partners' %}#uslovya">Как стать партнером?</a></p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

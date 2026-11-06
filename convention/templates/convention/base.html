@@ -1,0 +1,92 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Конвенция специалистов грудничкового плавания{% endblock %}</title>
+    <meta name="description" content="Конвенция направлена на развитие потенциала профессионалов, работающих с детьми, помогает в решении сложных вопросов, возникающих при такой работе и служит ориентиром для тех, кто только начинает делать первые шаги">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Конвенция специалистов грудничкового плавания">
+    <meta property="og:title" content="{% if current %}{{ current.title }} специалистов грудничкового плавания, {{ current.dates }}{% else %}Конвенция специалистов грудничкового плавания{% endif %}">
+    <meta property="og:description" content="Конвенция направлена на развитие потенциала профессионалов, работающих с детьми, помогает в решении сложных вопросов, возникающих при такой работе и служит ориентиром для тех, кто только начинает делать первые шаги">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'convention/favico/apple-touch-icon.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'convention/favico/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'convention/favico/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'convention/favico/favicon-16x16.png' %}">
+    <link rel="shortcut icon" href="{% static 'convention/favico/favicon.ico' %}">
+    <meta name="theme-color" content="#ea5330">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap">
+    <link rel="stylesheet" href="{% static 'convention/css/convention.css' %}">
+</head>
+<body>
+{% url 'convention:registration' as registration_page %}
+<nav class="bundle top-menu" aria-label="Разделы сайта конвенции">
+    <div class="content">{% include "convention/includes/menu.html" %}</div>
+</nav>
+
+<header class="bundle top-splash">
+    <div class="content content-narrow splash">
+        <a href="{% url 'convention:home' %}" class="splash-matryoshka" aria-hidden="true" tabindex="-1">
+            <img src="{% static 'convention/img/matryoshka.svg' %}" alt="">
+        </a>
+        <div class="splash-body">
+            <p class="splash-title" role="heading" aria-level="1">
+                <a href="{% url 'convention:home' %}">{% include "convention/includes/splash_title.html" %}</a>
+            </p>
+            <p class="splash-actions">
+                <a href="{{ registration_page }}" class="button button-green button-nomargin">Стать участником</a>
+                <span class="splash-social">
+                    {% if contacts.telegram_url %}<a href="{{ contacts.telegram_url }}" target="_blank" rel="noopener" aria-label="Telegram"><img src="{% static 'convention/img/tg.svg' %}" alt=""></a>{% endif %}
+                    {% if contacts.vk_url %}<a href="{{ contacts.vk_url }}" target="_blank" rel="noopener" aria-label="ВКонтакте"><img src="{% static 'convention/img/vk.svg' %}" alt=""></a>{% endif %}
+                </span>
+            </p>
+        </div>
+    </div>
+</header>
+
+<header class="bundle top-splash-mobile">
+    <a href="{% url 'convention:home' %}" class="splash-mobile-link">
+        <img class="splash-mobile-matryoshka" src="{% static 'convention/img/matryoshka-head.svg' %}" alt="">
+        <span class="splash-title splash-title--mobile">{% include "convention/includes/splash_title.html" %}</span>
+    </a>
+    <p class="center"><a href="{{ registration_page }}" class="button button-green button-nomargin">Стать участником</a></p>
+</header>
+
+<div class="menu-mobile">
+    <button type="button" class="cd-nav-trigger" aria-controls="cd-nav" aria-expanded="false">
+        Меню<span class="cd-nav-icon" aria-hidden="true"></span>
+    </button>
+    <nav id="cd-nav" class="cd-nav" aria-label="Разделы сайта конвенции">
+        <p class="cd-nav-title">{% include "convention/includes/splash_title.html" %}</p>
+        <p class="mobile-menu">{% include "convention/includes/menu.html" with separator="<br>" %}</p>
+    </nav>
+</div>
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="bundle bottom-menu">
+    <div class="content bottom-menu-inner">
+        <a href="{% url 'convention:home' %}" class="bottom-matryoshka" aria-hidden="true" tabindex="-1">
+            <img src="{% static 'convention/img/matryoshka-bottom.svg' %}" alt="">
+        </a>
+        <div class="bottom-menu-text">
+            <p><a href="{% url 'convention:home' %}"><img class="bottom-logo" src="{% static 'convention/img/logo-text-bottom.svg' %}" alt="Ежегодная конвенция специалистов грудничкового плавания"></a></p>
+            <p class="bottom-links">{% include "convention/includes/menu.html" %}</p>
+            <p class="bottom-policy">
+                Настоящая <a href="{% static 'convention/docs/politika_pd.pdf' %}" target="_blank">Политика в отношении обработки персональных данных</a>
+                действует в отношении всей информации, которую Пользователь посредством данного сайта может передать
+                для сбора и обработки Оператору — Ассоциации грудничкового и раннего плавания.
+            </p>
+            <p class="bottom-policy">
+                Конвенцию проводит <a href="{{ main_site_url }}">Международная ассоциация поддержки и развития раннего и грудничкового плавания</a>
+            </p>
+        </div>
+    </div>
+</footer>
+<script src="{% static 'convention/js/convention.js' %}" defer></script>
+</body>
+</html>

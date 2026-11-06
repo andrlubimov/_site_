@@ -1,0 +1,30 @@
+{% extends "convention/base.html" %}
+
+{% block title %}Архив • Конвенция специалистов грудничкового плавания{% endblock %}
+
+{% block content %}
+<section class="bundle bg-cream">
+    <div class="content">
+        <h1 class="center orange upper mt-05"><b>Архив конвенции</b></h1>
+    </div>
+</section>
+
+<div class="flex-container content mt-2 mb-3">
+    {% for convention in conventions %}
+    <div class="center speaker-card archive-card">
+        {% if convention.archive_image %}
+        <img class="speaker-face mb-05" src="{{ convention.archive_image.url }}" alt="" loading="lazy">
+        {% else %}
+        <span class="archive-number mb-05" aria-hidden="true">{{ convention.number }}</span>
+        {% endif %}
+        <p class="lead lead-small blue mt-05 mb-0">{{ convention.title }}</p>
+        <p class="tiny">Проходила {{ convention.dates }} года {{ convention.place }}</p>
+        {% if convention.details_url %}
+        <p class="mt-1"><a href="{{ convention.details_url }}" class="button button-green button-small button-nomargin"{% if not convention.has_program %} target="_blank"{% endif %}>Подробнее</a></p>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="lead center grey">Архив пока пуст.</p>
+    {% endfor %}
+</div>
+{% endblock %}

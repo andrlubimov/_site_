@@ -1,0 +1,137 @@
+{% extends "convention/base.html" %}
+{% load static %}
+
+{% block title %}Участие • Конвенция специалистов грудничкового плавания{% endblock %}
+
+{% block content %}
+<section class="bundle bg-cream">
+    <div class="content">
+        <h1 class="center orange upper mb-0"><b>Участие в конвенции</b></h1>
+    </div>
+</section>
+
+<section class="bundle">
+    <div class="content">
+        <p class="lead lead-small grey center mt-1">
+            Участие в мероприятиях Конвенции платное, предварительная регистрация участников обязательна.
+            <br>Стоимость участия зависит от вашей роли и количества дней, которое вы проведете на Конвенции.
+            <br>Предусмотрены скидки за предварительную оплату, скидки постоянным участникам и представителям клубов.
+        </p>
+        {% if price_cards %}
+        <div class="flex-container content mt-3 mb-2">
+            {% for group, prices in price_cards %}
+            <div class="center condition-card">
+                <p class="lead orange mb-05">{{ group }}</p>
+                <p class="center big">{% for price in prices %}<b>{{ price.label }}</b>{% if price.note %} ({{ price.note }}){% endif %} — {{ price.amount }} {{ price.unit }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="content content-narrow">
+        {% if current.price_note_lines %}
+        <p class="center dkgrey mt-0">{% for line in current.price_note_lines %}{{ line }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</p>
+        {% endif %}
+        {% if current.price_list %}
+        <p class="center dkgrey">
+            <a href="{{ current.price_list.url }}" target="_blank" class="button button-blue">Подробнее о стоимости участия</a>
+        </p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="bundle bg-yellow">
+    {% include "convention/includes/day_cards.html" %}
+    {% for price in extras %}
+    <p class="center mt-1"><b>{{ price.label }}</b>{% if price.note %} ({{ price.note }}){% endif %} — {{ price.amount }} {{ price.unit }}.</p>
+    {% endfor %}
+    <p class="mt-1 center">
+        <a href="{% url 'convention:registration' %}" class="button button-green">Стать участником</a>
+    </p>
+    {% if current.hotel_booking_url %}
+    <p class="center">
+        <a href="{{ current.hotel_booking_url }}" target="_blank" rel="noopener">Забронировать номер в отеле на время проведения конвенции</a>
+    </p>
+    {% endif %}
+</section>
+
+{% if current.hotel_name or hotel_prices %}
+<section class="bundle mb-0">
+    <div class="content-narrow">
+        <p class="lead lead-small orange mt-05 mb-05"><b>Размещение</b></p>
+        <p class="dkgrey">
+            Вы можете остановиться <b>{{ current.place }}</b> (место проведения Конвенции){% if current.venue.address %},
+            <br>по адресу {{ current.venue.address }}{% endif %}.
+        </p>
+        <div class="location">
+            <img src="{% static 'convention/img/location-big.png' %}" class="location-img" alt="">
+            <div>
+                <p class="dkgrey">
+                    {% if current.hotel_name %}<b>{% if current.hotel_url %}<a href="{{ current.hotel_url }}" target="_blank" rel="noopener">{{ current.hotel_name }}</a>{% else %}{{ current.hotel_name }}{% endif %}</b><br>{% endif %}
+                    {% for price in hotel_prices %}{{ price.label }}{% if price.note %} ({{ price.note }}){% endif %} — {{ price.amount }} {{ price.unit }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                </p>
+                {% if current.hotel_note %}<p class="dkgrey small">{{ current.hotel_note }}</p>{% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% if current.hotel_booking_url %}
+<section class="bundle center mt-0 mb-2 bg-ltgreen booking">
+    <p class="mt-1"><a href="{{ current.hotel_booking_url }}" class="button button-green" target="_blank" rel="noopener">Забронировать номер</a></p>
+    <p class="grey">Забронируйте номер в отеле на время проведения конвенции по специальной цене через наших партнеров.</p>
+</section>
+{% endif %}
+{% endif %}
+
+{% if current.regulations %}
+<div class="doc-item mb-1 mt-2">
+    <a href="{{ current.regulations.url }}" target="_blank">
+        <img src="{% static 'convention/img/pdf.svg' %}" alt="">
+        <span class="doc-name">Положение О проведении семинара <br>«Конвенция по грудничковому плаванию»</span>
+    </a>
+</div>
+{% endif %}
+{% if current.offer %}
+<div class="doc-item">
+    <a href="{{ current.offer.url }}" target="_blank">
+        <img src="{% static 'convention/img/pdf.svg' %}" alt="">
+        <span class="doc-name">Публичная оферта на оказание услуг участникам семинара «Конвенция по грудничковому плаванию»</span>
+    </a>
+    <p class="doc-prop">Становясь участником семинара вы принимаете положения публичной оферты</p>
+</div>
+{% endif %}
+
+<section class="bundle bg-cream mt-3">
+    <div class="content">
+        <h2 class="center blue mt-0">Мероприятия в рамках Конвенции</h2>
+        <p class="lead lead-small grey center">У вас имеется возможность выступить с докладом и поделиться своим опытом перед широкой аудиторией, а также поучаствовать в других мероприятиях, проводимом в рамках Конвенции.</p>
+        <p class="lead lead-small grey center">Доклады по актуальным вопросам развития грудничкового плавания, круглые столы, мероприятия по обмену опытом.</p>
+    </div>
+</section>
+<section class="bundle mt-1">
+    <div class="content">
+        <p class="lead lead-small grey"><b>Темы докладов</b></p>
+        <p class="big"><b>На Конвенции будет представлен профессиональный опыт и достижения по следующим направлениям:</b></p>
+        <ol class="big topics">
+            <li>Разминка сухопутная и водная</li>
+            <li>Адаптация ребенка к «большой» воде</li>
+            <li>Особенности психологической работы с «нехочухами» и «немогухами»</li>
+            <li>Плавание на груди</li>
+            <li>Плавание на спине</li>
+            <li>Плавание на боку</li>
+            <li>Работа с инвентарем</li>
+            <li>Прыжки</li>
+            <li>Обучение стилям плавания до 4‑х лет — «за» и «против»</li>
+            <li>Ныряние</li>
+            <li>Постановка дыхания</li>
+            <li>Самостоятельное плавание</li>
+            <li>Плавание и ныряние совместно с родителями</li>
+        </ol>
+        <div class="content content-rounded bg-ltgreen mt-2 note-box">
+            <p class="justify"><b>Представьте свой собственный доклад по выбранной вами теме, поделитесь с коллегами своим опытом, своими результатами и наработками!</b></p>
+            <p class="justify">При подготовке выступлений, мы просим вас ориентироваться на указанные темы, также вы можете предложить свое направление деятельности для доклада. Для того, чтобы стать докладчиком вам необходимо <a href="{% url 'convention:registration' %}">зарегистрироваться</a> в качестве участника Конвенции, описав заявку на выступление.</p>
+            <p class="justify">После одобрения заявки подготовьте выступление по выбранному направлению и презентационные материалы к выступлению (презентацию, фото, видео и т. д.). По желанию можно также подготовить раздаточный материал к докладу.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

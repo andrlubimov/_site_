@@ -1,0 +1,47 @@
+{% extends "convention/base.html" %}
+
+{% block title %}Партнеры • Конвенция специалистов грудничкового плавания{% endblock %}
+
+{% block content %}
+<section class="bundle bg-cream">
+    <div class="content">
+        <h1 class="center orange upper mb-0"><b>Партнеры конвенции</b></h1>
+    </div>
+</section>
+
+{% if partnerships %}
+<div class="partner-cards content mt-2">
+    {% for link in partnerships %}
+    {% with partner=link.partner %}
+    <article class="partner-card{% if link.is_general_sponsor %} partner-card--main{% endif %}">
+        {% if link.is_general_sponsor %}<p class="lead lead-small ltgrey left mt-0 mb-05">Генеральный спонсор</p>{% endif %}
+        {% if partner.logo %}
+        {% if partner.website %}<a href="{{ partner.website }}" target="_blank" rel="noopener">{% endif %}<img class="partner-card-logo" src="{{ partner.logo.url }}" alt="{{ partner.name }}">{% if partner.website %}</a>{% endif %}
+        {% else %}
+        <h2 class="partner-card-name">{{ partner.name }}</h2>
+        {% endif %}
+        {% if partner.headline %}<p class="justify mt-1"><b>{{ partner.headline|linebreaksbr }}</b></p>{% endif %}
+        {% for paragraph in partner.paragraphs %}<p class="justify">{{ paragraph|linebreaksbr }}</p>{% endfor %}
+        {% if partner.website %}<p><a href="{{ partner.website }}" target="_blank" rel="noopener">{% if link.is_general_sponsor %}Сайт генерального спонсора{% else %}Сайт партнера{% endif %}</a></p>{% endif %}
+    </article>
+    {% endwith %}
+    {% endfor %}
+</div>
+{% else %}
+<p class="lead center grey mt-2">Список партнеров конвенции скоро появится.</p>
+{% endif %}
+
+<section class="bundle bg-yellow mt-2 mb-3" id="uslovya">
+    <div class="content">
+        <h2 class="grey center"><b>Хотите стать партнером Конвенции?</b></h2>
+        <p class="lead lead-small grey center">Партнерам Конвенции предоставляется <b>рекламное пространство для продукции</b> в зале во время Конвенции с возможностью распространения продукции и рекламных материалов. <b>Время для презентации оборудования, продукции</b> на Конвенции (15 мин). Размещение <b>рекламного поста</b> в наших соцсетях. Размещение <b>логотипа партнера</b> на сайте Конвенции в течение года.</p>
+    </div>
+    {% if coordinators %}
+    <div class="flex-container content mt-2">
+        {% for person in coordinators %}
+        {% include "convention/includes/person_card.html" with photo=person.photo name=person.name text=person.role phone=person.phone email=person.email %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "convention/base.html" %}
+{% load static %}
+
+{% block title %}Программа{% if is_archive %} — {{ convention.title|lower }}, {{ convention.year }}{% endif %} • Конвенция специалистов грудничкового плавания{% endblock %}
+
+{% block content %}
+<section class="bundle bg-cream">
+    <div class="content">
+        <h1 class="center orange upper mt-05"><b>Программа мероприятий</b></h1>
+        {% if is_archive %}
+        <p class="lead center grey mt-0">{{ convention.title }}, {{ convention.dates }}</p>
+        {% endif %}
+    </div>
+    {% include "convention/includes/day_cards.html" %}
+    {% if day_links|length > 1 %}
+    <div class="content content-narrow mt-2">
+        <p class="lead lead-middle center blue mt-1 mb-0 day-links">
+            {% for link in day_links %}
+            <a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.day.label }} {{ link.day.date.year }}</a>
+            {% endfor %}
+        </p>
+    </div>
+    {% endif %}
+</section>
+
+{% if selected %}
+<p class="lead center grey mt-1 mb-1"><b>{{ day_title }}</b></p>
+{% endif %}
+{% if convention.program_notice %}
+<div class="content content-rounded bg-ltgreen mt-0 mb-2 notice">
+    <p class="center">{{ convention.program_notice }}</p>
+</div>
+{% endif %}
+<div class="content program">
+    {% for section in sections %}
+        {% if section.key != 'main' %}<p class="lead center grey mt-1 mb-1" id="{{ section.key }}">{{ section.label }}</p>{% endif %}
+        {% for event in section.events %}
+        <article class="event-card" style="--event-color: {{ event.event_type.color }}">
+            <p class="event-meta">
+                {% if event.event_type.show_label %}<span class="event-type">{{ event.event_type.name }}</span>{% endif %}
+                <span class="event-time"><b>{{ event.time|time:"H:i" }}</b> → {{ selected.date|date:"d.m.Y" }}</span>
+                {% if event.location %}<span class="event-location">{{ event.location }}</span>{% endif %}
+            </p>
+            <h3 class="event-title">{{ event.title }}</h3>
+            {% if event.topic %}<p class="event-topic">{{ event.topic|linebreaksbr }}</p>{% endif %}
+            {% for speaker in event.speakers.all %}
+            <div class="event-speaker">
+                <img class="event-speaker-img" src="{% if speaker.photo %}{{ speaker.photo.url }}{% else %}{% static 'convention/img/speaker-default.svg' %}{% endif %}" alt="" loading="lazy">
+                <p class="event-speaker-name"><b>{{ speaker.name }}</b></p>
+                {% if speaker.details %}<p class="event-speaker-details">{{ speaker.details }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </article>
+        {% endfor %}
+    {% empty %}
+        {% if not convention.program_notice %}
+        <p class="center grey mt-2 mb-3">Программа появится позже. Следите за обновлениями!</p>
+        {% endif %}
+    {% endfor %}
+</div>
+{% if day_links|length > 1 %}
+<div class="content content-narrow mt-2 mb-3">
+    <p class="lead lead-middle center blue mt-1 mb-0 day-links">
+        {% for link in day_links %}
+        <a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.day.label }} {{ link.day.date.year }}</a>
+        {% endfor %}
+    </p>
+</div>
+{% endif %}
+{% if is_archive %}
+<p class="center mb-3"><a href="{% url 'convention:history' %}" class="button">Все конвенции в архиве</a></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "convention/base.html" %}
+
+{% block title %}Регистрация участника • Конвенция специалистов грудничкового плавания{% endblock %}
+
+{% block content %}
+<section class="bundle bg-cream">
+    <div class="content">
+        <h1 class="center orange upper mt-05"><b>Регистрация участника конвенции</b></h1>
+    </div>
+</section>
+
+{% if form_src %}
+<section class="bundle center mt-1 mb-0 registration">
+    <script src="https://forms.yandex.ru/_static/embed.js"></script>
+    <iframe src="{{ form_src }}" name="ya-form-{{ form_id }}" title="Анкета участника конвенции"></iframe>
+</section>
+{% else %}
+<div class="content content-rounded bg-ltgreen mt-3 mb-3 notice">
+    <p class="center">Регистрация на {{ current.title|default:"конвенцию"|lower }} откроется скоро. Вопросы об участии — на странице <a href="{% url 'convention:contacts' %}">контактов</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

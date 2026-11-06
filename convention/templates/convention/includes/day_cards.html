@@ -1,0 +1,23 @@
+{% comment %}Карточки дней: дата, что проходит, а после мероприятий на одной площадке — её адрес и схема проезда (views.day_cards){% endcomment %}
+{% if day_cards %}
+<div class="flex-container content day-cards">
+    {% for card in day_cards %}
+    <div class="center speaker-card day-card">
+        <p class="lead lead-small orange mt-05 mb-0">{{ card.day.label }}</p>
+        {% for block in card.blocks %}
+            {% for activity in block.activities %}
+            <p class="lead lead-small mt-05 mb-0"><b>{{ activity.title }}</b>{% if activity.hall %}<br>{{ activity.hall }}{% endif %}</p>
+            {% endfor %}
+            {% if block.venue %}
+            <p class="tiny mt-05">
+                <b>{{ block.venue.name }}</b>
+                {% if block.venue.address %}<br>{{ block.venue.address }}{% endif %}
+                {% if block.venue.map_url %}<br><b><a href="{{ block.venue.map_url }}" target="_blank" rel="noopener">Схема проезда</a></b>{% endif %}
+                {% if block.venue.transfer_url %}<br><a href="{{ block.venue.transfer_url }}" target="_blank" rel="noopener">{{ block.venue.transfer_text|default:"Трансфер" }}</a>{% elif block.venue.transfer_text %}<br>{{ block.venue.transfer_text }}{% endif %}
+            </p>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

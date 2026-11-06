@@ -43,6 +43,9 @@ set +o allexport
 [[ -n "${REPO_URL:-}" ]] || die "REPO_URL is not set in ${ENV_FILE}."
 [[ -n "${DOMAIN:-}" ]]   || die "DOMAIN is not set in ${ENV_FILE}."
 
+# Сайт конвенции — на своём домене, тем же Django (приложение convention)
+CONVENTION_DOMAIN="${CONVENTION_DOMAIN:-convent.grudnichkovoe-plavanie.ru}"
+
 # Allow .env to override the deploy directory; re-derive dependent paths
 DEPLOY_DIR="${DEPLOY_DIR:-/var/www/swimming_association}"
 VENV_DIR="${DEPLOY_DIR}/.venv"
@@ -96,6 +99,7 @@ declare -A REQUIRED_VARS=(
     [DB_NAME]="${DB_NAME:-swimming_association}"
     [DB_USER]="${DB_USER:-postgres}"
     [ALLOWED_HOSTS]="${DOMAIN}"
+    [CONVENTION_HOSTS]="${CONVENTION_DOMAIN}"
     [USE_S3]="${USE_S3}"
 )
 
@@ -203,7 +207,7 @@ server {
 
 server {
     listen 80;
-    server_name ${DOMAIN};
+    server_name ${DOMAIN} ${CONVENTION_DOMAIN};
 
     client_max_body_size 20M;
 ${STATIC_MEDIA_LOCATIONS}
@@ -230,6 +234,7 @@ systemctl restart nginx
 
 log "Deployment complete!"
 log "  Site URL  : http://${DOMAIN}"
+log "  Convention: http://${CONVENTION_DOMAIN}"
 log "  Project   : ${DEPLOY_DIR}"
 log "  Venv      : ${VENV_DIR}"
 log "  Nginx conf: ${NGINX_CONF}"

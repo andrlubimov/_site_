@@ -44,15 +44,19 @@ def _menu():
 
 def navigation(request):
     """Меню сайта. Пункт подсвечен, если открыт он сам или одна из его страниц
-    (у «Курсов» — ещё страницы курсов и преподавателей: всё, что под /education/)."""
-    path = request.path
-    items = []
-    for label, url, children in _menu():
-        links = [url] + [child_url for _, child_url in children]
-        active = path in links or (label == 'Курсы' and path.startswith('/education/'))
-        items.append(SimpleNamespace(
-            label=label, url=url, external=url.startswith('http'), active=active,
-            children=[SimpleNamespace(label=child_label, url=child_url, active=path == child_url)
-                      for child_label, child_url in children],
-        ))
-    return {'site_menu': items}
+    (у «Курсов» — ещё страницы курсов и преподавателей: всё, что под /education/).
+    Строится, только если шаблон обратился к меню: на сайте конвенции (свой домен) адресов основного сайта нет."""
+    def build():
+        path = request.path
+        items = []
+        for label, url, children in _menu():
+            links = [url] + [child_url for _, child_url in children]
+            active = path in links or (label == 'Курсы' and path.startswith('/education/'))
+            items.append(SimpleNamespace(
+                label=label, url=url, external=url.startswith('http'), active=active,
+                children=[SimpleNamespace(label=child_label, url=child_url, active=path == child_url)
+                          for child_label, child_url in children],
+            ))
+        return items
+
+    return {'site_menu': SimpleLazyObject(build)}

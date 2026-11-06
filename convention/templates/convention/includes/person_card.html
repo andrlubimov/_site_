@@ -1,0 +1,5 @@
+{% load static %}<div class="center speaker-card">
+    <img class="speaker-face{% if orange %} speaker-face-orange{% endif %} mb-05" src="{% if photo %}{{ photo.url }}{% else %}{% static 'convention/img/speaker-default.svg' %}{% endif %}" alt="" loading="lazy">
+    <p class="lead lead-small {% if orange %}orange{% else %}blue{% endif %} mt-05 mb-0">{{ name }}</p>
+    <p class="tiny">{{ text|linebreaksbr }}{% if phone or email %}<br><br>{% if phone %}<b><a href="tel:{{ phone|cut:' '|cut:'('|cut:')'|cut:'-' }}" class="phone-link">{{ phone }}</a></b><br>{% endif %}{% if email %}<b><a href="mailto:{{ email }}">{{ email }}</a></b>{% endif %}{% endif %}</p>
+</div>

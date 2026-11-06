@@ -1,0 +1,30 @@
+{% extends "convention/base.html" %}
+
+{% block title %}Контакты • Конвенция специалистов грудничкового плавания{% endblock %}
+
+{% block content %}
+<section class="bundle bg-cream">
+    <div class="content">
+        <h1 class="center orange upper mb-0"><b>Контакты</b></h1>
+    </div>
+</section>
+
+{% if committee %}
+<p class="lead center grey mt-1">Оргкомитет конвенции</p>
+<div class="flex-container content">
+    {% for person in committee %}
+    {% include "convention/includes/person_card.html" with photo=person.photo name=person.name text=person.role phone=person.phone email=person.email orange=True %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if coordinators %}
+<section class="bundle bg-yellow mt-3 mb-3">
+    <div class="flex-container content">
+        {% for person in coordinators %}
+        {% include "convention/includes/person_card.html" with photo=person.photo name=person.name text=person.role phone=person.phone email=person.email %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
