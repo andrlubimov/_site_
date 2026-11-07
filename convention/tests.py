@@ -141,6 +141,21 @@ class PagesTests(TestCase):
         self.assertNotContains(response, 'Публичная оферта')
         self.assertTrue(Convention.objects.get(number=11).offer)
 
+    def test_talk_topics_from_admin(self):
+        response = self.get('/uchastie')
+        self.assertContains(response, '<li>Разминка сухопутная и водная</li>')  # список со старого сайта
+        self.assertContains(response, '<li>Плавание и ныряние совместно с родителями</li>')
+        current = Convention.objects.current()
+        current.talk_topics = 'Новая тема\n\n  Ещё одна тема  '
+        current.save()
+        response = self.get('/uchastie')
+        self.assertContains(response, '<li>Новая тема</li>')
+        self.assertContains(response, '<li>Ещё одна тема</li>')
+        self.assertNotContains(response, 'Разминка сухопутная')
+        current.talk_topics = ''
+        current.save()
+        self.assertNotContains(self.get('/uchastie'), 'Темы докладов')
+
     def test_history(self):
         response = self.get('/history')
         self.assertContains(response, 'Шестая конвенция')

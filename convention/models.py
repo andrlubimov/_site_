@@ -72,6 +72,23 @@ class Convention(models.Model):
                 'Предусмотрены скидки: при ранней оплате участия; для группового посещения; '
                 'участникам прошлых Конвенций; членам Ассоциации грудничкового плавания.',
         help_text='Под карточками цен на странице «Участие»; каждая строка — отдельно.')
+    talk_topics = models.TextField(
+        'Темы докладов', blank=True,
+        default='Разминка сухопутная и водная\n'
+                'Адаптация ребенка к «большой» воде\n'
+                'Особенности психологической работы с «нехочухами» и «немогухами»\n'
+                'Плавание на груди\n'
+                'Плавание на спине\n'
+                'Плавание на боку\n'
+                'Работа с инвентарем\n'
+                'Прыжки\n'
+                'Обучение стилям плавания до 4‑х лет — «за» и «против»\n'
+                'Ныряние\n'
+                'Постановка дыхания\n'
+                'Самостоятельное плавание\n'
+                'Плавание и ныряние совместно с родителями',
+        help_text='Нумерованный список на странице «Участие»; каждая тема — с новой строки. '
+                  'Если пусто — блок «Темы докладов» не показывается.')
     hotel_name = models.CharField('Отель', max_length=255, blank=True, help_text='Например: «Отель «Гринвуд»».')
     hotel_url = models.URLField('Сайт отеля', blank=True)
     hotel_booking_url = models.URLField('Бронирование номера', blank=True,
@@ -138,6 +155,10 @@ class Convention(models.Model):
     @property
     def price_note_lines(self):
         return [line.strip() for line in self.price_note.splitlines() if line.strip()]
+
+    @property
+    def talk_topic_lines(self):
+        return [line.strip() for line in self.talk_topics.splitlines() if line.strip()]
 
 
 class ConventionDay(models.Model):
