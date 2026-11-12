@@ -233,7 +233,14 @@ def upcoming_schedules():
             .prefetch_related('in_person_days'))
 
 
-COURSE_DATES_SHOWN = 2  # на странице курса видны ближайшие даты, остальные — под кнопкой «Развернуть»
+# на странице курса видны две ближайшие даты и два представителя для практики, остальные — под кнопкой «Развернуть»
+COURSE_ROWS_SHOWN = 2
+
+
+def more_label(count, forms):
+    """«ещё 3 даты» — подпись кнопки «Развернуть» у свёрнутого списка"""
+    more = count - COURSE_ROWS_SHOWN
+    return f'ещё {more} {plural_ru(more, forms)}' if more > 0 else ''
 
 
 def course_detail(request, slug):
@@ -244,6 +251,8 @@ def course_detail(request, slug):
             Prefetch('schedules', queryset=upcoming_schedules(), to_attr='upcoming'),
             Prefetch('representatives', queryset=Representative.objects.filter(is_active=True),
                      to_attr='active_representatives'),
+            Prefetch('practice_representatives', queryset=Representative.objects.filter(is_active=True),
+                     to_attr='practice_reps'),
         ),
         slug=slug, is_active=True,
     )
@@ -255,12 +264,13 @@ def course_detail(request, slug):
     if request.user.is_authenticated:
         enrolled = set(Enrollment.objects.filter(user=request.user, schedule__course=course)
                        .values_list('schedule_id', flat=True))
-    more = len(course.upcoming) - COURSE_DATES_SHOWN
     context = {
         'course': course,
         'variants': variants if len(variants) > 1 else [],
         'schedules': course.upcoming,
-        'dates_more_label': f'ещё {more} {plural_ru(more, ("дата", "даты", "дат"))}' if more > 0 else '',
+        'dates_more_label': more_label(len(course.upcoming), ('дата', 'даты', 'дат')),
+        'practice_more_label': more_label(len(course.practice_reps),
+                                          ('представитель', 'представителя', 'представителей')),
         'enrolled': enrolled,
         'page_title': course.title,
     }

@@ -1,5 +1,5 @@
 /* Страница курса: «Программа курса» свёрнута до нескольких строк, кнопка «Развернуть» раскрывает её.
-   Так же свёрнуты ближайшие даты сверх двух. Без JS программа и даты показываются целиком. */
+   Так же свёрнуты ближайшие даты и представители для практики сверх двух. Без JS всё показывается целиком. */
 (function () {
     'use strict';
 
@@ -36,12 +36,12 @@
     });
 })();
 
-(function () {
+// Списки, свёрнутые до двух строк (даты, представители для практики): кнопка раскрывает список из aria-controls
+document.querySelectorAll('.course-list-toggle').forEach(function (toggle) {
     'use strict';
 
-    var list = document.getElementById('course-dates');
-    var toggle = document.querySelector('.course-dates-toggle');
-    if (!list || !toggle) return;
+    var list = document.getElementById(toggle.getAttribute('aria-controls'));
+    if (!list) return;
 
     var label = toggle.querySelector('span');
     var icons = toggle.querySelectorAll('.bi');
@@ -61,8 +61,8 @@
         var expanded = toggle.getAttribute('aria-expanded') === 'true';
         setExpanded(!expanded);
         if (expanded) {
-            // при сворачивании возвращаемся к началу списка дат
+            // при сворачивании возвращаемся к началу списка
             list.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
-})();
+});

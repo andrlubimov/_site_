@@ -338,9 +338,12 @@ class CourseAdminTests(TestCase):
 
     def test_course_representatives(self):
         rep = Representative.objects.create(name='Счастливый крепыш', city='Новосибирск', country='Россия')
-        response = self.client.post('/admin/core/course/add/', self.course_data(representatives=[rep.pk]))
+        response = self.client.post('/admin/core/course/add/', self.course_data(
+            representatives=[rep.pk], practice_representatives=[rep.pk]))
         self.assertEqual(response.status_code, 302, response.content.decode()[:500])
-        self.assertEqual(list(Course.objects.get(slug='novyy-kurs').representatives.all()), [rep])
+        course = Course.objects.get(slug='novyy-kurs')
+        self.assertEqual(list(course.representatives.all()), [rep])
+        self.assertEqual(list(course.practice_representatives.all()), [rep])
         self.assertContains(self.client.get(f'/admin/core/representative/{rep.pk}/change/'), 'Новый курс')
         self.assertEqual(self.client.get('/admin/core/representative/').status_code, 200)
 
@@ -742,6 +745,20 @@ class RepresentativeCoursesTests(TestCase):
         html = response.content.decode()
         self.assertLess(html.index('Ближайшие даты проведения'), html.index('можно пройти у наших представителей'))
         self.assertNotContains(self.client.get('/education/courses/other/'), 'можно пройти у наших представителей')
+
+    def test_practice_representatives_collapsed_after_two(self):
+        self.assertNotContains(self.client.get('/education/courses/other/'), 'Практическую часть')
+        reps = [Representative.objects.create(name=f'Клуб {n}', city='Казань', country='Россия') for n in range(3)]
+        self.other.practice_representatives.set(reps[:2] + [self.hidden])
+        response = self.client.get('/education/courses/other/')
+        self.assertContains(response, 'Практическую часть данного курса можно пройти у наших представителей')
+        self.assertContains(response, 'href="/specialists/klub-0/"')
+        self.assertNotContains(response, 'Скрытый клуб')
+        self.assertNotContains(response, 'aria-controls="course-practice"')  # двое — сворачивать нечего
+        self.other.practice_representatives.add(reps[2])
+        response = self.client.get('/education/courses/other/')
+        self.assertContains(response, 'aria-controls="course-practice"')
+        self.assertContains(response, 'data-more="ещё 1 представитель"')
 
     def test_representative_page(self):
         response = self.client.get('/specialists/schastlivyy-krepysh/')

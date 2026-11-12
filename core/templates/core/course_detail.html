@@ -148,7 +148,7 @@
                         </ul>
                         {% if dates_more_label %}
                         {# видны первые две даты, остальные раскрывает кнопка (course-detail.js); без JS — все #}
-                        <button type="button" class="course-program-toggle course-dates-toggle" aria-controls="course-dates"
+                        <button type="button" class="course-program-toggle course-dates-toggle course-list-toggle" aria-controls="course-dates"
                                 aria-expanded="false" data-more="{{ dates_more_label }}" hidden>
                             <i class="bi bi-arrow-down"></i>
                             <span>Развернуть</span>
@@ -179,6 +179,34 @@
                             </li>
                             {% endfor %}
                         </ul>
+                    </section>
+                    {% endif %}
+                    {% endwith %}
+
+                    {% with reps=course.practice_reps %}
+                    {% if reps %}
+                    <section class="course-detail-block course-detail-reps">
+                        <h2 class="course-detail-h">Практическую часть данного курса можно пройти у наших представителей</h2>
+                        <ul class="course-detail-doc-list" id="course-practice">
+                            {% for rep in reps %}
+                            <li class="course-detail-doc">
+                                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                                <span class="course-option-text">
+                                    <a class="course-option-name course-detail-rep-link" href="{{ rep.get_absolute_url }}">{{ rep.name }}</a>
+                                    <span class="course-option-meta">{{ rep.city }}, {{ rep.country }}</span>
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% if practice_more_label %}
+                        {# видны первые два, остальных раскрывает кнопка (course-detail.js); без JS — все #}
+                        <button type="button" class="course-program-toggle course-list-toggle" aria-controls="course-practice"
+                                aria-expanded="false" data-more="{{ practice_more_label }}" hidden>
+                            <i class="bi bi-arrow-down"></i>
+                            <span>Развернуть</span>
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+                        {% endif %}
                     </section>
                     {% endif %}
                     {% endwith %}

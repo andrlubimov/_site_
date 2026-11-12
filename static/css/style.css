@@ -1726,8 +1726,9 @@ body:has(.footer-wave) main > section:last-child {
     display: none;
 }
 
-/* Ближайшие даты: видны две, остальные свёрнуты (см. course-detail.js) */
-.course-dates-list.is-collapsed > .course-dates-row:nth-child(n+3) {
+/* Ближайшие даты и представители для практики: видны две строки, остальные свёрнуты (см. course-detail.js) */
+.course-dates-list.is-collapsed > .course-dates-row:nth-child(n+3),
+.course-detail-doc-list.is-collapsed > .course-detail-doc:nth-child(n+3) {
     display: none;
 }
 

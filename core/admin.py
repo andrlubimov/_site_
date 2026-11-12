@@ -202,7 +202,7 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ['title', 'slug', 'short_description', 'full_description', 'teachers__last_name']
     list_editable = ['order', 'is_active']
     prepopulated_fields = {'slug': ('title',)}
-    autocomplete_fields = ['required_course', 'card', 'representatives']
+    autocomplete_fields = ['required_course', 'card', 'representatives', 'practice_representatives']
     readonly_fields = ['schedule_overview']
     fieldsets = (
         ('Основное', {
@@ -232,9 +232,10 @@ class CourseAdmin(admin.ModelAdmin):
             'fields': ('required_course',),
         }),
         ('Представители', {
-            'fields': ('representatives',),
+            'fields': ('representatives', 'practice_representatives'),
             'description': 'Представители работают как франчайзи: проводят у себя курсы, франшизу которых купили. '
-                           'Можно выбрать несколько или ни одного.',
+                           'У некоторых курсов, которые проходят в Ассоциации, практику можно сдать у представителя '
+                           'ближе к дому. В обоих полях можно выбрать несколько представителей или ни одного.',
         }),
         ('Расписание', {
             'fields': ('schedule_overview',),
