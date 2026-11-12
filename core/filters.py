@@ -6,7 +6,7 @@
 from django import forms
 from django.db.models import Q
 
-from .models import ChildAge, Course, HealthFeature, Teacher
+from .models import ChildAge, Course, HealthFeature, Representative, Teacher
 
 HOURS_RANGES = {
     'upto10': (None, 10),
@@ -34,7 +34,7 @@ def search_key(text):
 
 class CourseFilterForm(forms.Form):
     # порядок в блоке фильтров: частые группы — сверху
-    field_order = ['q', 'type', 'hours', 'direction', 'teacher', 'age', 'health', 'venue', 'skill']
+    field_order = ['q', 'type', 'hours', 'direction', 'teacher', 'age', 'health', 'venue', 'skill', 'representative']
 
     q = forms.CharField(label='Поиск', required=False, max_length=100, widget=forms.TextInput(attrs={
         'type': 'search', 'class': 'form-control form-control-sm', 'placeholder': 'Название или тема',
@@ -43,7 +43,7 @@ class CourseFilterForm(forms.Form):
                                       widget=forms.CheckboxSelectMultiple)
     teacher = forms.ModelChoiceField(label='Преподаватель', queryset=Teacher.objects.none(), required=False,
                                      to_field_name='slug', empty_label='Все преподаватели')
-    age = forms.ModelMultipleChoiceField(label='Возраст детей', queryset=ChildAge.objects.all(), required=False,
+    age = forms.ModelMultipleChoiceField(label='Целевая группа', queryset=ChildAge.objects.all(), required=False,
                                          to_field_name='code', widget=forms.CheckboxSelectMultiple)
     health = forms.ModelMultipleChoiceField(label='Особенности здоровья', queryset=HealthFeature.objects.all(),
                                             required=False, to_field_name='code',
@@ -56,6 +56,9 @@ class CourseFilterForm(forms.Form):
                                      widget=forms.CheckboxSelectMultiple)
     skill = forms.MultipleChoiceField(label='Уровень учащегося', choices=SKILL_FILTER_CHOICES, required=False,
                                       widget=forms.CheckboxSelectMultiple)
+    representative = forms.ModelChoiceField(label='Представитель', queryset=Representative.objects.none(),
+                                            required=False, to_field_name='slug',
+                                            empty_label='Все представители')
 
     def __init__(self, *args, dated_only=False, **kwargs):
         super().__init__(*args, **kwargs)
@@ -65,6 +68,15 @@ class CourseFilterForm(forms.Form):
         self.fields['teacher'].queryset = (Teacher.objects.filter(courses__is_active=True)
                                            .distinct().order_by('last_name', 'first_name'))
         self.fields['teacher'].widget.attrs['class'] = 'form-select form-select-sm'
+        # представители — только те, кто проводит курсы на сайте; если таких нет, фильтр не показываем
+        representatives = (Representative.objects.filter(is_active=True, courses__is_active=True)
+                           .distinct().order_by('name'))
+        if representatives.exists():
+            self.fields['representative'].queryset = representatives
+            self.fields['representative'].label_from_instance = lambda rep: rep.name  # без города: колонка узкая
+            self.fields['representative'].widget.attrs['class'] = 'form-select form-select-sm'
+        else:
+            del self.fields['representative']
 
     @property
     def is_filtered(self):
@@ -109,4 +121,6 @@ class CourseFilterForm(forms.Form):
             queryset = queryset.filter(course_type__in=data['type'])
         if data['skill']:
             queryset = queryset.filter(skill_level__in=data['skill'])
+        if data.get('representative'):
+            queryset = queryset.filter(representatives=data['representative'])
         return queryset.distinct()

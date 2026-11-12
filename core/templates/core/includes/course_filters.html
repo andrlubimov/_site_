@@ -27,7 +27,7 @@
         {% else %}
         <fieldset class="course-filter">
             <legend>{{ field.label }}</legend>
-            {% if field.name == 'teacher' %}
+            {% if field.name == 'teacher' or field.name == 'representative' %}
             {{ field }}
             {% else %}
             <div class="course-filter-options">

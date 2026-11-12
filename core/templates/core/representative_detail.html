@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static course_tags %}
+
+{% block title %}{{ page_title }} - Ассоциация поддержки и развития раннего и грудничкового плавания{% endblock %}
+
+{% block header_content %}
+<div class="header-page-content">
+    <p class="header-page-title">Представители</p>
+    <div class="header-tabs">
+        <a href="{% url 'core:page_content' slug='about' %}" class="header-tab-btn">Об Ассоциации</a>
+        <a href="{% url 'core:page_content' slug='membership' %}" class="header-tab-btn">Членство</a>
+        <a href="{% url 'core:specialists_list' %}" class="header-tab-btn active">Представители</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- Профиль представителя: как у преподавателя -->
+            <aside class="col-lg-3">
+                <div class="teacher-profile">
+                    <div class="rep-profile-logo">
+                        {% if rep.logo %}<img src="{{ rep.logo.url }}" alt="{{ rep.name }}">{% else %}<i class="bi bi-water" aria-hidden="true"></i>{% endif %}
+                    </div>
+                    <p class="teacher-profile-role">{{ rep.get_kind_display }}</p>
+                    <h1 class="teacher-profile-name">{{ rep.name }}</h1>
+
+                    <dl class="course-aside-list">
+                        <div class="course-aside-row">
+                            <dt>Город</dt>
+                            <dd><span class="course-chip">{{ rep.city }}, {{ rep.country }}</span></dd>
+                        </div>
+                        {% if rep.contact_name %}
+                        <div class="course-aside-row">
+                            <dt>Контактное лицо</dt>
+                            <dd>{{ rep.contact_name }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if rep.phone or rep.email or rep.website %}
+                        <div class="course-aside-row">
+                            <dt>Контакты</dt>
+                            <dd>
+                                <ul class="rep-card-links rep-profile-links">
+                                    {% if rep.phone %}<li><i class="bi bi-telephone"></i><a href="tel:{{ rep.phone_href }}">{{ rep.phone }}</a></li>{% endif %}
+                                    {% if rep.email %}<li><i class="bi bi-envelope"></i><a href="mailto:{{ rep.email }}">{{ rep.email }}</a></li>{% endif %}
+                                    {% if rep.website %}<li><i class="bi bi-globe2"></i><a href="{{ rep.website }}" target="_blank" rel="noopener">Сайт</a></li>{% endif %}
+                                </ul>
+                            </dd>
+                        </div>
+                        {% endif %}
+                        {% if cards %}
+                        <div class="course-aside-row">
+                            <dt>Программы</dt>
+                            <dd><span class="course-chip">{{ found_label }}</span></dd>
+                        </div>
+                        {% endif %}
+                    </dl>
+                </div>
+            </aside>
+
+            <div class="col-lg-9">
+                <nav class="course-list-bar course-detail-bar" aria-label="Навигация">
+                    <a class="course-detail-back" href="{% url 'core:specialists_list' %}"><i class="bi bi-arrow-left"></i> Все представители</a>
+                    <a class="course-detail-back ms-auto" href="{% url 'core:courses_list' %}"><i class="bi bi-mortarboard"></i> Все программы</a>
+                </nav>
+
+                {% if rep.description %}
+                <article class="course-detail teacher-bio">
+                    <h2 class="course-detail-h">О представителе</h2>
+                    {{ rep.description|linebreaks }}
+                </article>
+                {% endif %}
+
+                <section class="course-section teacher-courses" aria-labelledby="rep-courses-title">
+                    <header class="course-section-head">
+                        <span class="course-dir-icon"><i class="bi bi-mortarboard"></i></span>
+                        <div>
+                            <h2 class="course-section-title" id="rep-courses-title">Курсы представителя</h2>
+                            <small>{% if cards %}{{ found_label }} · преподавательский состав и цена могут отличаться{% else %}пока нет курсов{% endif %}</small>
+                        </div>
+                    </header>
+                    {% if cards %}
+                    <div class="row g-3">
+                        {% for card in cards %}
+                        <div class="col-md-6">
+                            {% include "core/includes/course_card.html" %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="course-list-empty">
+                        <i class="bi bi-calendar-x" aria-hidden="true"></i>
+                        <p>Сейчас представитель не проводит курсы Ассоциации.</p>
+                        <a class="btn btn-light btn-sm rounded-pill" href="{% url 'core:courses_list' %}">Все программы</a>
+                    </div>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

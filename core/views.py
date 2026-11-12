@@ -242,6 +242,8 @@ def course_detail(request, slug):
         Course.objects.select_related('required_course__card', 'card').prefetch_related(
             'course_teachers__teacher', 'child_ages', 'health_features',
             Prefetch('schedules', queryset=upcoming_schedules(), to_attr='upcoming'),
+            Prefetch('representatives', queryset=Representative.objects.filter(is_active=True),
+                     to_attr='active_representatives'),
         ),
         slug=slug, is_active=True,
     )
@@ -265,6 +267,12 @@ def course_detail(request, slug):
     return render(request, 'core/course_detail.html', context)
 
 
+def programs_label(courses):
+    """«3 программы» — программа считается как карточка на странице «Программы»: варианты одного курса — один раз"""
+    programs = len({('card', c.card_id) if c.card_id else ('course', c.pk) for c in courses})
+    return f'{programs} {plural_ru(programs, ("программа", "программы", "программ"))}' if programs else ''
+
+
 def teachers_list(request):
     """Список преподавателей: карточки с фото, числом программ и направлениями; фильтр по направлению"""
     teachers = Teacher.objects.prefetch_related(Prefetch(
@@ -279,12 +287,9 @@ def teachers_list(request):
         codes = {c.direction for c in teacher.active_courses if c.direction}
         if direction and direction not in codes:
             continue
-        # программа — карточка на странице «Программы»: варианты одного курса считаются один раз
-        programs = len({('card', c.card_id) if c.card_id else ('course', c.pk) for c in teacher.active_courses})
         cards.append(SimpleNamespace(
             teacher=teacher,
-            programs_label=(f'{programs} {plural_ru(programs, ("программа", "программы", "программ"))}'
-                            if programs else 'Сейчас нет открытых курсов'),
+            programs_label=programs_label(teacher.active_courses) or 'Сейчас нет открытых курсов',
             directions=[(code, labels[code], Course.DIRECTION_ICONS[code])
                         for code in DIRECTION_SECTION_ORDER if code in codes],
         ))
@@ -346,7 +351,11 @@ ASSOCIATION_HQ = {
 
 def representatives_list(request):
     """Страница «Представители»: региональные представители, зарубежные партнёры и глобус"""
-    representatives = list(Representative.objects.filter(is_active=True))
+    representatives = list(Representative.objects.filter(is_active=True).prefetch_related(Prefetch(
+        'courses', queryset=Course.objects.filter(is_active=True), to_attr='active_courses',
+    )))
+    for rep in representatives:
+        rep.programs_label = programs_label(rep.active_courses)
     globe_points = [ASSOCIATION_HQ] + [
         {
             'id': f'rep-{rep.pk}',
@@ -367,6 +376,26 @@ def representatives_list(request):
         'page_title': 'Представители',
     }
     return render(request, 'core/representatives.html', context)
+
+
+def representative_detail(request, slug):
+    """Страница представителя: контакты, описание и курсы, которые он проводит по франшизе"""
+    rep = get_object_or_404(Representative, slug=slug, is_active=True)
+    courses = (
+        Course.objects.filter(is_active=True, representatives=rep)
+        .select_related('card', 'card__description_course')
+        .prefetch_related('course_teachers__teacher')
+        .order_by('order', 'title')
+    )
+    # те же карточки, что на странице «Программы», но без дат: у представителя свои даты
+    cards = build_course_cards(courses)
+    context = {
+        'rep': rep,
+        'cards': cards,
+        'found_label': cards_found_label(cards),
+        'page_title': rep.name,
+    }
+    return render(request, 'core/representative_detail.html', context)
 
 
 def partners_list(request):

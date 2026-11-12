@@ -18,6 +18,7 @@ urlpatterns = [
     path('courses/', RedirectView.as_view(pattern_name='core:courses_list', permanent=True)),
     path('courses/<slug:slug>/', views.legacy_course_redirect),
     path('specialists/', views.representatives_list, name='specialists_list'),
+    path('specialists/<slug:slug>/', views.representative_detail, name='representative_detail'),
     path('partners/', views.partners_list, name='partners_list'),
     path('news/', views.news_list, name='news_list'),
     path('news/<slug:slug>/', views.news_detail, name='news_detail'),

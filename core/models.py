@@ -75,14 +75,14 @@ class Teacher(models.Model):
 
 
 class ChildAge(models.Model):
-    """Справочник «Возраст детей» (грудной, ранний, дошкольный)"""
+    """Справочник «Целевая группа» (груднички, ранний и дошкольный возраст, взрослые)"""
     code = models.SlugField('Код', max_length=30, unique=True)
     name = models.CharField('Название', max_length=100)
     order = models.PositiveSmallIntegerField('Порядок', default=0)
 
     class Meta:
-        verbose_name = 'Возраст детей'
-        verbose_name_plural = 'Возраст детей'
+        verbose_name = 'Целевая группа'
+        verbose_name_plural = 'Целевые группы'
         ordering = ['order']
 
     def __str__(self):
@@ -182,12 +182,12 @@ class Course(models.Model):
         Teacher, verbose_name='Преподаватели', through='CourseTeacher',
         related_name='courses', blank=True,
     )
-    child_ages = models.ManyToManyField(ChildAge, verbose_name='Возраст детей', related_name='courses')
+    child_ages = models.ManyToManyField(ChildAge, verbose_name='Целевая группа', related_name='courses', blank=True)
     direction = models.CharField('Направление работы', max_length=20, choices=DIRECTION_CHOICES)
     health_features = models.ManyToManyField(
-        HealthFeature, verbose_name='Особенности здоровья детей', related_name='courses',
+        HealthFeature, verbose_name='Особенности здоровья детей', related_name='courses', blank=True,
     )
-    venue = models.CharField('Место проведения', max_length=20, choices=VENUE_CHOICES)
+    venue = models.CharField('Место проведения', max_length=20, choices=VENUE_CHOICES, blank=True)
     skill_level = models.CharField('Навыки учащегося', max_length=20, choices=SKILL_CHOICES)
     course_type = models.CharField(
         'Тип', max_length=20, choices=TYPE_CHOICES,
@@ -216,6 +216,12 @@ class Course(models.Model):
         'self', verbose_name='Необходимый курс для старта', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='next_courses',
         help_text='Курс, который нужно пройти перед этим.',
+    )
+    # представители работают как франчайзи: проводят у себя курсы, франшизу которых купили
+    representatives = models.ManyToManyField(
+        'Representative', verbose_name='Проводится представителями', related_name='courses', blank=True,
+        help_text='Представители, купившие франшизу курса. На странице курса — список «Данный курс можно пройти '
+                  'у наших представителей», на странице представителя — этот курс.',
     )
 
     # Варианты одного курса (пакет «Студент»/«Специалист», семинар/повышение квалификации)
@@ -571,6 +577,15 @@ class Representative(models.Model):
 
     kind = models.CharField('Тип', max_length=20, choices=KIND_CHOICES, default=KIND_REGIONAL)
     name = models.CharField('Название', max_length=255)
+    slug = models.SlugField(
+        'Адрес страницы', max_length=120, unique=True, blank=True,
+        help_text='Латиница: grudnichkovoe-plavanie.ru/specialists/адрес/. '
+                  'Если оставить пустым, заполнится из названия.',
+    )
+    description = models.TextField(
+        'Описание', blank=True,
+        help_text='Показывается на странице представителя. Абзацы разделяйте пустой строкой.',
+    )
     logo = models.ImageField('Логотип', upload_to='representatives/', blank=True, null=True)
     city = models.CharField('Город', max_length=100)
     country = models.CharField('Страна', max_length=100)
@@ -593,6 +608,14 @@ class Representative(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.city})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = unique_slug(Representative, self.name, self.pk, 'representative')
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('core:representative_detail', kwargs={'slug': self.slug})
 
     @property
     def phone_href(self):

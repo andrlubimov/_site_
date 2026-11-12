@@ -160,6 +160,29 @@
                         {% endif %}
                     </section>
 
+                    {% with reps=course.active_representatives %}
+                    {% if reps %}
+                    <section class="course-detail-block course-detail-reps">
+                        <h2 class="course-detail-h course-detail-h--hint">
+                            {# текст и «!» — одним элементом: при переносе «!» остаётся за последним словом #}
+                            <span>Данный курс можно пройти у наших представителей <button type="button" class="course-hint" data-hint="Преподавательский состав и цена могут отличаться"
+                                    aria-label="Преподавательский состав и цена могут отличаться"><i class="bi bi-exclamation-circle"></i></button></span>
+                        </h2>
+                        <ul class="course-detail-doc-list">
+                            {% for rep in reps %}
+                            <li class="course-detail-doc">
+                                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                                <span class="course-option-text">
+                                    <a class="course-option-name course-detail-rep-link" href="{{ rep.get_absolute_url }}">{{ rep.name }}</a>
+                                    <span class="course-option-meta">{{ rep.city }}, {{ rep.country }}</span>
+                                </span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                    {% endif %}
+                    {% endwith %}
+
                     <div class="course-detail-signup">
                         <span class="course-dir-icon course-dir-icon--sm"><i class="bi bi-telephone"></i></span>
                         <div>
@@ -206,7 +229,7 @@
                         {% with ages=course.child_ages.all %}
                         {% if ages %}
                         <div class="course-aside-row">
-                            <dt>Возраст детей</dt>
+                            <dt>Целевая группа</dt>
                             <dd>{% for age in ages %}<span class="course-chip">{{ age.name }}</span>{% endfor %}</dd>
                         </div>
                         {% endif %}

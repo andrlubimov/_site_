@@ -139,16 +139,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'debug': {'()': 'django.utils.log.RequireDebugTrue'},
+        'no_debug': {'()': 'django.utils.log.RequireDebugFalse'},
+    },
     'formatters': {
         'plain': {'format': '{levelname} {name}: {message}', 'style': '{'},
     },
     'handlers': {
         'stderr': {'class': 'logging.StreamHandler', 'formatter': 'plain'},
+        'debug_stderr': {'class': 'logging.StreamHandler', 'formatter': 'plain', 'filters': ['debug']},
+        'error_stderr': {'class': 'logging.StreamHandler', 'formatter': 'plain', 'filters': ['no_debug'],
+                         'level': 'ERROR'},
+        'null': {'class': 'logging.NullHandler'},
     },
     'root': {'handlers': ['stderr'], 'level': 'WARNING'},
     'loggers': {
-        # 404 и прочие предупреждения Django на рабочем сервере — шум от ботов: там только ошибки
-        'django': {'handlers': ['stderr'], 'level': 'INFO' if DEBUG else 'ERROR', 'propagate': False},
+        # 404 и прочие предупреждения Django — только при разработке: на рабочем сервере это шум от ботов
+        'django': {'handlers': ['debug_stderr', 'error_stderr'], 'level': 'INFO', 'propagate': False},
+        # запросы с чужим доменом (сканеры) получают 400 — в журнал их не пишем
+        'django.security.DisallowedHost': {'handlers': ['null'], 'propagate': False},
     },
 }
 

@@ -179,7 +179,10 @@ class CourseModelTests(TestCase):
         self.assertEqual(second.slug, 'grudnichkovoe-plavanie-bazovyy-modul-2')
 
     def test_lookup_options_seeded_by_migration(self):
-        self.assertEqual(list(ChildAge.objects.values_list('code', flat=True)), ['infant', 'early', 'preschool'])
+        self.assertEqual(list(ChildAge.objects.values_list('code', 'name')), [
+            ('infant', 'Груднички'), ('early', 'Ранний возраст'), ('preschool', 'Дошкольный возраст'),
+            ('adults', 'Взрослые'),
+        ])
         self.assertEqual(list(HealthFeature.objects.values_list('code', flat=True)),
                          ['normotypical', 'special_care', 'pregnant'])
 
@@ -333,6 +336,28 @@ class CourseAdminTests(TestCase):
         self.assertEqual(course.teacher_list, [self.teacher])
         self.assertEqual(list(course.child_ages.values_list('code', flat=True)), ['infant'])
 
+    def test_course_representatives(self):
+        rep = Representative.objects.create(name='Счастливый крепыш', city='Новосибирск', country='Россия')
+        response = self.client.post('/admin/core/course/add/', self.course_data(representatives=[rep.pk]))
+        self.assertEqual(response.status_code, 302, response.content.decode()[:500])
+        self.assertEqual(list(Course.objects.get(slug='novyy-kurs').representatives.all()), [rep])
+        self.assertContains(self.client.get(f'/admin/core/representative/{rep.pk}/change/'), 'Новый курс')
+        self.assertEqual(self.client.get('/admin/core/representative/').status_code, 200)
+
+    def test_target_group_health_and_venue_optional(self):
+        data = self.course_data(venue='')
+        del data['child_ages'], data['health_features']
+        response = self.client.post('/admin/core/course/add/', data)
+        self.assertEqual(response.status_code, 302, response.content.decode()[:500])
+        course = Course.objects.get(slug='novyy-kurs')
+        self.assertEqual(course.venue, '')
+        self.assertFalse(course.child_ages.exists())
+        self.assertFalse(course.health_features.exists())
+        response = self.client.get('/education/courses/novyy-kurs/')
+        self.assertEqual(response.status_code, 200)
+        for label in ['Целевая группа', 'Особенности здоровья', 'Место проведения занятий']:
+            self.assertNotContains(response, f'<dt>{label}</dt>')
+
     def test_course_requires_teacher_and_diploma_price(self):
         data = self.course_data(has_diploma='on')
         data['course_teachers-0-teacher'] = ''
@@ -405,7 +430,8 @@ class CourseDetailTests(TestCase):
                                       end_date=date.today() - timedelta(days=28))  # прошедшая — не показываем
         response = self.client.get('/education/courses/kurs/')
         self.assertEqual(response.status_code, 200)
-        for text in ['Короткое описание.', 'Подробности.', 'Плавание', 'Грудной (0–1 год)', 'Ранний (1–3 года)',
+        for text in ['Короткое описание.', 'Подробности.', 'Плавание', '<dt>Целевая группа</dt>', 'Груднички',
+                     'Ранний возраст',
                      'Диплом', '15\u00a0000\u00a0₽', '10:00–15:00', 'Онлайн', 'Сертификат о прохождении курса']:
             self.assertContains(response, text)
         self.assertEqual(len(response.context['schedules']), 1)
@@ -685,6 +711,70 @@ class RepresentativesPageTests(TestCase):
     def test_phone_href(self):
         self.assertEqual(Representative(phone='+998 909242004').phone_href, '+998909242004')
         self.assertEqual(Representative(phone='8 (800) 100-00-00').phone_href, '88001000000')
+
+
+class RepresentativeCoursesTests(TestCase):
+    """Представители-франчайзи: их курсы — на странице курса, на странице представителя и в фильтре"""
+
+    def setUp(self):
+        self.rep = Representative.objects.create(
+            kind='regional', name='Счастливый крепыш', city='Новосибирск', country='Россия',
+            phone='+7 (913) 713-94-64', description='Школа плавания для малышей.',
+        )
+        self.hidden = Representative.objects.create(name='Скрытый клуб', city='Омск', country='Россия',
+                                                    is_active=False)
+        self.course = make_course(title='Грудничковое плавание', slug='gp')
+        self.other = make_course(title='Другой курс', slug='other')
+        self.course.representatives.set([self.rep, self.hidden])
+
+    def test_slug_from_name(self):
+        self.assertEqual(self.rep.slug, 'schastlivyy-krepysh')
+        twin = Representative.objects.create(name='Счастливый крепыш', city='Омск', country='Россия')
+        self.assertEqual(twin.slug, 'schastlivyy-krepysh-2')
+
+    def test_course_page_lists_active_representatives_with_hint(self):
+        response = self.client.get('/education/courses/gp/')
+        self.assertContains(response, 'Данный курс можно пройти у наших представителей')
+        self.assertContains(response, 'data-hint="Преподавательский состав и цена могут отличаться"')
+        self.assertContains(response, 'href="/specialists/schastlivyy-krepysh/"')
+        self.assertContains(response, 'Новосибирск, Россия')
+        self.assertNotContains(response, 'Скрытый клуб')
+        html = response.content.decode()
+        self.assertLess(html.index('Ближайшие даты проведения'), html.index('можно пройти у наших представителей'))
+        self.assertNotContains(self.client.get('/education/courses/other/'), 'можно пройти у наших представителей')
+
+    def test_representative_page(self):
+        response = self.client.get('/specialists/schastlivyy-krepysh/')
+        self.assertEqual(response.status_code, 200)
+        for text in ['Счастливый крепыш', 'Региональный представитель', 'Школа плавания для малышей.',
+                     'href="tel:+79137139464"', 'Курсы представителя', 'Грудничковое плавание',
+                     'преподавательский состав и цена могут отличаться']:
+            self.assertContains(response, text)
+        self.assertNotContains(response, 'Другой курс')
+        self.assertEqual(self.client.get(f'/specialists/{self.hidden.slug}/').status_code, 404)
+
+    def test_representative_without_courses(self):
+        rep = Representative.objects.create(name='Новый клуб', city='Казань', country='Россия')
+        self.assertContains(self.client.get(rep.get_absolute_url()), 'Сейчас представитель не проводит курсы')
+
+    def test_list_links_to_page_and_courses(self):
+        response = self.client.get('/specialists/')
+        self.assertContains(response, 'href="/specialists/schastlivyy-krepysh/"')
+        self.assertContains(response, 'Курсы: 1 программа')
+
+    def test_filter_by_representative(self):
+        response = self.client.get('/education/courses/?representative=schastlivyy-krepysh')
+        self.assertEqual([c.title for c in response.context['courses']], ['Грудничковое плавание'])
+        form = response.context['filter_form']
+        self.assertEqual(list(form.fields)[-1], 'representative')  # в самом низу блока фильтров
+        self.assertEqual(list(form.fields['representative'].queryset), [self.rep])  # скрытых в списке нет
+        self.assertContains(response, 'Все представители')
+
+    def test_filter_hidden_without_franchise_courses(self):
+        self.course.representatives.clear()
+        response = self.client.get('/education/courses/')
+        self.assertNotIn('representative', response.context['filter_form'].fields)
+        self.assertNotContains(response, 'Все представители')
 
 
 class OldSiteImportParserTests(SimpleTestCase):

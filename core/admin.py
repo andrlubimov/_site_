@@ -66,14 +66,18 @@ class TeacherAdmin(admin.ModelAdmin):
     def courses_overview(self, obj):
         if not obj or not obj.pk:
             return 'Курсы появятся здесь, когда преподаватель будет указан в карточке курса.'
-        courses = obj.courses.order_by('title')
-        if not courses:
-            return 'Преподаватель пока не указан ни в одном курсе.'
-        return format_html('<ul class="course-admin-schedule">{}</ul>', format_html_join(
-            '', '<li><a href="{}">{}</a>{}</li>',
-            ((reverse('admin:core_course_change', args=[c.pk]), c.title,
-              '' if c.is_active else ' (скрыт на сайте)') for c in courses),
-        ))
+        return courses_links(obj.courses.order_by('title')) or 'Преподаватель пока не указан ни в одном курсе.'
+
+
+def courses_links(courses):
+    """Список курсов со ссылками на их карточки в админке (у преподавателя и представителя)"""
+    if not courses:
+        return ''
+    return format_html('<ul class="course-admin-schedule">{}</ul>', format_html_join(
+        '', '<li><a href="{}">{}</a>{}</li>',
+        ((reverse('admin:core_course_change', args=[c.pk]), c.title,
+          '' if c.is_active else ' (скрыт на сайте)') for c in courses),
+    ))
 
 
 class CourseTeacherInline(admin.TabularInline):
@@ -193,11 +197,12 @@ class CourseCardAdmin(admin.ModelAdmin):
 class CourseAdmin(admin.ModelAdmin):
     inlines = [CourseTeacherInline]
     list_display = ['title', 'course_type', 'hours', 'price_label', 'teacher_names', 'order', 'is_active']
-    list_filter = ['is_active', 'course_type', 'direction', 'venue', 'skill_level', 'child_ages', 'health_features']
+    list_filter = ['is_active', 'course_type', 'direction', 'venue', 'skill_level', 'child_ages', 'health_features',
+                   'representatives']
     search_fields = ['title', 'slug', 'short_description', 'full_description', 'teachers__last_name']
     list_editable = ['order', 'is_active']
     prepopulated_fields = {'slug': ('title',)}
-    autocomplete_fields = ['required_course', 'card']
+    autocomplete_fields = ['required_course', 'card', 'representatives']
     readonly_fields = ['schedule_overview']
     fieldsets = (
         ('Основное', {
@@ -225,6 +230,11 @@ class CourseAdmin(admin.ModelAdmin):
         }),
         ('Требования', {
             'fields': ('required_course',),
+        }),
+        ('Представители', {
+            'fields': ('representatives',),
+            'description': 'Представители работают как франчайзи: проводят у себя курсы, франшизу которых купили. '
+                           'Можно выбрать несколько или ни одного.',
         }),
         ('Расписание', {
             'fields': ('schedule_overview',),
@@ -413,16 +423,39 @@ class SpecialistAdmin(admin.ModelAdmin):
 
 @admin.register(Representative)
 class RepresentativeAdmin(admin.ModelAdmin):
-    list_display = ['name', 'kind', 'city', 'country', 'has_coordinates', 'is_active', 'order']
+    list_display = ['name', 'kind', 'city', 'country', 'courses_count', 'has_coordinates', 'is_active', 'order']
     list_filter = ['kind', 'is_active', 'country']
     search_fields = ['name', 'city', 'country', 'contact_name']
     list_editable = ['is_active', 'order']
+    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ['courses_overview']
     fieldsets = (
-        (None, {'fields': ('kind', 'name', 'logo', 'contact_name')}),
+        (None, {'fields': ('kind', 'name', 'slug', 'logo', 'contact_name')}),
+        ('Страница представителя', {
+            'fields': ('description', 'courses_overview'),
+            'description': 'На странице представителя — логотип, контакты, описание и курсы, которые он проводит. '
+                           'Курсы отмечаются в карточке курса, в разделе «Представители».',
+        }),
         ('Расположение', {'fields': ('city', 'country', 'latitude', 'longitude')}),
         ('Контакты', {'fields': ('website', 'email', 'phone')}),
         ('Настройки', {'fields': ('is_active', 'order')}),
     )
+
+    class Media:
+        css = {'all': ['css/admin-course.css']}
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(courses_total=Count('courses', distinct=True))
+
+    @admin.display(description='Курсов', ordering='courses_total')
+    def courses_count(self, obj):
+        return obj.courses_total
+
+    @admin.display(description='Курсы представителя')
+    def courses_overview(self, obj):
+        if not obj or not obj.pk:
+            return 'Курсы появятся здесь, когда представитель будет отмечен в карточке курса.'
+        return courses_links(obj.courses.order_by('title')) or 'Представитель пока не отмечен ни в одном курсе.'
 
     @admin.display(boolean=True, description='На глобусе')
     def has_coordinates(self, obj):

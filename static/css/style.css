@@ -1345,6 +1345,16 @@ body:has(.footer-wave) main > section:last-child {
     text-decoration: underline;
 }
 
+/* название — ссылка на страницу представителя (/specialists/<slug>/) */
+.rep-card-name a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.rep-card-name a:hover {
+    color: var(--ocean-700);
+}
+
 /* --- Глобус --- */
 .rep-globe {
     position: relative;
@@ -1795,6 +1805,25 @@ body:has(.footer-wave) main > section:last-child {
     outline: 2px solid var(--ocean-500);
     outline-offset: 2px;
     border-radius: 50%;
+}
+
+/* «Данный курс можно пройти у наших представителей» — «!» в заголовке блока */
+.course-detail-h--hint {
+    position: relative; /* к заголовку привязана подсказка .course-hint */
+}
+
+.course-detail-h--hint .course-hint::after {
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.course-detail-rep-link {
+    color: var(--ocean-700);
+    text-decoration: none;
+}
+
+.course-detail-rep-link:hover {
+    text-decoration: underline;
 }
 
 .course-detail-doc .course-option-price {
@@ -2914,6 +2943,30 @@ body:has(.footer-wave) main > section:last-child {
     align-items: center;
     gap: 0.55rem;
     font-weight: 600;
+}
+
+/* Страница представителя (/specialists/<slug>/) — та же панель профиля, вместо фото логотип */
+.rep-profile-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    margin-bottom: 1rem;
+}
+
+.rep-profile-logo img {
+    max-width: 100%;
+    max-height: 140px;
+    object-fit: contain;
+}
+
+.rep-profile-logo .bi {
+    font-size: 3.5rem;
+    color: var(--ocean-500);
+}
+
+.rep-profile-links {
+    text-align: left;
 }
 
 /* «О преподавателе» — белый блок, как основной блок страницы курса */
